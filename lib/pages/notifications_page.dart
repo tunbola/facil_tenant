@@ -6,6 +6,8 @@ import 'package:facil_tenant/models/message_model.dart';
 import 'package:facil_tenant/models/user_model.dart';
 import 'package:facil_tenant/styles/colors.dart';
 
+
+//Requests/complaints page
 class NotificationsPage extends StatefulWidget {
   final bool isComlaint;
   final bool isAnnouncements;

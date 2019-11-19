@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../styles/colors.dart';
 
+//class contains widget that's the navigation bar of the
+//application
 class AppScaffold extends StatelessWidget {
   final Widget child;
   final Widget bottom;
@@ -52,7 +54,7 @@ class AppScaffold extends StatelessWidget {
         decoration: BoxDecoration(
           image: DecorationImage(
             image: AssetImage('assets/img/properties.png'),
-            alignment: Alignment.bottomCenter,
+            alignment: Alignment.bottomCenter, //push image to bottom of the screen and align to center on the x-axis
             fit: BoxFit.fitWidth,
             colorFilter: ColorFilter.mode(Colors.white10, BlendMode.dstATop),
           ),

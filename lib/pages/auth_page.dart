@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../components/app_scaffold.dart';
 
 import '../styles/colors.dart';
+import "../services/auth_service.dart";
 
 BuildContext ctx;
 
@@ -237,13 +238,26 @@ class RegistrationPage extends StatelessWidget {
 class LoginPage extends StatelessWidget {
   final Function presentSnack;
   final Function goHome;
-  final ValueNotifier _obscurePass = ValueNotifier(true);
+  final ValueNotifier _obscurePass = ValueNotifier(true); //toggle between showing password and hiding password in input field
   // final ValueNotifier _accType = ValueNotifier(null);
+
+  final username = TextEditingController();
+  final password = TextEditingController();
 
   LoginPage(
     this.presentSnack,
     this.goHome,
   );
+
+  _validateUserInput(String username, String password) {
+    if (username.length < 1) {
+      return "Email address or phone number is required ...";
+    } 
+    if (password.length < 1) {
+      return "Password is required ...";
+    }
+    return "";
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -287,8 +301,9 @@ class LoginPage extends StatelessWidget {
                   //   height: 10.0,
                   // ),
                   TextField(
+                    controller: username,
                     decoration: InputDecoration(
-                      hintText: 'Email',
+                      hintText: 'Email or phone number',
                     ),
                     autocorrect: false,
                     keyboardType: TextInputType.emailAddress,
@@ -300,6 +315,7 @@ class LoginPage extends StatelessWidget {
                     valueListenable: _obscurePass,
                     builder: (context, val, child) {
                       return TextField(
+                        controller: password,
                         decoration: InputDecoration(
                           hintText: 'Password',
                           suffixIcon: GestureDetector(
@@ -323,7 +339,19 @@ class LoginPage extends StatelessWidget {
                   ),
                   RaisedButton(
                     child: Text('LOGIN'),
-                    onPressed: () => goHome(),
+                    onPressed: () {
+                      //validate user input
+                      String formValidation = _validateUserInput(username.text, password.text);
+                      if (formValidation.length > 1) {
+                        Scaffold.of(context).showSnackBar(
+                          SnackBar(content: Text(formValidation)));
+                      } else {
+                        //AuthService authservice = new AuthService();
+                        print("Username is : ${username.text} while password : ${password.text})");
+                        //print(authservice.userLogin(username.text, password.text));
+                        //goHome();
+                      }
+                    },
                   ),
                   SizedBox(
                     height: 30.0,

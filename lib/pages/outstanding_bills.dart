@@ -106,7 +106,7 @@ class OutstandingBillsPage extends StatelessWidget {
                                             fit: BoxFit.fitWidth,
                                           ),
                                         ),
-                                        Text("You payment has been received")
+                                        Text("You payment has been confirmed")
                                       ],
                                     ),
                                   ),
@@ -234,6 +234,9 @@ class OutstandingBillsPage extends StatelessWidget {
     );
   }
 
+  /// page widget that displays notification for outstanding bills,
+  /// displays a list of bills and a button that pops up the 
+  /// pay outstanding bills window
   @override
   Widget build(BuildContext context) {
     formatter = NumberFormat.currency(
@@ -374,7 +377,7 @@ class OutstandingBillsPage extends StatelessWidget {
                                       padding: EdgeInsets.all(5),
                                       onPressed: () =>
                                           _payBill([bill], context),
-                                      child: Text("Pay"),
+                                      child: Text("Pay"), //each outstanding bill payment button
                                     )
                                   ],
                                 ),
@@ -397,8 +400,8 @@ class OutstandingBillsPage extends StatelessWidget {
           ],
         ),
       ),
-      pageTitle: ValueNotifier("PAYMENT HISTORY"),
-      bottomWidget: Container(
+      pageTitle: ValueNotifier("PAYMENT HISTORY"),  //page title
+      bottomWidget: Container( //bottom widget for paying oustanding bills button
         padding: EdgeInsets.only(
           left: 16.0,
           right: 16.0,

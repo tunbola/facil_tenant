@@ -43,6 +43,8 @@ class DashboardPage extends StatefulWidget {
   }
 }
 
+//Displays notifications overlay at the top of the screen
+//stacked on one another.
 class _DashboardPageState extends State<DashboardPage> {
   void showNotifs(BuildContext context) {
     Timer(Duration(seconds: 1), () {

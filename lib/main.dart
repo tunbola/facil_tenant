@@ -2,11 +2,12 @@ import 'package:facil_tenant/pages/outstanding_bills.dart';
 import 'package:facil_tenant/pages/payment_history_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
+/*
 import 'package:facil_tenant/models/message_model.dart';
 import 'package:facil_tenant/models/user_model.dart';
 
 import 'package:facil_tenant/pages/notification_detail_page.dart';
+*/
 import 'package:overlay_support/overlay_support.dart';
 
 import 'styles/theme.dart';
@@ -54,7 +55,7 @@ class MyApp extends StatelessWidget {
             builder: (BuildContext context) => DashboardPage(),
           );
         },
-        onGenerateRoute: (RouteSettings settings) {
+        /*onGenerateRoute: (RouteSettings settings) {
           final List<String> path = settings.name.split('/');
           switch (path[0]) {
             case 'notifications':
@@ -87,7 +88,7 @@ class MyApp extends StatelessWidget {
                 builder: (BuildContext context) => DashboardPage(),
               );
           }
-        },
+        },*/
       ),
     );
   }
