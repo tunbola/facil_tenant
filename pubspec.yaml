@@ -29,6 +29,7 @@ dependencies:
   provider: ^2.0.0+1
   sembast: ^1.15.4+1
   http: ^0.12.0+2
+  get_it: ^3.0.3
 
 dev_dependencies:
   flutter_test:

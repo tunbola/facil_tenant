@@ -8,19 +8,15 @@ import 'package:facil_tenant/styles/colors.dart';
 
 
 //Requests/complaints page
-class NotificationsPage extends StatefulWidget {
-  final bool isComplaint;
-  final bool isAnnouncements;
-
-  NotificationsPage({this.isComplaint = false, this.isAnnouncements = false});
+class MessagesPage extends StatefulWidget {
 
   @override
   State<StatefulWidget> createState() {
-    return _NotificationsPageState();
+    return _MessagesPageState();
   }
 }
 
-class _NotificationsPageState extends State<NotificationsPage> {
+class _MessagesPageState extends State<MessagesPage> {
   @override
   void initState() {
     super.initState();
@@ -29,30 +25,21 @@ class _NotificationsPageState extends State<NotificationsPage> {
   @override
   Widget build(BuildContext context) {
     return AppScaffold(
-      floatingActionButton: widget.isComplaint
-          ? FloatingActionButton.extended(
+      floatingActionButton: FloatingActionButton.extended(
               heroTag: "createMessae",
               tooltip: "Create Message",
               onPressed: () =>
                   Navigator.of(context).pushNamed("notifications/create"),
               icon: Icon(Icons.edit),
-              label: Text("Make Complaint or Request"),
-            )
-          : null,
-      child: MessageList(
-        isFromMe: widget.isComplaint,
-        isAnnouncements: widget.isAnnouncements
-      ),
-      pageTitle: ValueNotifier(
-          widget.isComplaint ? "COMPLAINTS AND REQUESTS" : widget.isAnnouncements ? "ANNOUCEMENTS" : "MESSAGES"),
+              label: Text("Send message"),
+            ),
+      child: MessageList(),
+      pageTitle: ValueNotifier("MESSAGES"),
     );
   }
 }
 
 class MessageList extends StatelessWidget {
-  final bool isFromMe;
-  final bool isAnnouncements;
-  MessageList({this.isFromMe = false, this.isAnnouncements});
 
   Future<List<MessageModel>> _getMessages() async {
     await Future.delayed(Duration(seconds: 5));
@@ -170,10 +157,7 @@ class MessageList extends StatelessWidget {
                                   children: [
                                     TableRow(
                                       children: [
-                                        Text(
-                                          isFromMe
-                                              ? it.title
-                                              : "Your rent for June is Due",
+                                        Text("Your rent for June is Due",
                                           maxLines: 1,
                                           style:
                                               Theme.of(context).textTheme.title,
@@ -192,33 +176,19 @@ class MessageList extends StatelessWidget {
                                   height: 5.0,
                                 ),
                                 Text(
-                                  "${isFromMe ? 'to' : 'from'} the Caretaker",
+                                  "the Caretaker",
                                   maxLines: 1,
                                   style: Theme.of(context)
                                       .textTheme
                                       .subtitle
                                       .copyWith(
-                                          fontWeight: idx % 2 == 0 || isFromMe
+                                          fontWeight: idx % 2 == 0
                                               ? FontWeight.normal
                                               : FontWeight.bold),
                                 ),
                                 SizedBox(
                                   height: 5.0,
                                 ),
-                                isFromMe
-                                    ? Text(
-                                        "${isEven ? 'RESOLVED' : 'UNRESOLVED'}",
-                                        maxLines: 1,
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: isEven
-                                              ? Colors.green
-                                              : Colors.red,
-                                        ),
-                                      )
-                                    : SizedBox(
-                                        height: 0,
-                                      ),
                                 SizedBox(
                                   height: 5.0,
                                 ),
@@ -230,33 +200,10 @@ class MessageList extends StatelessWidget {
                                       .textTheme
                                       .body1
                                       .copyWith(
-                                          fontWeight: idx % 2 == 0 || isFromMe
+                                          fontWeight: idx % 2 == 0
                                               ? FontWeight.normal
                                               : FontWeight.bold),
                                 ),
-                                // SizedBox(
-                                //   height: !isFromMe ? 10.0 : 0,
-                                // ),
-                                !isFromMe
-                                    ? Align(
-                                        alignment: Alignment.bottomRight,
-                                        child: GestureDetector(
-                                          child: Container(
-                                            padding: EdgeInsets.symmetric(
-                                              vertical: 5,
-                                              horizontal: 5,
-                                            ),
-                                            child: Text(
-                                              "Mark as read",
-                                              style: TextStyle(
-                                                color: shedAppBlue100,
-                                              ),
-                                            ),
-                                          ),
-                                          onTap: () {},
-                                        ),
-                                      )
-                                    : SizedBox()
                               ],
                             ),
                           ),
@@ -265,7 +212,7 @@ class MessageList extends StatelessWidget {
                     ),
                   ),
                   onTap: () => Navigator.of(context)
-                      .pushNamed('notifications/detail/$isFromMe/$isAnnouncements/1'),
+                      .pushNamed('notifications/detail/1'),
                 ),
                 onDismissed: (dir) => "",
                 direction: DismissDirection.endToStart,

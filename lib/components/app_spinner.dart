@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 class AppSpinner extends StatelessWidget {
   const AppSpinner();
+  
   @override
   Widget build(BuildContext context) {
     return Center(
