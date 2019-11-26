@@ -1,3 +1,4 @@
+import 'package:facil_tenant/pages/messages_page.dart';
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 
@@ -21,6 +22,8 @@ Route<dynamic> generateRoute(RouteSettings settings) {
       return MaterialPageRoute(builder: (context) => AuthPage());
     case routes.Home:
       return MaterialPageRoute(builder: (context) => DashboardPage());
+      case routes.Messages:
+      return MaterialPageRoute(builder: (context) => MessagesPage());
     case routes.Notifications:
       return MaterialPageRoute(builder: (context) => NotificationsPage());
     case routes.Announcements:

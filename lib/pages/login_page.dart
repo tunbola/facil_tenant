@@ -10,13 +10,13 @@ class LoginPage extends StatefulWidget {
   LoginPage(this.presentSnack);
 
   @override
-  LoginFormWidget createState() => LoginFormWidget(this.presentSnack);
+  LoginFormState createState() => LoginFormState(this.presentSnack);
 }
 
-class LoginFormWidget extends State<LoginPage> {
+class LoginFormState extends State<LoginPage> {
 
   final Function presentSnack;
-  LoginFormWidget(this.presentSnack); //snackbar is meant to display messages to users on authentication pages based on context
+  LoginFormState(this.presentSnack); //snackbar is meant to display messages to users on authentication pages based on context
 
   final ValueNotifier _obscurePass = ValueNotifier(true); //toggle between showing password and hiding password in input field
   
@@ -113,6 +113,8 @@ class LoginFormWidget extends State<LoginPage> {
                             setState(() {
                               buttonClicked = false;
                             });
+                          }).catchError((onError) {
+                            presentSnack(context, "Fatal error occured while logging in", Colors.redAccent, Colors.white);
                           });
                         } 
                       },

@@ -9,3 +9,4 @@ const String CreateNotifications = 'notifications/create';
 const String PaymentHistory = 'payment/history';
 const String OutstandingBills = 'outstandings';
 const String UserProfile = 'profile';
+const String Messages = 'messages';

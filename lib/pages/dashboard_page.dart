@@ -104,7 +104,7 @@ class _DashboardPageState extends State<DashboardPage> {
   getUserName() async {
     String un = await AccessService.userName;
     setState(() {
-      _username = un;
+      _username = un == null ? "No name yet" : un;
     });
   }
 
@@ -218,7 +218,7 @@ class _DashboardPageState extends State<DashboardPage> {
                   "assets/img/chat.png",
                   caption: "Messages",
                   onPress: () =>
-                      _navigationService.navigateTo(routes.Notifications),
+                      _navigationService.navigateTo(routes.Messages),
                 ),
                 ImageButton(
                   "assets/img/sent_message.png",

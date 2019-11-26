@@ -6,4 +6,5 @@ const config = {
   "announcements": "announcements/",
   "message": "message/",
   "propertyAccess": "propertyaccess/",
+  "create": "create/",
 };

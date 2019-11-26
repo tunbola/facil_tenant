@@ -75,4 +75,19 @@ class AccessService {
     return property;
   }
 
+  static bool isPhoneNumber(String phoneNumber) {
+    bool pnValid = RegExp(r"^[0-9]{11}$").hasMatch(phoneNumber);
+    return pnValid;
+  }
+
+  static bool isValidCode(String smsCode) {
+    bool isValid = RegExp(r"^[0-9]{6}$").hasMatch(smsCode);
+    return isValid;
+  }
+
+  static bool isValidEmail(String email) {
+    bool emailValid = RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(email);
+    return emailValid;
+  }
+
 }

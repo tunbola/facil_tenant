@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../components/app_scaffold.dart';
 import '../styles/colors.dart';
+import "package:facil_tenant/pages/registration_page.dart";
 
 import "package:facil_tenant/pages/login_page.dart";
 
@@ -51,9 +52,7 @@ class AuthPage extends StatelessWidget {
               return MaterialPageRoute(builder: (
                 BuildContext context,
               ) {
-                return LoginPage(
-                  presentSnack
-                );
+                return LoginPage(presentSnack);
               });
               break;
             case 'login/signup':
@@ -61,10 +60,7 @@ class AuthPage extends StatelessWidget {
               return MaterialPageRoute(builder: (
                 BuildContext context,
               ) {
-                return RegistrationPage(
-                  presentSnack,
-                  goHome,
-                );
+                return RegistrationPage(presentSnack);
               });
               break;
             case 'login/retrievepass':
@@ -91,144 +87,6 @@ class AuthPage extends StatelessWidget {
         },
       ),
       pageTitle: _pgTitle,
-    );
-  }
-}
-
-class RegistrationPage extends StatelessWidget {
-  final Function presentSnack;
-  final Function goHome;
-  final ValueNotifier _obscurePass = ValueNotifier(true);
-  final ValueNotifier _obscurePassConf = ValueNotifier(true);
-
-  RegistrationPage(
-    this.presentSnack,
-    this.goHome,
-  );
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onDoubleTap: () => FocusScope.of(context).requestFocus(FocusNode()),
-      child: Center(
-        child: SingleChildScrollView(
-          padding: EdgeInsets.symmetric(
-            vertical: 5.0,
-            horizontal: 16.0,
-          ),
-          child: Container(
-            child: Builder(
-              builder: (BuildContext context) {
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: <Widget>[
-                    TextField(
-                      decoration: InputDecoration(
-                        hintText: 'Email',
-                      ),
-                      keyboardType: TextInputType.emailAddress,
-                      autocorrect: false,
-                    ),
-                    SizedBox(
-                      height: 10.0,
-                    ),
-                    ValueListenableBuilder(
-                      valueListenable: _obscurePass,
-                      builder: (context, val, child) {
-                        return TextField(
-                          decoration: InputDecoration(
-                            hintText: 'Password',
-                            suffixIcon: GestureDetector(
-                              child: Icon(
-                                _obscurePass.value
-                                    ? Icons.visibility
-                                    : Icons.visibility_off,
-                                color: shedAppBlue400,
-                              ),
-                              onTap: () =>
-                                  _obscurePass.value = !_obscurePass.value,
-                            ),
-                          ),
-                          autocorrect: false,
-                          obscureText: val,
-                        );
-                      },
-                    ),
-                    SizedBox(
-                      height: 10.0,
-                    ),
-                    ValueListenableBuilder(
-                      valueListenable: _obscurePassConf,
-                      builder: (context, val, child) {
-                        return TextField(
-                          decoration: InputDecoration(
-                            hintText: 'Password Confirm',
-                            suffixIcon: GestureDetector(
-                              child: Icon(
-                                _obscurePass.value
-                                    ? Icons.visibility
-                                    : Icons.visibility_off,
-                                color: shedAppBlue400,
-                              ),
-                              onTap: () => _obscurePassConf.value =
-                                  !_obscurePassConf.value,
-                            ),
-                          ),
-                          autocorrect: false,
-                          obscureText: val,
-                        );
-                      },
-                    ),
-                    SizedBox(
-                      height: 10.0,
-                    ),
-                    TextField(
-                      decoration: InputDecoration(
-                        hintText: 'Secret Code',
-                      ),
-                      autocorrect: false,
-                    ),
-                    SizedBox(
-                      height: 20.0,
-                    ),
-                    RaisedButton(
-                      child: Text('REGISTER'),
-                      onPressed: () => goHome(),
-                    ),
-                    SizedBox(
-                      height: 30.0,
-                    ),
-                    Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 10.0,
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: <Widget>[
-                          Text(
-                            "Already have an account?",
-                          ),
-                          FlatButton(
-                            child: Text(
-                              "login",
-                              style:
-                                  Theme.of(context).textTheme.display1.copyWith(
-                                        fontSize: 14.0,
-                                      ),
-                            ),
-                            onPressed: () =>
-                                Navigator.of(context).pushNamed("login/signin"),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                );
-              },
-            ),
-          ),
-        ),
-      ),
     );
   }
 }

@@ -52,8 +52,8 @@ class AuthService {
   fetchMessagesTrail() async {
     String userId = await AccessService.userId;
     try {
-      http.Response response = await http.get(
-          "${config['baseUrl']}${config['anouncements']}index?id=$userId");
+      http.Response response = await http
+          .get("${config['baseUrl']}${config['anouncements']}index?id=$userId");
       final responseJson = conv.json.decode(response.body);
 
       final responseObject = ResponseModel.fromJson(responseJson);
@@ -63,6 +63,22 @@ class AuthService {
       return responseObject.message;
     } catch (e) {
       return "The application could not connect to the server ...";
+    }
+  }
+
+  Future<Map<String, dynamic>> registerUser(String phone, String email, String password, String smsCode) async {
+    try {
+      http.Response response = await http.post(
+          "${config['baseUrl']}${config['user']}${config['create']}",
+          body: {"phone": phone, "email": email, "password": password, "sms_code": smsCode});
+      final responseJson = conv.json.decode(response.body);
+      final responseObject = ResponseModel.fromJson(responseJson);
+      if (response.statusCode != 200) {
+        return {"status": false, "message" : responseObject.message};
+      }
+      return {"status": true, "message" : responseObject.message};
+    } catch (e) {
+      return {"status": false, "message" : "The application could not connect to the server ..."};
     }
   }
 }
