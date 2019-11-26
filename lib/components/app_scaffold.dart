@@ -93,12 +93,12 @@ class AppScaffold extends StatelessWidget {
                           ),
                           GestureDetector(
                             child: CircleAvatar(
-                            backgroundColor: Colors.white,
-                            backgroundImage:
+                              backgroundColor: Colors.white,
+                              backgroundImage:
                                 AssetImage('assets/img/tenant.png'),
-                            radius: 15.0,
-                          ),
-                          onTap: () => Navigator.of(context).pushNamed('profile'),
+                              radius: 15.0,
+                            ),
+                            onTap: () => Navigator.of(context).pushNamed('profile'),
                           )
                         ],
                       ),

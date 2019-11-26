@@ -9,6 +9,12 @@ import 'package:overlay_support/overlay_support.dart';
 
 import '../styles/colors.dart';
 
+import "package:facil_tenant/services/access_service.dart";
+
+import "package:facil_tenant/services/navigation_service.dart";
+import "package:facil_tenant/singleton/locator.dart";
+import "package:facil_tenant/routes/route_paths.dart" as routes;
+
 final List<MessageModel> messages = [
   MessageModel(
     isRead: false,
@@ -46,6 +52,13 @@ class DashboardPage extends StatefulWidget {
 //Displays notifications overlay at the top of the screen
 //stacked on one another.
 class _DashboardPageState extends State<DashboardPage> {
+  
+  String _username = "";// AccessService.userName;
+  String _propertyName = "";
+  String _propertyAddress = "";
+
+  static NavigationService _navigationService = locator<NavigationService>();
+
   void showNotifs(BuildContext context) {
     Timer(Duration(seconds: 1), () {
       messages.forEach((message) {
@@ -88,10 +101,27 @@ class _DashboardPageState extends State<DashboardPage> {
     });
   }
 
+  getUserName() async {
+    String un = await AccessService.userName;
+    setState(() {
+      _username = un == null ? "No name yet" : un;
+    });
+  }
+
+  getProperty() async {
+    Map<String, dynamic> property = await AccessService.property;
+    setState(() {
+      _propertyName = property["name"];
+      _propertyAddress = property["address"];
+    });
+  }
+
   @override
   void initState() {
     super.initState();
     showNotifs(context);
+    getUserName();
+    getProperty();
   }
 
   @override
@@ -102,7 +132,7 @@ class _DashboardPageState extends State<DashboardPage> {
       actions: <Widget>[
         IconButton(
           icon: Icon(Icons.power_settings_new),
-          onPressed: () => Navigator.of(context).pushReplacementNamed('auth'),
+          onPressed: () => Navigator.of(context).pushReplacementNamed('auth'), //logout here
           iconSize: 30,
         ),
       ],
@@ -125,7 +155,7 @@ class _DashboardPageState extends State<DashboardPage> {
                     height: 10.0,
                   ),
                   Text(
-                    "DIRISU JESSE BAYODELE",
+                    _username.toUpperCase(),
                     overflow: TextOverflow.visible,
                     style: Theme.of(context).textTheme.title.copyWith(
                           fontSize: 50.0,
@@ -136,11 +166,19 @@ class _DashboardPageState extends State<DashboardPage> {
                     height: 10.0,
                   ),
                   Text(
-                    "Aso Rock Villa",
+                    _propertyName,
                     overflow: TextOverflow.visible,
                     textAlign: TextAlign.left,
                     style: Theme.of(context).textTheme.display1.copyWith(
-                          fontSize: 25,
+                          fontSize: 25.0,
+                        ),
+                  ),
+                  Text(
+                    _propertyAddress,
+                    overflow: TextOverflow.visible,
+                    textAlign: TextAlign.left,
+                    style: Theme.of(context).textTheme.display1.copyWith(
+                          fontSize: 17.0,
                         ),
                   ),
                 ],
@@ -156,7 +194,7 @@ class _DashboardPageState extends State<DashboardPage> {
               "assets/img/megaphone.png",
               caption: "Announcements",
               textStyle: TextStyle(fontSize: 10),
-              onPress: () => Navigator.of(context).pushNamed('announcements'),
+              onPress: () => _navigationService.navigateTo(routes.Announcements),
             ),
             ),
           ),
@@ -174,24 +212,24 @@ class _DashboardPageState extends State<DashboardPage> {
                   "assets/img/receipt.png",
                   caption: "Bills",
                   onPress: () =>
-                      Navigator.of(context).pushNamed('outstandings'),
+                      _navigationService.navigateTo(routes.OutstandingBills),
                 ),
                 ImageButton(
                   "assets/img/chat.png",
                   caption: "Messages",
                   onPress: () =>
-                      Navigator.of(context).pushNamed('notifications'),
+                      _navigationService.navigateTo(routes.Messages),
                 ),
                 ImageButton(
                   "assets/img/sent_message.png",
                   caption: "Requests/Complaints",
-                  onPress: () => Navigator.of(context).pushNamed('complaints'),
+                  onPress: () => _navigationService.navigateTo(routes.Complaints),
                 ),
                 ImageButton(
                   "assets/img/verified_payment.png",
                   caption: "Payments",
                   onPress: () =>
-                      Navigator.of(context).pushNamed('payment/history'),
+                      _navigationService.navigateTo(routes.PaymentHistory),
                 ),
               ],
             ),

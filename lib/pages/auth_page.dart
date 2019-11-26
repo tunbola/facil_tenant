@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../components/app_scaffold.dart';
-
 import '../styles/colors.dart';
-import "../services/auth_service.dart";
+import "package:facil_tenant/pages/registration_page.dart";
+
+import "package:facil_tenant/pages/login_page.dart";
 
 BuildContext ctx;
 
@@ -51,10 +52,7 @@ class AuthPage extends StatelessWidget {
               return MaterialPageRoute(builder: (
                 BuildContext context,
               ) {
-                return LoginPage(
-                  presentSnack,
-                  goHome,
-                );
+                return LoginPage(presentSnack);
               });
               break;
             case 'login/signup':
@@ -62,10 +60,7 @@ class AuthPage extends StatelessWidget {
               return MaterialPageRoute(builder: (
                 BuildContext context,
               ) {
-                return RegistrationPage(
-                  presentSnack,
-                  goHome,
-                );
+                return RegistrationPage(presentSnack);
               });
               break;
             case 'login/retrievepass':
@@ -85,7 +80,6 @@ class AuthPage extends StatelessWidget {
                 builder: (BuildContext context) {
                   return LoginPage(
                     presentSnack,
-                    goHome,
                   );
                 },
               );
@@ -93,320 +87,6 @@ class AuthPage extends StatelessWidget {
         },
       ),
       pageTitle: _pgTitle,
-    );
-  }
-}
-
-class RegistrationPage extends StatelessWidget {
-  final Function presentSnack;
-  final Function goHome;
-  final ValueNotifier _obscurePass = ValueNotifier(true);
-  final ValueNotifier _obscurePassConf = ValueNotifier(true);
-
-  RegistrationPage(
-    this.presentSnack,
-    this.goHome,
-  );
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onDoubleTap: () => FocusScope.of(context).requestFocus(FocusNode()),
-      child: Center(
-        child: SingleChildScrollView(
-          padding: EdgeInsets.symmetric(
-            vertical: 5.0,
-            horizontal: 16.0,
-          ),
-          child: Container(
-            child: Builder(
-              builder: (BuildContext context) {
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: <Widget>[
-                    TextField(
-                      decoration: InputDecoration(
-                        hintText: 'Email',
-                      ),
-                      keyboardType: TextInputType.emailAddress,
-                      autocorrect: false,
-                    ),
-                    SizedBox(
-                      height: 10.0,
-                    ),
-                    ValueListenableBuilder(
-                      valueListenable: _obscurePass,
-                      builder: (context, val, child) {
-                        return TextField(
-                          decoration: InputDecoration(
-                            hintText: 'Password',
-                            suffixIcon: GestureDetector(
-                              child: Icon(
-                                _obscurePass.value
-                                    ? Icons.visibility
-                                    : Icons.visibility_off,
-                                color: shedAppBlue400,
-                              ),
-                              onTap: () =>
-                                  _obscurePass.value = !_obscurePass.value,
-                            ),
-                          ),
-                          autocorrect: false,
-                          obscureText: val,
-                        );
-                      },
-                    ),
-                    SizedBox(
-                      height: 10.0,
-                    ),
-                    ValueListenableBuilder(
-                      valueListenable: _obscurePassConf,
-                      builder: (context, val, child) {
-                        return TextField(
-                          decoration: InputDecoration(
-                            hintText: 'Password Confirm',
-                            suffixIcon: GestureDetector(
-                              child: Icon(
-                                _obscurePass.value
-                                    ? Icons.visibility
-                                    : Icons.visibility_off,
-                                color: shedAppBlue400,
-                              ),
-                              onTap: () => _obscurePassConf.value =
-                                  !_obscurePassConf.value,
-                            ),
-                          ),
-                          autocorrect: false,
-                          obscureText: val,
-                        );
-                      },
-                    ),
-                    SizedBox(
-                      height: 10.0,
-                    ),
-                    TextField(
-                      decoration: InputDecoration(
-                        hintText: 'Secret Code',
-                      ),
-                      autocorrect: false,
-                    ),
-                    SizedBox(
-                      height: 20.0,
-                    ),
-                    RaisedButton(
-                      child: Text('REGISTER'),
-                      onPressed: () => goHome(),
-                    ),
-                    SizedBox(
-                      height: 30.0,
-                    ),
-                    Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 10.0,
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: <Widget>[
-                          Text(
-                            "Already have an account?",
-                          ),
-                          FlatButton(
-                            child: Text(
-                              "login",
-                              style:
-                                  Theme.of(context).textTheme.display1.copyWith(
-                                        fontSize: 14.0,
-                                      ),
-                            ),
-                            onPressed: () =>
-                                Navigator.of(context).pushNamed("login/signin"),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                );
-              },
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class LoginPage extends StatelessWidget {
-  final Function presentSnack;
-  final Function goHome;
-  final ValueNotifier _obscurePass = ValueNotifier(true); //toggle between showing password and hiding password in input field
-  // final ValueNotifier _accType = ValueNotifier(null);
-
-  final username = TextEditingController();
-  final password = TextEditingController();
-
-  LoginPage(
-    this.presentSnack,
-    this.goHome,
-  );
-
-  _validateUserInput(String username, String password) {
-    if (username.length < 1) {
-      return "Email address or phone number is required ...";
-    } 
-    if (password.length < 1) {
-      return "Password is required ...";
-    }
-    return "";
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: SingleChildScrollView(
-        padding: EdgeInsets.symmetric(
-          vertical: 5.0,
-          horizontal: 16.0,
-        ),
-        child: Container(
-          child: Builder(
-            builder: (BuildContext context) {
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: <Widget>[
-                  // ValueListenableBuilder(
-                  //   valueListenable: _accType,
-                  //   builder: (context, val, child) {
-                  //     return DropdownButtonFormField(
-                  //       decoration: InputDecoration(
-                  //         labelStyle:
-                  //             Theme.of(context).inputDecorationTheme.labelStyle,
-                  //         enabledBorder: Theme.of(context)
-                  //             .inputDecorationTheme
-                  //             .enabledBorder,
-                  //         focusedBorder: Theme.of(context)
-                  //             .inputDecorationTheme
-                  //             .enabledBorder,
-                  //       ),
-                  //       hint: Text("Select Account Type"),
-                  //       value: val,
-                  //       items: <String>["Facility Manager", "Tenant"]
-                  //           .map((it) =>
-                  //               DropdownMenuItem(value: it, child: Text(it)))
-                  //           .toList(),
-                  //       onChanged: (valu) => _accType.value = valu,
-                  //     );
-                  //   },
-                  // ),
-                  // SizedBox(
-                  //   height: 10.0,
-                  // ),
-                  TextField(
-                    controller: username,
-                    decoration: InputDecoration(
-                      hintText: 'Email or phone number',
-                    ),
-                    autocorrect: false,
-                    keyboardType: TextInputType.emailAddress,
-                  ),
-                  SizedBox(
-                    height: 10.0,
-                  ),
-                  ValueListenableBuilder(
-                    valueListenable: _obscurePass,
-                    builder: (context, val, child) {
-                      return TextField(
-                        controller: password,
-                        decoration: InputDecoration(
-                          hintText: 'Password',
-                          suffixIcon: GestureDetector(
-                            child: Icon(
-                              _obscurePass.value
-                                  ? Icons.visibility
-                                  : Icons.visibility_off,
-                              color: shedAppBlue400,
-                            ),
-                            onTap: () =>
-                                _obscurePass.value = !_obscurePass.value,
-                          ),
-                        ),
-                        autocorrect: false,
-                        obscureText: val,
-                      );
-                    },
-                  ),
-                  SizedBox(
-                    height: 20.0,
-                  ),
-                  RaisedButton(
-                    child: Text('LOGIN'),
-                    onPressed: () {
-                      //validate user input
-                      String formValidation = _validateUserInput(username.text, password.text);
-                      if (formValidation.length > 1) {
-                        Scaffold.of(context).showSnackBar(
-                          SnackBar(content: Text(formValidation)));
-                      } else {
-                        //AuthService authservice = new AuthService();
-                        print("Username is : ${username.text} while password : ${password.text})");
-                        //print(authservice.userLogin(username.text, password.text));
-                        //goHome();
-                      }
-                    },
-                  ),
-                  SizedBox(
-                    height: 30.0,
-                  ),
-                  Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 10.0,
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          mainAxisSize: MainAxisSize.min,
-                          children: <Widget>[
-                            Text(
-                              "New here?",
-                            ),
-                            FlatButton(
-                              child: Text(
-                                "register",
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .display1
-                                    .copyWith(
-                                      fontSize: 14.0,
-                                    ),
-                              ),
-                              onPressed: () => Navigator.of(context)
-                                  .pushNamed("login/signup"),
-                            ),
-                          ],
-                        ),
-                        FlatButton(
-                          child: Text(
-                            "Retrieve Password",
-                            textAlign: TextAlign.right,
-                            style:
-                                Theme.of(context).textTheme.display1.copyWith(
-                                      fontSize: 14.0,
-                                    ),
-                          ),
-                          onPressed: () => Navigator.of(context)
-                              .pushNamed("login/retrievepass"),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              );
-            },
-          ),
-        ),
-      ),
     );
   }
 }
