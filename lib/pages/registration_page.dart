@@ -189,8 +189,8 @@ class RegistrationPageState extends State<RegistrationPage> {
                             setState(() {
                               buttonClicked = true;
                             });
-                            AuthService authservice = new AuthService();
-                            Future response = authservice.registerUser(phone.text.trim(), email.text.trim(), password.text.trim(), smsCode.text.trim());
+                            HttpService httpService = new HttpService();
+                            Future response = httpService.registerUser(phone.text.trim(), email.text.trim(), password.text.trim(), smsCode.text.trim());
                             response.then((response) {
                               if (response != null) {
                                 setState(() {

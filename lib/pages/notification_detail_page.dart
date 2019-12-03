@@ -40,7 +40,7 @@ class NotificationDetailPage extends StatelessWidget {
                 height: 10.0,
               ),
               Text(
-                "${isFromMe ? 'to' : 'from'} ${isFromMe ? message.to : message.from.name}",
+                "${isFromMe ? 'to' : 'from'} ${isFromMe ? message.to : message.from.surname}",
                 style: Theme.of(context).textTheme.subtitle,
               ),
               SizedBox(

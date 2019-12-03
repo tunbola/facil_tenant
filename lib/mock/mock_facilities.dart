@@ -4,57 +4,57 @@ final List<PropertyModel> facilities = [
   PropertyModel(
     name: "Ibukun House",
     address: "12 Ibukun Drive, off Glorious Lane, V.I",
-    city: "Victoria Island",
+    /*city: "Victoria Island",
     state: "Lagos",
     country: "Nigeria",
     picture: "assets/img/apartments.png",
     apartments: 20,
     lat: 0,
-    lng: 0,
+    lng: 0,*/
   ),
   PropertyModel(
     name: "Bourdillion House",
     address: "12 Bourdillion Way, Ikoyi",
-    city: "Ikoyi",
+    /*city: "Ikoyi",
     state: "Lagos",
     country: "Nigeria",
     picture: "assets/img/block.png",
     apartments: 10,
     lat: 0,
-    lng: 0,
+    lng: 0,*/
   ),
   PropertyModel(
     name: "Agbowo Building",
     address: "Agbowo, Bodija, Ibadan",
-    city: "Ibadan",
+    /*city: "Ibadan",
     state: "Oyo",
     country: "Nigeria",
     picture: "assets/img/properties.png",
     apartments: 600,
     lat: 0,
-    lng: 0,
+    lng: 0,*/
   ),
   PropertyModel(
     name: "Kings Court",
     address: "12, Tolbugatta Drive, Ibikan Street",
-    city: "Banana Island",
+    /*city: "Banana Island",
     state: "Lagos",
     country: "Nigeria",
     picture: "assets/img/building.png",
     apartments: 200,
     lat: 0,
-    lng: 0,
+    lng: 0,*/
   ),
   PropertyModel(
     name: "Aso Rock Villa",
     address: "Presidential Drive, Asokoro",
-    city: "Central Business District",
+    /*city: "Central Business District",
     state: "Abuja",
     country: "Nigeria",
     picture: "assets/img/apartment_building.png",
     apartments: 60,
     lat: 0,
-    lng: 0,
+    lng: 0,*/
   ),
 ];
 

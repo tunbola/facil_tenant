@@ -39,7 +39,6 @@ class LocalStorage {
         final val = await db.get(key);
         return val;
       } catch (e) {
-        print(e);
         return false;
       }
     }
@@ -52,7 +51,6 @@ class LocalStorage {
       final val = await db.put(value, key);
       return val;
     } catch (e) {
-      print(e);
       return false;
     }
   }
