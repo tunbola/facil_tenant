@@ -109,11 +109,6 @@ class _ProfilePageState extends State<ProfilePage>
       return {"status": false, "message": "Email address is invalid"};
     return await _httpService.updateProfile(
         surname, othernames, phone, email, address, title);
-    /*return {
-      "status": true,
-      "message": "$surname, $othernames, $phone, $email, $address, $title",
-      "pageType": "Page type is Edit"
-    };*/
   }
 
   Future<Map<String, dynamic>> createVisit(

@@ -1,18 +1,36 @@
+import 'package:facil_tenant/models/index.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:facil_tenant/components/app_scaffold.dart';
 import 'package:facil_tenant/components/app_spinner.dart';
 import 'package:facil_tenant/models/message_model.dart';
 import 'package:facil_tenant/models/user_model.dart';
+import "package:facil_tenant/services/http_service.dart";
 import 'package:facil_tenant/styles/colors.dart';
 
+/*
+
+
+{
+    "id": "10", 
+    "request_type_id": "3", 
+    "user_id": "5", 
+    "comment": "I suggest monthly payment for sewage disposal so as to have a great.", 
+    "created_at": "2019-10-31 10:00:50", 
+    "last_updated": "2019-11-04 15:39:54", 
+    "request_status_id": "3", 
+    "requestStatus": {id: 3, name: Completed}, 
+    "requestType": {id: 3, property_id: 1, name: Requests, request_group_id: null}
+}
+
+*/
 
 //Requests/complaints page
 class NotificationsPage extends StatefulWidget {
-  final bool isComplaint;
+  final bool isRequests;
   final bool isAnnouncements;
 
-  NotificationsPage({this.isComplaint = false, this.isAnnouncements = false});
+  NotificationsPage({this.isRequests = false, this.isAnnouncements = false});
 
   @override
   State<StatefulWidget> createState() {
@@ -29,34 +47,49 @@ class _NotificationsPageState extends State<NotificationsPage> {
   @override
   Widget build(BuildContext context) {
     return AppScaffold(
-      floatingActionButton: widget.isComplaint
+      floatingActionButton: widget.isRequests
           ? FloatingActionButton.extended(
               heroTag: "createMessae",
               tooltip: "Create Message",
               onPressed: () =>
                   Navigator.of(context).pushNamed("notifications/create"),
               icon: Icon(Icons.edit),
-              label: Text("Make Complaint or Request"),
+              label: Text("Make a Request"),
             )
           : null,
-      child: MessageList(
-        isFromMe: widget.isComplaint,
-        isAnnouncements: widget.isAnnouncements
-      ),
-      pageTitle: ValueNotifier(
-          widget.isComplaint ? "COMPLAINTS AND REQUESTS" : widget.isAnnouncements ? "ANNOUCEMENTS" : "MESSAGES"),
+      child: NotificationsList(
+          isRequest: widget.isRequests,
+          isAnnouncements: widget.isAnnouncements),
+      pageTitle: ValueNotifier(widget.isRequests ? "REQUESTS" : "ANNOUCEMENTS"),
     );
   }
 }
 
-class MessageList extends StatelessWidget {
-  final bool isFromMe;
+class NotificationsList extends StatelessWidget {
+  final bool isRequest;
   final bool isAnnouncements;
-  MessageList({this.isFromMe = false, this.isAnnouncements});
+  NotificationsList({this.isRequest = false, this.isAnnouncements});
 
-  Future<List<MessageModel>> _getMessages() async {
-    await Future.delayed(Duration(seconds: 5));
-    return Future.value(
+  final _httpService = new HttpService();
+
+  Future<List<NotificationsModel>> _getNotifications() async {
+    //Map<String, dynamic> re = await _httpService.fetchRequests("1");
+    //print(re);
+    if (this.isAnnouncements) {
+      Map<String, dynamic> response =
+          await _httpService.fetchAnnounceMents("1");
+      List<NotificationsModel> _notifications =
+          (response["data"]["data"] as List)
+              .map((data) => NotificationsModel(
+                  id: data["id"],
+                  message: data["notice"],
+                  createdAt: data["created_at"]))
+              .toList();
+      return Future.value(_notifications);
+    }
+    return [];
+
+    /*return Future.value(
       List.generate(
         30,
         (idx) => MessageModel(
@@ -73,20 +106,23 @@ class MessageList extends StatelessWidget {
           from: UserModel(
             email: "tenant@facil.com",
             pictureUrl: "assets/img/media.png",
-            //type: UserType.TENANT,
             surname: "Ogbeni Ayalegbe",
             othernames: "",
             phone: "+234 820 022 6425",
           ),
         ),
       ),
-    );
+    );*/
   }
+
+  /*{status: true, message: Announcements, 
+  data: {totalRows: 10, data: [{id: 10, property_id: 2, notice: udhgfuhdifhgihdfighiuhidg, created_at: 2019-11-13 16:59:51}], 
+  numberOfPages: 10, currentPage: 1, numberPerPage: 1}}*/
 
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-      future: _getMessages(),
+      future: _getNotifications(),
       builder: (context, res) {
         if (res.hasError) {
           return Container(
@@ -109,165 +145,131 @@ class MessageList extends StatelessWidget {
               ),
             );
           }
+          dynamic _notifications = res.data;
           return ListView.builder(
             padding: EdgeInsets.all(0),
             itemCount: res.data.length,
             itemBuilder: (context, idx) {
-              final it = res.data[idx];
+              final content = _notifications[idx];
               final bool isEven = idx % 2 == 0;
-              // final names =
-              //     isFromMe ? it.to.split(" ") : it.from.name.split(" ");
               return Dismissible(
                 key: Key(idx.toString()),
                 child: GestureDetector(
-                  child: Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 14.0,
-                    ),
-                    color: Colors.white,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: <Widget>[
-                        // CircleAvatar(
-                        //   backgroundColor: shedAppBlue300,
-                        //   child: Text(
-                        //     names.length > 1
-                        //         ? "${names[0][0]}${names[1][0]}"
-                        //         : "${names[0][0]}${names[0][1]}",
-                        //     textAlign: TextAlign.center,
-                        //     style:
-                        //         Theme.of(context).textTheme.body1.copyWith(
-                        //               fontWeight: FontWeight.w900,
-                        //               color: Colors.white,
-                        //             ),
-                        //   ),
-                        //   radius: 25.0,
-                        // ),
-                        // SizedBox(
-                        //   width: 10.0,
-                        // ),
-                        Expanded(
-                          child: Container(
-                            padding: EdgeInsets.symmetric(
-                              vertical: 14.0,
-                            ),
-                            decoration: BoxDecoration(
-                              border: Border(
-                                  bottom: idx != (res.data.length - 1)
-                                      ? BorderSide(
-                                          color: Colors.grey, width: 0.5)
-                                      : BorderSide.none),
-                            ),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: <Widget>[
-                                Table(
-                                  columnWidths: {
-                                    0: FlexColumnWidth(6),
-                                    1: FlexColumnWidth(3)
-                                  },
-                                  children: [
-                                    TableRow(
-                                      children: [
-                                        Text(
-                                          isFromMe
-                                              ? it.title
-                                              : "Your rent for June is Due",
-                                          maxLines: 1,
-                                          style:
-                                              Theme.of(context).textTheme.title,
-                                          textAlign: TextAlign.left,
-                                        ),
-                                        Text(
-                                          DateFormat.yMEd()
-                                              .format(it.createdAt),
-                                          textAlign: TextAlign.right,
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                                SizedBox(
-                                  height: 5.0,
-                                ),
-                                Text(
-                                  "${isFromMe ? 'to' : 'from'} the Caretaker",
-                                  maxLines: 1,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .subtitle
-                                      .copyWith(
-                                          fontWeight: idx % 2 == 0 || isFromMe
-                                              ? FontWeight.normal
-                                              : FontWeight.bold),
-                                ),
-                                SizedBox(
-                                  height: 5.0,
-                                ),
-                                isFromMe
-                                    ? Text(
-                                        "${isEven ? 'RESOLVED' : 'UNRESOLVED'}",
-                                        maxLines: 1,
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: isEven
-                                              ? Colors.green
-                                              : Colors.red,
-                                        ),
-                                      )
-                                    : SizedBox(
-                                        height: 0,
-                                      ),
-                                SizedBox(
-                                  height: 5.0,
-                                ),
-                                Text(
-                                  it.body,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .body1
-                                      .copyWith(
-                                          fontWeight: idx % 2 == 0 || isFromMe
-                                              ? FontWeight.normal
-                                              : FontWeight.bold),
-                                ),
-                                // SizedBox(
-                                //   height: !isFromMe ? 10.0 : 0,
-                                // ),
-                                !isFromMe
-                                    ? Align(
-                                        alignment: Alignment.bottomRight,
-                                        child: GestureDetector(
-                                          child: Container(
-                                            padding: EdgeInsets.symmetric(
-                                              vertical: 5,
-                                              horizontal: 5,
-                                            ),
-                                            child: Text(
-                                              "Mark as read",
-                                              style: TextStyle(
-                                                color: shedAppBlue100,
-                                              ),
-                                            ),
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 14.0,
+                      ),
+                      color: Colors.white,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: <Widget>[
+                          // CircleAvatar(
+                          //   backgroundColor: shedAppBlue300,
+                          //   child: Text(
+                          //     names.length > 1
+                          //         ? "${names[0][0]}${names[1][0]}"
+                          //         : "${names[0][0]}${names[0][1]}",
+                          //     textAlign: TextAlign.center,
+                          //     style:
+                          //         Theme.of(context).textTheme.body1.copyWith(
+                          //               fontWeight: FontWeight.w900,
+                          //               color: Colors.white,
+                          //             ),
+                          //   ),
+                          //   radius: 25.0,
+                          // ),
+                          // SizedBox(
+                          //   width: 10.0,
+                          // ),
+                          Expanded(
+                            child: Container(
+                              padding: EdgeInsets.symmetric(
+                                vertical: 14.0,
+                              ),
+                              decoration: BoxDecoration(
+                                border: Border(
+                                    bottom: idx != (res.data.length - 1)
+                                        ? BorderSide(
+                                            color: Colors.grey, width: 0.5)
+                                        : BorderSide.none),
+                              ),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: <Widget>[
+                                  Table(
+                                    columnWidths: {
+                                      0: FlexColumnWidth(6),
+                                      1: FlexColumnWidth(3)
+                                    },
+                                    children: [
+                                      TableRow(
+                                        children: [
+                                          Text(
+                                            isRequest
+                                                ? "${content.requestType}"
+                                                : "",
+                                            maxLines: 1,
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .title,
+                                            textAlign: TextAlign.left,
                                           ),
-                                          onTap: () {},
+                                          Text(
+                                            DateFormat.yMEd().format(
+                                                DateTime.parse(
+                                                    content.createdAt)),
+                                            textAlign: TextAlign.right,
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .body1
+                                                .copyWith(
+                                                    fontWeight:
+                                                        FontWeight.bold),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(
+                                    height: 5.0,
+                                  ),
+                                  isRequest
+                                      ? Text(
+                                          "${isEven ? 'RESOLVED' : 'UNRESOLVED'}",
+                                          maxLines: 1,
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: isEven
+                                                ? Colors.green
+                                                : Colors.red,
+                                          ),
+                                        )
+                                      : SizedBox(
+                                          height: 0,
                                         ),
-                                      )
-                                    : SizedBox()
-                              ],
+                                  SizedBox(
+                                    height: 5.0,
+                                  ),
+                                  Text(
+                                    content.message,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .body1
+                                        .copyWith(
+                                            fontWeight: FontWeight.normal),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                  onTap: () => Navigator.of(context)
-                      .pushNamed('notifications/detail/$isFromMe/$isAnnouncements/1'),
-                ),
+                    onTap: () {}),
                 onDismissed: (dir) => "",
                 direction: DismissDirection.endToStart,
               );
