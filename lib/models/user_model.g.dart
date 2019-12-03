@@ -9,43 +9,26 @@ part of 'user_model.dart';
 UserModel _$UserModelFromJson(Map<String, dynamic> json) {
   return UserModel(
       id: json['id'] as String,
-      name: json['name'] as String,
-      picture: json['picture'] as String,
+      propertyId: json['property_id'] as String,
+      parentUserId: json['parent_user_id'] as String,
       email: json['email'] as String,
-      phoneNumber: json['phoneNumber'] as String,
-      type: _$enumDecodeNullable(_$UserTypeEnumMap, json['type']));
+      phone: json['phone'] as String,
+      surname: json['surname'] as String,
+      othernames: json['othernames'] as String,
+      title: json['title'] as String,
+      pictureUrl: json['picture_url'] as String,
+      address: json['address'] as String);
 }
 
 Map<String, dynamic> _$UserModelToJson(UserModel instance) => <String, dynamic>{
       'id': instance.id,
-      'name': instance.name,
-      'picture': instance.picture,
+      'property_id': instance.propertyId,
+      'parent_user_id': instance.parentUserId,
       'email': instance.email,
-      'phoneNumber': instance.phoneNumber,
-      'type': _$UserTypeEnumMap[instance.type]
+      'phone': instance.phone,
+      'surname': instance.surname,
+      'othernames': instance.othernames,
+      'title': instance.title,
+      'picture_url': instance.pictureUrl,
+      'address': instance.address
     };
-
-T _$enumDecode<T>(Map<T, dynamic> enumValues, dynamic source) {
-  if (source == null) {
-    throw ArgumentError('A value must be provided. Supported values: '
-        '${enumValues.values.join(', ')}');
-  }
-  return enumValues.entries
-      .singleWhere((e) => e.value == source,
-          orElse: () => throw ArgumentError(
-              '`$source` is not one of the supported values: '
-              '${enumValues.values.join(', ')}'))
-      .key;
-}
-
-T _$enumDecodeNullable<T>(Map<T, dynamic> enumValues, dynamic source) {
-  if (source == null) {
-    return null;
-  }
-  return _$enumDecode<T>(enumValues, source);
-}
-
-const _$UserTypeEnumMap = <UserType, dynamic>{
-  UserType.AGENT: 'AGENT',
-  UserType.TENANT: 'TENANT'
-};

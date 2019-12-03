@@ -53,7 +53,7 @@ class DashboardPage extends StatefulWidget {
 //stacked on one another.
 class _DashboardPageState extends State<DashboardPage> {
   
-  String _username = "";// AccessService.userName;
+  String _username = "";
   String _propertyName = "";
   String _propertyAddress = "";
 
@@ -102,14 +102,14 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   getUserName() async {
-    String un = await AccessService.userName;
+    String un = await AccessService.getUserName();
     setState(() {
-      _username = un == null ? "No name yet" : un;
+      _username = un;
     });
   }
 
   getProperty() async {
-    Map<String, dynamic> property = await AccessService.property;
+    Map<String, dynamic> property = await AccessService.getProperty();
     setState(() {
       _propertyName = property["name"];
       _propertyAddress = property["address"];
@@ -132,7 +132,7 @@ class _DashboardPageState extends State<DashboardPage> {
       actions: <Widget>[
         IconButton(
           icon: Icon(Icons.power_settings_new),
-          onPressed: () => Navigator.of(context).pushReplacementNamed('auth'), //logout here
+          onPressed: () => AccessService.logOut(),// Navigator.of(context).pushReplacementNamed('auth'), //logout here
           iconSize: 30,
         ),
       ],
