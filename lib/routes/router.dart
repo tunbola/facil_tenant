@@ -29,7 +29,7 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     case routes.Announcements:
       return MaterialPageRoute(builder: (context) => NotificationsPage(isAnnouncements: true));
     case routes.Complaints:
-      return MaterialPageRoute(builder: (context) => NotificationsPage(isComplaint: true));
+      return MaterialPageRoute(builder: (context) => NotificationsPage(isRequests: true));
     case routes.CreateNotifications:
       return MaterialPageRoute(builder: (context) => NotificationCreatePage());
     case routes.PaymentHistory:

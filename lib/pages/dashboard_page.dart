@@ -222,7 +222,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 ),
                 ImageButton(
                   "assets/img/sent_message.png",
-                  caption: "Requests/Complaints",
+                  caption: "Requests",
                   onPress: () => _navigationService.navigateTo(routes.Complaints),
                 ),
                 ImageButton(

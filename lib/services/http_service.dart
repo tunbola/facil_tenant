@@ -1,5 +1,4 @@
 //import 'package:facil_tenant/models/index.dart';
-
 import "http_url_config.dart";
 import "package:http/http.dart" as http;
 import "dart:async";
@@ -38,19 +37,42 @@ class HttpService {
     }
   }
 
-  fetchAnnounceMents(String propertyId, String pageNumber) async {
+  Future<Map<String, dynamic>>fetchAnnounceMents(String pageNumber) async {
+    Map<String, String> requestHeader = await AccessService.requestHeader();
     try {
       http.Response response = await http.get(
-          "${config['baseUrl']}${config['anouncements']}index?id=${propertyId}&page=${pageNumber}");
+          "${config['baseUrl']}${config['announcements']}index?page=$pageNumber", headers: requestHeader);
       final responseJson = conv.json.decode(response.body);
       final responseObject = ResponseModel.fromJson(responseJson);
 
       if (response.statusCode != 200) {
-        return responseObject.data;
+        return {"status": false, "message": responseObject.message};
       }
-      return responseObject.message;
+      return {"status": true, "message": responseObject.message, "data": responseObject.data};
     } catch (e) {
-      return "The application could not connect to the server ...";
+      return {
+        "status": false,
+        "message": "The application could not connect to the server ..."
+      };
+    }
+  }
+
+  Future<Map<String, dynamic>>fetchRequests(String pageNumber) async {
+    Map<String, String> requestHeader = await AccessService.requestHeader();
+    try {
+      http.Response response = await http.get(
+          "${config['baseUrl']}${config['request']}${config['view']}?page=$pageNumber", headers: requestHeader);
+      final responseJson = conv.json.decode(response.body);
+      final responseObject = ResponseModel.fromJson(responseJson);
+      if (response.statusCode != 200) {
+        return {"status": false, "message": responseObject.message};
+      }
+      return {"status": true, "message": responseObject.message, "data": responseObject.data};
+    } catch (e) {
+      return {
+        "status": false,
+        "message": "The application could not connect to the server ... ${e.toString()}"
+      };
     }
   }
 
@@ -66,7 +88,10 @@ class HttpService {
       }
       return responseObject.message;
     } catch (e) {
-      return "The application could not connect to the server ...";
+      return {
+        "status": false,
+        "message": "The application could not connect to the server ..."
+      };
     }
   }
 
@@ -96,11 +121,11 @@ class HttpService {
   }
 
   Future<Map<String, dynamic>> fetchProfile(String userId) async {
-    Map<String, String> accessToken = await AccessService.requestHeader();
+    Map<String, String> requestHeader = await AccessService.requestHeader();
     try {
       http.Response response = await http.get(
           "${config['baseUrl']}${config['user']}${config['view']}?id=$userId",
-          headers: accessToken);
+          headers: requestHeader);
       final responseJson = conv.json.decode(response.body);
       final responseObject = ResponseModel.fromJson(responseJson);
       if (response.statusCode != 200) {
@@ -188,7 +213,7 @@ class HttpService {
 
   Future<Map<String, dynamic>> updateProfile(String surname, String othernames,
       String phone, String email, String address, String title) async {
-    Map<String, String> accessToken = await AccessService.requestHeader();
+    Map<String, String> requestHeader = await AccessService.requestHeader();
     String userId = await AccessService.getUserId();
     try {
       String requestBody = conv.json.encode({
@@ -203,7 +228,7 @@ class HttpService {
       http.Response response = await http.put(
           "${config['baseUrl']}${config['user']}${config['update']}?id=$userId",
           body: requestBody,
-          headers: accessToken);
+          headers: requestHeader);
       final responseJson = conv.json.decode(response.body);
       final responseObject = ResponseModel.fromJson(responseJson);
       if (response.statusCode != 200)

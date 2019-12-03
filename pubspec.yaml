@@ -33,8 +33,6 @@ dependencies:
   json_annotation: ^2.2.0
   datetime_picker_formfield: ^0.4.3
   dropdownfield: ^1.0.3
-  #dropdown_formfield: ^0.1.1
-  #flutter_secure_storage: ^3.3.1+1
 
 dev_dependencies:
   flutter_test:
