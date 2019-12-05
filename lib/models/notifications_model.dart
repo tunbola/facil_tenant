@@ -9,6 +9,7 @@ class NotificationsModel {
   String createdAt;
   String lastUpdated;
   String requestStatus;
+  int requestStatusId;
   String requestType;
 
   NotificationsModel(
@@ -17,6 +18,7 @@ class NotificationsModel {
       this.createdAt,
       this.lastUpdated,
       this.requestStatus,
+      this.requestStatusId,
       this.requestType});
 
   factory NotificationsModel.fromJson(Map<String, dynamic> json) =>

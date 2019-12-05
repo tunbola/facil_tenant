@@ -372,7 +372,7 @@ class _ProfilePageState extends State<ProfilePage>
                                                 _report = {
                                                   "status": false,
                                                   "message":
-                                                      "Sorry, there was an error while processing your request $error"
+                                                      "Sorry, there was an error while processing your request"
                                                 };
                                                 _buttonClicked = false;
                                               }));
