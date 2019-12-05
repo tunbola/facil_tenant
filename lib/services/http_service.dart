@@ -37,7 +37,7 @@ class HttpService {
     }
   }
 
-  Future<Map<String, dynamic>>fetchAnnounceMents(String pageNumber) async {
+  Future<Map<String, dynamic>>fetchAnnounceMents(int pageNumber) async {
     Map<String, String> requestHeader = await AccessService.requestHeader();
     try {
       http.Response response = await http.get(
@@ -57,7 +57,7 @@ class HttpService {
     }
   }
 
-  Future<Map<String, dynamic>>fetchRequests(String pageNumber) async {
+  Future<Map<String, dynamic>>fetchRequests(int pageNumber) async {
     Map<String, String> requestHeader = await AccessService.requestHeader();
     try {
       http.Response response = await http.get(
@@ -246,6 +246,68 @@ class HttpService {
       return {
         "status": false,
         "message": "Failed to update your profile",
+        "data": null
+      };
+    }
+  }
+
+  Future<Map<String, dynamic>> fetchRequestTypes() async {
+    Map<String, String> requestHeader = await AccessService.requestHeader();
+    try {
+      http.Response response = await http.get(
+          "${config['baseUrl']}${config['requestType']}index",
+          headers: requestHeader);
+      final responseJson = conv.json.decode(response.body);
+      final responseObject = ResponseModel.fromJson(responseJson);
+      if (response.statusCode != 200)
+        return {
+          "status": false,
+          "message": responseObject.message,
+          "data": null
+        };
+      return {
+        "status": true,
+        "message": responseObject.message,
+        "data": responseObject.data
+      };
+    } catch (e) {
+      return {
+        "status": false,
+        "message": "Failed to update your profile",
+        "data": null
+      };
+    }
+  }
+
+  Future<Map<String, dynamic>> createRequest(String requestTypeId, String request) async {
+    Map<String, String> requestHeader = await AccessService.requestHeader();
+    
+    try {
+      String requestBody = conv.json.encode({
+        "request_type_id": requestTypeId,
+        "comment": request,
+      });
+      http.Response response = await http.post(
+          "${config['baseUrl']}${config['request']}${config['create']}",
+          body: requestBody,
+          headers: requestHeader);
+      final responseJson = conv.json.decode(response.body);
+      final responseObject = ResponseModel.fromJson(responseJson);
+      if (response.statusCode != 200)
+        return {
+          "status": false,
+          "message": responseObject.message,
+          "data": null
+        };
+      return {
+        "status": true,
+        "message": responseObject.message,
+        "data": responseObject.data
+      };
+    } catch (e) {
+      return {
+        "status": false,
+        "message": "Internet connection error",
         "data": null
       };
     }
