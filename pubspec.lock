@@ -29,6 +29,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.3.0"
+  badges:
+    dependency: "direct main"
+    description:
+      name: badges
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.1.0"
   boolean_selector:
     dependency: transitive
     description:
@@ -340,13 +347,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.3.19"
-  loadmore:
-    dependency: "direct main"
-    description:
-      name: loadmore
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "1.0.4"
   logging:
     dependency: transitive
     description:

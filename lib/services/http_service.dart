@@ -37,18 +37,23 @@ class HttpService {
     }
   }
 
-  Future<Map<String, dynamic>>fetchAnnounceMents(int pageNumber) async {
+  Future<Map<String, dynamic>> fetchAnnounceMents(int pageNumber) async {
     Map<String, String> requestHeader = await AccessService.requestHeader();
     try {
       http.Response response = await http.get(
-          "${config['baseUrl']}${config['announcements']}index?page=$pageNumber", headers: requestHeader);
+          "${config['baseUrl']}${config['announcements']}index?page=$pageNumber",
+          headers: requestHeader);
       final responseJson = conv.json.decode(response.body);
       final responseObject = ResponseModel.fromJson(responseJson);
 
       if (response.statusCode != 200) {
         return {"status": false, "message": responseObject.message};
       }
-      return {"status": true, "message": responseObject.message, "data": responseObject.data};
+      return {
+        "status": true,
+        "message": responseObject.message,
+        "data": responseObject.data
+      };
     } catch (e) {
       return {
         "status": false,
@@ -57,36 +62,150 @@ class HttpService {
     }
   }
 
-  Future<Map<String, dynamic>>fetchRequests(int pageNumber) async {
+  Future<Map<String, dynamic>> fetchRequests(int pageNumber) async {
     Map<String, String> requestHeader = await AccessService.requestHeader();
     try {
       http.Response response = await http.get(
-          "${config['baseUrl']}${config['request']}${config['view']}?page=$pageNumber", headers: requestHeader);
+          "${config['baseUrl']}${config['request']}${config['view']}?page=$pageNumber",
+          headers: requestHeader);
       final responseJson = conv.json.decode(response.body);
       final responseObject = ResponseModel.fromJson(responseJson);
       if (response.statusCode != 200) {
         return {"status": false, "message": responseObject.message};
       }
-      return {"status": true, "message": responseObject.message, "data": responseObject.data};
+      return {
+        "status": true,
+        "message": responseObject.message,
+        "data": responseObject.data
+      };
     } catch (e) {
       return {
         "status": false,
-        "message": "The application could not connect to the server ... ${e.toString()}"
+        "message": "The application could not connect to the server ...}"
       };
     }
   }
 
-  fetchMessagesTrail(String userId) async {
+  Future<Map<String, dynamic>> fetchMessageSenders() async {
+    Map<String, String> requestHeader = await AccessService.requestHeader();
     try {
-      http.Response response = await http
-          .get("${config['baseUrl']}${config['anouncements']}index?id=$userId");
+      http.Response response = await http.get(
+          "${config['baseUrl']}${config['message']}",
+          headers: requestHeader);
       final responseJson = conv.json.decode(response.body);
 
       final responseObject = ResponseModel.fromJson(responseJson);
       if (response.statusCode != 200) {
-        return responseObject.data;
+        return {"status": false, "message": responseObject.message};
       }
-      return responseObject.message;
+      return {
+        "status": true,
+        "message": responseObject.message,
+        "data": responseObject.data
+      };
+    } catch (e) {
+      return {
+        "status": false,
+        "message": "The application could not connect to the server ..."
+      };
+    }
+  }
+
+  Future<Map<String, dynamic>> fetchMessagesByTitle(String userId) async {
+    Map<String, String> requestHeader = await AccessService.requestHeader();
+    try {
+      http.Response response = await http.get(
+          "${config['baseUrl']}${config['message']}?userId=$userId",
+          headers: requestHeader);
+      final responseJson = conv.json.decode(response.body);
+      final responseObject = ResponseModel.fromJson(responseJson);
+      if (response.statusCode != 200) {
+        return {"status": false, "message": responseObject.message};
+      }
+      return {
+        "status": true,
+        "message": responseObject.message,
+        "data": responseObject.data
+      };
+    } catch (e) {
+      return {
+        "status": false,
+        "message": "The application could not connect to the server ..."
+      };
+    }
+  }
+
+  Future<Map<String, dynamic>> fetchChatHistory(
+      String chatMateId, String title) async {
+    Map<String, String> requestHeader = await AccessService.requestHeader();
+    try {
+      http.Response response = await http.get(
+          "${config['baseUrl']}${config['message']}?chatMateId=${chatMateId}&title=$title",
+          headers: requestHeader);
+      final responseJson = conv.json.decode(response.body);
+      final responseObject = ResponseModel.fromJson(responseJson);
+      if (response.statusCode != 200) {
+        return {"status": false, "message": responseObject.message};
+      }
+      return {
+        "status": true,
+        "message": responseObject.message,
+        "data": responseObject.data
+      };
+    } catch (e) {
+      return {
+        "status": false,
+        "message": "The application could not connect to the server ..."
+      };
+    }
+  }
+
+  Future<Map<String, dynamic>> sendMessage(
+      List<String> viewableBy, String title, String message) async {
+    Map<String, String> requestHeader = await AccessService.requestHeader();
+    try {
+      String requestBody = conv.json.encode(
+          {"viewable_by": viewableBy, "title": title, "message": message});
+      http.Response response = await http.post(
+          "${config['baseUrl']}${config['message']}${config['create']}",
+          body: requestBody,
+          headers: requestHeader);
+      final responseJson = conv.json.decode(response.body);
+      final responseObject = ResponseModel.fromJson(responseJson);
+      if (response.statusCode != 200) {
+        return {"status": false, "message": responseObject.message};
+      }
+      return {
+        "status": true,
+        "message": responseObject.message,
+        "data": responseObject.data
+      };
+    } catch (e) {
+      return {
+        "status": false,
+        "message": "The application could not connect to the server ..."
+      };
+    }
+  }
+
+  Future<Map<String, dynamic>> updateMessagesState(String msgIds) async {
+    Map<String, String> requestHeader = await AccessService.requestHeader();
+    try {
+      String requestBody = conv.json.encode({"msgsid": msgIds});
+      http.Response response = await http.put(
+          "${config['baseUrl']}${config['message']}${config['update']}",
+          body: requestBody,
+          headers: requestHeader);
+      final responseJson = conv.json.decode(response.body);
+      final responseObject = ResponseModel.fromJson(responseJson);
+      if (response.statusCode != 200) {
+        return {"status": false, "message": responseObject.message};
+      }
+      return {
+        "status": true,
+        "message": responseObject.message,
+        "data": responseObject.data
+      };
     } catch (e) {
       return {
         "status": false,
@@ -279,9 +398,10 @@ class HttpService {
     }
   }
 
-  Future<Map<String, dynamic>> createRequest(String requestTypeId, String request) async {
+  Future<Map<String, dynamic>> createRequest(
+      String requestTypeId, String request) async {
     Map<String, String> requestHeader = await AccessService.requestHeader();
-    
+
     try {
       String requestBody = conv.json.encode({
         "request_type_id": requestTypeId,

@@ -10,3 +10,5 @@ const String PaymentHistory = 'payment/history';
 const String OutstandingBills = 'outstandings';
 const String UserProfile = 'profile';
 const String Messages = 'messages';
+const String MessagesByTitle = 'messages/title';
+const String ChatHistory = 'chat/reply';

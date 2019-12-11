@@ -4,9 +4,6 @@ import 'package:intl/intl.dart';
 import 'package:facil_tenant/components/app_scaffold.dart';
 import 'package:facil_tenant/components/app_spinner.dart';
 import "package:facil_tenant/services/http_service.dart";
-import 'package:facil_tenant/styles/colors.dart';
-import 'package:loadmore/loadmore.dart';
-
 import "package:facil_tenant/services/navigation_service.dart";
 import "package:facil_tenant/singleton/locator.dart";
 import "package:facil_tenant/routes/route_paths.dart" as routes;
@@ -30,15 +27,15 @@ class _NotificationsPageState extends State<NotificationsPage> {
     super.initState();
   }
 
-  static NavigationService _navigationService = locator<NavigationService>();
+  final NavigationService _navigationService = locator<NavigationService>();
 
   @override
   Widget build(BuildContext context) {
     return AppScaffold(
       floatingActionButton: widget.isRequests
           ? FloatingActionButton.extended(
-              heroTag: "createMessae",
-              tooltip: "Create Message",
+              heroTag: "Notification",
+              tooltip: "Requests & announcements",
               onPressed: () =>
                   _navigationService.navigateTo(routes.CreateRequest),
               icon: Icon(Icons.edit),

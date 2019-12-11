@@ -1,6 +1,6 @@
 import "package:facil_tenant/services/storage_service.dart";
 import "dart:convert" as conv;
-
+import 'package:intl/intl.dart';
 import "package:facil_tenant/services/navigation_service.dart";
 import "package:facil_tenant/singleton/locator.dart";
 import "package:facil_tenant/routes/route_paths.dart" as routes;
@@ -110,5 +110,27 @@ class AccessService {
       "Access-Control-Allow-Origin": "*",
       "Authorization": "Bearer $access"
     };
+  }
+
+  static String getLastContent(String content) {
+    List<String> listOfStrings = content.split("|");
+    return listOfStrings[listOfStrings.length - 1];
+  }
+
+  static String getLastTime(String sentTimeGroup) {
+    String dateTime = AccessService.getLastContent(sentTimeGroup);
+    return DateFormat.yMMMd()
+        .format(DateTime.parse(dateTime));
+  }
+
+  static int numberOfZeros(String msgStateGroup) {
+    List listOfMsgState = msgStateGroup.split("|");
+    int numberOfUnread = 0;
+    for (var i = 0; i < listOfMsgState.length; i++) {
+      if (listOfMsgState[i] == "0") {
+        numberOfUnread += 1;
+      }
+    }
+    return numberOfUnread;
   }
 }
