@@ -605,8 +605,8 @@ class _ProfilePageState extends State<ProfilePage>
                         ),
                       ),
                     ),
-                    /*SliverPersistentHeader(
-                      pinned: true,
+                    SliverPersistentHeader(
+                      pinned: false,
                       delegate: _SliverAppBarDelegate(
                         TabBar(
                           labelPadding: EdgeInsets.symmetric(vertical: 15),
@@ -627,7 +627,7 @@ class _ProfilePageState extends State<ProfilePage>
                           ],
                         ),
                       ),
-                    ),*/
+                    ),
                   ];
                 },
                 body: TabBarView(
@@ -937,13 +937,13 @@ class _ProfilePageState extends State<ProfilePage>
                                         ? "No name yet"
                                         : "${dependent.surname} ${dependent.othernames}"),
                                     subtitle: Text(dependent.phone),
-                                    trailing: IconButton(
+                                    /*trailing: IconButton(
                                       onPressed: () {},
                                       icon: Icon(
                                         Icons.delete_forever,
                                         color: shedAppBodyBlack,
                                       ),
-                                    ),
+                                    ),*/
                                   ),
                                 );
                               },

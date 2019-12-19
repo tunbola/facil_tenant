@@ -6,7 +6,7 @@ import 'package:facil_tenant/styles/colors.dart';
 import 'package:flutter/material.dart';
 import '../components/app_scaffold.dart';
 
-const Months = const [
+/*const Months = const [
   "January",
   "February",
   "March",
@@ -19,7 +19,7 @@ const Months = const [
   "October",
   "November",
   "December"
-];
+];*/
 
 NumberFormat formatter;
 List<BillModel> _bills;
@@ -339,15 +339,6 @@ class OutstandingBillsPage extends StatelessWidget {
                                             .copyWith(fontSize: 15),
                                       ),
                                     ),
-                                    Text(
-                                      idx % 2 == 0 ? "OVERDUE" : "",
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .caption
-                                          .copyWith(
-                                            color: shedAppErrorRed,
-                                          ),
-                                    ),
                                   ],
                                 ),
                                 SizedBox(
@@ -400,8 +391,8 @@ class OutstandingBillsPage extends StatelessWidget {
           ],
         ),
       ),
-      pageTitle: ValueNotifier("PAYMENT HISTORY"),  //page title
-      bottomWidget: Container( //bottom widget for paying oustanding bills button
+      pageTitle: ValueNotifier("OUTSTANDING BILLS"),  //page title
+      /*bottomWidget: Container( //bottom widget for paying oustanding bills button
         padding: EdgeInsets.only(
           left: 16.0,
           right: 16.0,
@@ -412,7 +403,7 @@ class OutstandingBillsPage extends StatelessWidget {
           onPressed: () => _payBill(_bills, context),
           child: Text("Pay Outstanding Bills"),
         ),
-      ),
+      ),*/
     );
   }
 }

@@ -432,4 +432,74 @@ class HttpService {
       };
     }
   }
+
+  Future<Map<String, dynamic>> fetchOutstandingBills({String year}) async {
+    Map<String, String> requestHeader = await AccessService.requestHeader();
+    //get userId
+    String url = "";
+    try {
+      if (year != null) {
+        url =
+            "${config['baseUrl']}${config['payments']}${config['oustanding']}?year=$year";
+      } else {
+        url =
+            "${config['baseUrl']}${config['payments']}${config['oustanding']}";
+      }
+      http.Response response = await http.get(url, headers: requestHeader);
+      final responseJson = conv.json.decode(response.body);
+      final responseObject = ResponseModel.fromJson(responseJson);
+      if (response.statusCode != 200)
+        return {
+          "status": false,
+          "message": responseObject.message,
+          "data": null
+        };
+      return {
+        "status": true,
+        "message": responseObject.message,
+        "data": responseObject.data
+      };
+    } catch (e) {
+      return {
+        "status": false,
+        "message": "Internet connection error",
+        "data": null
+      };
+    }
+  }
+
+  Future<Map<String, dynamic>> fetchPayments({String year}) async {
+    Map<String, String> requestHeader = await AccessService.requestHeader();
+    //get userId
+    String url = "";
+    try {
+      if (year != null) {
+        url =
+            "${config['baseUrl']}${config['payments']}${config['view']}?settled=true&year=$year";
+      } else {
+        url =
+            "${config['baseUrl']}${config['payments']}${config['view']}?settled=true";
+      }
+      http.Response response = await http.get(url, headers: requestHeader);
+      final responseJson = conv.json.decode(response.body);
+      final responseObject = ResponseModel.fromJson(responseJson);
+      if (response.statusCode != 200)
+        return {
+          "status": false,
+          "message": responseObject.message,
+          "data": null
+        };
+      return {
+        "status": true,
+        "message": responseObject.message,
+        "data": responseObject.data
+      };
+    } catch (e) {
+      return {
+        "status": false,
+        "message": "Internet connection error",
+        "data": null
+      };
+    }
+  }
 }

@@ -1,6 +1,7 @@
 import 'package:facil_tenant/components/app_spinner.dart';
-import 'package:facil_tenant/mock/mock_payments.dart';
-import 'package:facil_tenant/models/bill_model.dart';
+import 'package:facil_tenant/models/payment_type_model.dart';
+import 'package:facil_tenant/models/payments_model.dart';
+import 'package:facil_tenant/services/http_service.dart';
 import 'package:intl/intl.dart';
 import 'package:facil_tenant/styles/colors.dart';
 import 'package:flutter/material.dart';
@@ -23,8 +24,40 @@ const Months = const [
 
 NumberFormat formatter;
 
-class PaymentHistoryPage extends StatelessWidget {
-  final choicePeriod = ValueNotifier({"year": 2019, "month": 6});
+class PaymentHistoryPage extends StatefulWidget {
+  @override
+  _PaymentHistoryPageState createState() => _PaymentHistoryPageState();
+}
+
+class _PaymentHistoryPageState extends State<PaymentHistoryPage> {
+  final choicePeriod = ValueNotifier({"year": 2019});
+  final _httpService = HttpService();
+
+  String yearToSearch = ((DateTime.now()).year).toString();
+
+  Future<List<PaymentsModel>> getPayments(String searchYear) async {
+    Map<String, dynamic> response =
+        await _httpService.fetchPayments(year: searchYear);
+    List<PaymentsModel> payments = [];
+
+    for (var i = 0; i < response["data"].length; i++) {
+      Map<String, dynamic> content = response["data"][i];
+      payments.add(PaymentsModel(
+          id: content["id"],
+          year: content["year"],
+          month: content["month"],
+          paidOn: content["transaction"]["created_at"],
+          paymentType: PaymentTypeModel(
+            id: content["paymentType"]["id"],
+            name: content["paymentType"]["name"],
+            paymentUnit: content["paymentType"]["payment_unit"],
+            amount: content["paymentType"]["amount"],
+            convenienceFee: content["paymentType"]["convenience_fee"],
+          )));
+    }
+    return Future.value(payments);
+  }
+
   @override
   Widget build(BuildContext context) {
     formatter = NumberFormat.currency(
@@ -74,49 +107,15 @@ class PaymentHistoryPage extends StatelessWidget {
                                     height: 100,
                                     child: YearPicker(
                                       selectedDate: DateTime(val["year"]),
-                                      lastDate: DateTime(DateTime.now().year),
-                                      firstDate: DateTime(2018),
+                                      lastDate:
+                                          DateTime(DateTime.now().year + 5),
+                                      firstDate:
+                                          DateTime(DateTime.now().year - 5),
                                       onChanged: (valu) =>
                                           choicePeriod.value = {
-                                            "year": valu.year,
-                                            "month": val["month"]
-                                          },
+                                        "year": valu.year,
+                                      },
                                     ),
-                                  ),
-                                  Text(
-                                    "Select Month",
-                                    style: Theme.of(context).textTheme.display1,
-                                  ),
-                                  Container(
-                                    padding: EdgeInsets.all(10.0),
-                                    child: Wrap(
-                                        alignment: WrapAlignment.center,
-                                        children: Months.map((it) {
-                                          return GestureDetector(
-                                            child: Card(
-                                              color: val["month"] ==
-                                                      Months.indexOf(it)
-                                                  ? shedAppBlue50
-                                                  : shedAppYellow50,
-                                              child: Padding(
-                                                padding: EdgeInsets.all(10.0),
-                                                child: Text(
-                                                  it,
-                                                  style: TextStyle(
-                                                    color: val["month"] ==
-                                                            Months.indexOf(it)
-                                                        ? Colors.white
-                                                        : shedAppBodyBlack,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                            onTap: () => choicePeriod.value = {
-                                                  "year": val["year"],
-                                                  "month": Months.indexOf(it)
-                                                },
-                                          );
-                                        }).toList().cast<Widget>()),
                                   ),
                                   Container(
                                     padding: EdgeInsets.only(right: 20.0),
@@ -130,7 +129,10 @@ class PaymentHistoryPage extends StatelessWidget {
                                         RaisedButton(
                                           padding: EdgeInsets.all(5.0),
                                           onPressed: () {
-                                            print(val);
+                                            setState(() {
+                                              yearToSearch =
+                                                  val["year"].toString();
+                                            });
                                             Navigator.of(context).pop();
                                           },
                                           child: Text("Fetch"),
@@ -180,7 +182,7 @@ class PaymentHistoryPage extends StatelessWidget {
                 color: shedAppBlue300,
               ),
               child: Text(
-                "Showing Bill Payments for July 2019",
+                "Showing Bill Payments for $yearToSearch",
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.headline.copyWith(
                       fontSize: 16,
@@ -193,8 +195,8 @@ class PaymentHistoryPage extends StatelessWidget {
             ),
             Expanded(
               child: FutureBuilder(
-                future: getBills(),
-                builder: (context, AsyncSnapshot<List<BillModel>> res) {
+                future: getPayments(yearToSearch),
+                builder: (context, res) {
                   if (res.hasError) {
                     return Container(
                       height: MediaQuery.of(context).size.height,
@@ -214,12 +216,23 @@ class PaymentHistoryPage extends StatelessWidget {
                             image: AssetImage('assets/img/no_messages.png'),
                           ),
                         ),
+                        child: Center(
+                          child: Container(
+                            margin: EdgeInsets.only(bottom: 90.0),
+                            child: Text(
+                              "No payments found for this period",
+                              style: TextStyle(
+                                  color: Colors.red,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ),
                       );
                     }
                     return ListView.separated(
                       itemCount: res.data.length,
                       itemBuilder: (context, idx) {
-                        final BillModel bill = res.data[idx];
+                        final PaymentsModel eachPayment = res.data[idx];
                         return Card(
                           elevation: 0,
                           child: Padding(
@@ -233,45 +246,42 @@ class PaymentHistoryPage extends StatelessWidget {
                                   children: <Widget>[
                                     Expanded(
                                       child: Text(
-                                        "${bill.utility.name} Bill",
+                                        "${eachPayment.paymentType.name}",
                                         style: Theme.of(context)
                                             .textTheme
                                             .headline
-                                            .copyWith(fontSize: 25),
+                                            .copyWith(fontSize: 20),
                                       ),
                                     ),
                                     Text(
-                                      "FAC-BILL::00${idx + 1}",
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .caption,
+                                      "Paid for : ${Months[int.parse(eachPayment.month) - 1]}",
+                                      style:
+                                          Theme.of(context).textTheme.caption,
                                     ),
                                   ],
                                 ),
-                                Text(
-                                  "${DateFormat.yMMMM().format(bill.period)}",
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .body1,
-                                ),
                                 SizedBox(
                                   height: 10.0,
                                 ),
-                                Text(
-                                  formatter.format(bill.utility.cost),
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .headline
-                                      .copyWith(fontSize: 50),
+                                Row(
+                                  children: <Widget>[
+                                    Expanded(
+                                      child: Text(
+                                        "${formatter.format(double.parse(eachPayment.paymentType.amount))}",
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .headline
+                                            .copyWith(fontSize: 20),
+                                      ),
+                                    ),
+                                    Text(
+                                      "Paid on : ${DateFormat.yMMMd().format(DateTime.parse(eachPayment.paidOn))}",
+                                      style: Theme.of(context).textTheme.body1,
+                                    ),
+                                  ],
                                 ),
                                 SizedBox(
                                   height: 10.0,
-                                ),
-                                Text(
-                                  "Paid: ${DateFormat.yMMMMEEEEd().format(bill.dueDate)}",
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .body1,
                                 ),
                               ],
                             ),
@@ -279,9 +289,9 @@ class PaymentHistoryPage extends StatelessWidget {
                         );
                       },
                       separatorBuilder: (context, idx) => Container(
-                            height: 0.5,
-                            color: Colors.grey,
-                          ),
+                        height: 0.5,
+                        color: Colors.grey,
+                      ),
                     );
                   } else {
                     return AppSpinner();
