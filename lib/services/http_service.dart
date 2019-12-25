@@ -435,15 +435,14 @@ class HttpService {
 
   Future<Map<String, dynamic>> fetchOutstandingBills({String year}) async {
     Map<String, String> requestHeader = await AccessService.requestHeader();
-    //get userId
     String url = "";
     try {
       if (year != null) {
         url =
-            "${config['baseUrl']}${config['payments']}${config['oustanding']}?year=$year";
+            "${config['baseUrl']}${config['payments']}${config['outstanding']}?year=$year";
       } else {
         url =
-            "${config['baseUrl']}${config['payments']}${config['oustanding']}";
+            "${config['baseUrl']}${config['payments']}${config['outstanding']}";
       }
       http.Response response = await http.get(url, headers: requestHeader);
       final responseJson = conv.json.decode(response.body);
@@ -470,7 +469,6 @@ class HttpService {
 
   Future<Map<String, dynamic>> fetchPayments({String year}) async {
     Map<String, String> requestHeader = await AccessService.requestHeader();
-    //get userId
     String url = "";
     try {
       if (year != null) {
