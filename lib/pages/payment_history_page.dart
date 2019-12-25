@@ -30,10 +30,10 @@ class PaymentHistoryPage extends StatefulWidget {
 }
 
 class _PaymentHistoryPageState extends State<PaymentHistoryPage> {
-  final choicePeriod = ValueNotifier({"year": 2019});
   final _httpService = HttpService();
 
   String yearToSearch = ((DateTime.now()).year).toString();
+  final choicePeriod = ValueNotifier({"year": (DateTime.now()).year});
 
   Future<List<PaymentsModel>> getPayments(String searchYear) async {
     Map<String, dynamic> response =

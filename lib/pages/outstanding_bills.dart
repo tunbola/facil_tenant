@@ -1,12 +1,15 @@
+import 'package:badges/badges.dart';
 import 'package:facil_tenant/components/app_spinner.dart';
-import 'package:facil_tenant/mock/mock_payments.dart';
-import 'package:facil_tenant/models/bill_model.dart';
+import 'package:facil_tenant/models/outstanding_bills_model.dart';
+import 'package:facil_tenant/models/payment_type_model.dart';
+import 'package:facil_tenant/models/payments_model.dart';
+import 'package:facil_tenant/services/http_service.dart';
 import 'package:intl/intl.dart';
 import 'package:facil_tenant/styles/colors.dart';
 import 'package:flutter/material.dart';
 import '../components/app_scaffold.dart';
 
-/*const Months = const [
+const Months = const [
   "January",
   "February",
   "March",
@@ -19,13 +22,23 @@ import '../components/app_scaffold.dart';
   "October",
   "November",
   "December"
-];*/
+];
 
 NumberFormat formatter;
-List<BillModel> _bills;
 
-class OutstandingBillsPage extends StatelessWidget {
+class OutstandingBillsPage extends StatefulWidget {
+  @override
+  _OutstandingBillsPageState createState() => _OutstandingBillsPageState();
+}
+
+class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
   final ValueNotifier _isPaying = ValueNotifier(false);
+  final _httpService = HttpService();
+
+  String filterBy = (DateTime.now().year).toString();
+  final choicePeriod = ValueNotifier({"year": (DateTime.now()).year});
+  String errMsg = "";
+  //double totalDebt = 0.00;
 
   Future<bool> _processPayment() async {
     _isPaying.value = true;
@@ -35,7 +48,58 @@ class OutstandingBillsPage extends StatelessWidget {
     return Future.value(true);
   }
 
-  _payBill(List<BillModel> bills, BuildContext context) {
+  List<PaymentTypeModel> sortYearlyDues(dynamic yearlyDues) {
+    List<PaymentTypeModel> _yearly = [];
+    for (var y = 0; y < yearlyDues.length; y++) {
+      Map<String, dynamic> _eachYearlyBill = yearlyDues[y];
+      _yearly.add(PaymentTypeModel(
+          id: _eachYearlyBill["id"],
+          name: _eachYearlyBill["name"],
+          amount: _eachYearlyBill["amount"],
+          convenienceFee: _eachYearlyBill["convenience_fee"],
+          paymentUnit: _eachYearlyBill["payment_unit"]));
+    }
+    return _yearly;
+  }
+
+  List<OutstandingBillsModel> sortMonthlyDues(dynamic monthlyDues) {
+    List<OutstandingBillsModel> _monthly = [];
+    for (var m = 0; m < monthlyDues.length; m++) {
+      List<PaymentTypeModel> _paymentTypesList = [];
+      Map<String, dynamic> _eachBill = monthlyDues[m];
+      for (var j = 0; j < _eachBill["data"].length; j++) {
+        Map<String, dynamic> _eachType = _eachBill["data"][j];
+        _paymentTypesList.add(PaymentTypeModel(
+            id: _eachType["id"],
+            name: _eachType["name"],
+            amount: _eachType["amount"],
+            convenienceFee: _eachType["convenience_fee"],
+            paymentUnit: _eachType["payment_unit"]));
+      }
+      _monthly.add(OutstandingBillsModel(
+        id: _eachBill["id"].toString(),
+        monthName: _eachBill["name"],
+        paymentTypes: _paymentTypesList,
+      ));
+    }
+    return _monthly;
+  }
+
+  Future<Map<String, List>> _fetchOutstandingBills(String year) async {
+    Map<String, dynamic> _response =
+        await _httpService.fetchOutstandingBills(year: year);
+    if (_response["status"] == false) errMsg = _response["message"];
+
+    Map<String, List> _outstanding = {};
+    Map<String, dynamic> _content = _response["data"];
+    List<PaymentTypeModel> _yearly = sortYearlyDues(_content["yearly"]);
+    List<OutstandingBillsModel> _monthly = sortMonthlyDues(_content["monthly"]);
+
+    _outstanding = {"monthly": _monthly, "yearly": _yearly};
+    return Future.value(_outstanding);
+  }
+
+  _payBill(List<PaymentsModel> bills, BuildContext context) {
     return showDialog(
       context: context,
       barrierDismissible: false,
@@ -153,7 +217,7 @@ class OutstandingBillsPage extends StatelessWidget {
                                     children: <Widget>[
                                       Expanded(
                                         child: Text(
-                                          "${bill.utility.name} Bill, ${DateFormat.yMMMM().format(bill.period)}",
+                                          "${bill.paymentType.name}",
                                           style: Theme.of(context)
                                               .textTheme
                                               .headline
@@ -161,7 +225,8 @@ class OutstandingBillsPage extends StatelessWidget {
                                         ),
                                       ),
                                       Text(
-                                        formatter.format(bill.utility.cost),
+                                        formatter.format(double.parse(
+                                            bill.paymentType.amount)),
                                         style: Theme.of(context)
                                             .textTheme
                                             .headline
@@ -179,24 +244,42 @@ class OutstandingBillsPage extends StatelessWidget {
                                 color: shedAppBlue400,
                               ),
                               Padding(
-                                padding: EdgeInsets.all(5.0),
-                                child: Text(
-                                  "TOTAL  ${formatter.format(
-                                    bills
-                                        .map((it) => it.utility.cost)
-                                        .toList()
-                                        .reduce((prev, nxt) => prev + nxt),
-                                  )}",
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .headline
-                                      .copyWith(
-                                        fontSize: 20,
-                                        // color: Colors.white,
+                                  padding: EdgeInsets.all(5.0),
+                                  child: Row(
+                                    children: <Widget>[
+                                      Expanded(
+                                        child: Text(
+                                          "TOTAL",
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .headline
+                                              .copyWith(
+                                                fontSize: 20,
+                                                // color: Colors.white,
+                                              ),
+                                          textAlign: TextAlign.left,
+                                        ),
                                       ),
-                                  textAlign: TextAlign.right,
-                                ),
-                              ),
+                                      Text(
+                                        "${formatter.format(
+                                          bills
+                                              .map((it) => double.parse(
+                                                  it.paymentType.amount))
+                                              .toList()
+                                              .reduce(
+                                                  (prev, nxt) => prev + nxt),
+                                        )}",
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .headline
+                                            .copyWith(
+                                              fontSize: 20,
+                                              // color: Colors.white,
+                                            ),
+                                        textAlign: TextAlign.right,
+                                      ),
+                                    ],
+                                  )),
                               Container(
                                 height: 2,
                                 color: shedAppBlue400,
@@ -235,7 +318,7 @@ class OutstandingBillsPage extends StatelessWidget {
   }
 
   /// page widget that displays notification for outstanding bills,
-  /// displays a list of bills and a button that pops up the 
+  /// displays a list of bills and a button that pops up the
   /// pay outstanding bills window
   @override
   Widget build(BuildContext context) {
@@ -246,6 +329,116 @@ class OutstandingBillsPage extends StatelessWidget {
       locale: Localizations.localeOf(context).toString(),
     );
     return AppScaffold(
+      floatingActionButton: Container(
+          margin: EdgeInsets.only(left: 30.0),
+          child: Align(
+            alignment: Alignment.bottomCenter,
+            child: FloatingActionButton(
+                heroTag: "filterHistory",
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    barrierDismissible: false,
+                    builder: (context) {
+                      return Scaffold(
+                        backgroundColor: Colors.black54,
+                        body: SafeArea(
+                          child: Center(
+                            child: Stack(
+                              alignment: Alignment.center,
+                              // fit: StackFit.loose,
+                              children: <Widget>[
+                                Container(
+                                  margin: EdgeInsets.symmetric(
+                                    vertical: 20.0,
+                                    horizontal: 15.0,
+                                  ),
+                                  // alignment: Alignment.center,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(20.0),
+                                  ),
+                                  child: ValueListenableBuilder(
+                                    valueListenable: choicePeriod,
+                                    builder: (context, val, child) {
+                                      return Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: <Widget>[
+                                          Text(
+                                            "Select Year",
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .display1,
+                                          ),
+                                          Container(
+                                            alignment: Alignment.center,
+                                            height: 100,
+                                            child: YearPicker(
+                                              selectedDate:
+                                                  DateTime(val["year"]),
+                                              lastDate: DateTime(
+                                                  DateTime.now().year + 5),
+                                              firstDate: DateTime(
+                                                  DateTime.now().year - 5),
+                                              onChanged: (valu) =>
+                                                  choicePeriod.value = {
+                                                "year": valu.year,
+                                              },
+                                            ),
+                                          ),
+                                          Container(
+                                            padding:
+                                                EdgeInsets.only(right: 20.0),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.end,
+                                              children: <Widget>[
+                                                FlatButton(
+                                                  onPressed:
+                                                      Navigator.of(context).pop,
+                                                  child: Text("Cancel"),
+                                                ),
+                                                RaisedButton(
+                                                  padding: EdgeInsets.all(5.0),
+                                                  onPressed: () {
+                                                    setState(() {
+                                                      filterBy = val["year"]
+                                                          .toString();
+                                                    });
+                                                    Navigator.of(context).pop();
+                                                  },
+                                                  child: Text("Fetch"),
+                                                ),
+                                              ],
+                                            ),
+                                          )
+                                        ],
+                                      );
+                                    },
+                                  ),
+                                ),
+                                Positioned(
+                                  top: 0,
+                                  right: .5,
+                                  child: FloatingActionButton(
+                                    heroTag: "cls",
+                                    onPressed: () =>
+                                        Navigator.of(context).pop(),
+                                    child: Icon(Icons.close),
+                                  ),
+                                )
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
+                child: Icon(
+                  Icons.calendar_today,
+                )),
+          )),
       child: Container(
         padding: EdgeInsets.only(
           top: 10.0,
@@ -265,21 +458,12 @@ class OutstandingBillsPage extends StatelessWidget {
                 textAlign: TextAlign.center,
                 text: TextSpan(
                   style: Theme.of(context).textTheme.headline.copyWith(
-                        fontSize: 16,
+                        fontSize: 13,
                         color: Colors.white,
                       ),
                   children: [
                     TextSpan(
-                      text: "You have ",
-                    ),
-                    TextSpan(
-                      text: formatter.format(3900),
-                      style: TextStyle(
-                        color: shedAppYellow100,
-                      ),
-                    ),
-                    TextSpan(
-                      text: " in outstanding bills",
+                      text: "Your outstanding bills for $filterBy",
                     ),
                   ],
                 ),
@@ -290,97 +474,278 @@ class OutstandingBillsPage extends StatelessWidget {
             ),
             Expanded(
               child: FutureBuilder(
-                future: getBills(),
-                builder: (context, AsyncSnapshot<List<BillModel>> res) {
+                future: _fetchOutstandingBills(filterBy),
+                builder: (context, res) {
                   if (res.hasError) {
                     return Container(
-                      height: MediaQuery.of(context).size.height,
-                      decoration: BoxDecoration(
-                        image: DecorationImage(
-                          image: AssetImage('assets/img/empty_state.png'),
+                        height: MediaQuery.of(context).size.height,
+                        decoration: BoxDecoration(
+                          image: DecorationImage(
+                            image: AssetImage('assets/img/empty_state.png'),
+                          ),
                         ),
-                      ),
-                    );
+                        child: Container(
+                          margin: EdgeInsets.only(bottom: 100.0),
+                          child: Center(
+                            child: Text(
+                              errMsg,
+                              style: TextStyle(
+                                  color: Colors.red,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ));
                   }
                   if (res.hasData) {
                     if (res.data.length <= 0) {
                       return Container(
-                        height: MediaQuery.of(context).size.height,
-                        decoration: BoxDecoration(
-                          image: DecorationImage(
-                            image: AssetImage('assets/img/no_messages.png'),
+                          height: MediaQuery.of(context).size.height,
+                          decoration: BoxDecoration(
+                            image: DecorationImage(
+                              image: AssetImage('assets/img/no_messages.png'),
+                            ),
+                          ),
+                          child: Container(
+                            margin: EdgeInsets.only(bottom: 100.0),
+                            child: Center(
+                              child: Text(
+                                "Empty",
+                                style: TextStyle(
+                                    color: Colors.red,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ));
+                    }
+                    List<OutstandingBillsModel> _monthlyDues =
+                        res.data["monthly"];
+                    List<PaymentTypeModel> _yearlyDues = res.data["yearly"];
+                    return ListView(
+                      children: <Widget>[
+                        RichText(
+                          textAlign: TextAlign.center,
+                          text: TextSpan(
+                            style:
+                                Theme.of(context).textTheme.headline.copyWith(
+                                      fontSize: 14,
+                                      color: shedAppBlue400,
+                                    ),
+                            children: [
+                              TextSpan(
+                                text: "Yearly dues",
+                              ),
+                            ],
                           ),
                         ),
-                      );
-                    }
-                    _bills = res.data;
-                    return ListView.separated(
-                      itemCount: res.data.length,
-                      itemBuilder: (context, idx) {
-                        final BillModel bill = res.data[idx];
-                        return Card(
-                          elevation: 0,
-                          child: Padding(
-                            padding: EdgeInsets.symmetric(
-                              vertical: 15.0,
-                              // horizontal: 10.0,
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: <Widget>[
-                                Row(
+                        /**List view for rendering yearly dues */
+                        ListView.separated(
+                          itemCount: _yearlyDues.length,
+                          shrinkWrap: true,
+                          physics: ClampingScrollPhysics(),
+                          itemBuilder: (context, idx) {
+                            final _yd = _yearlyDues[idx];
+                            return Card(
+                              elevation: 0,
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(
+                                  vertical: 15.0,
+                                  // horizontal: 10.0,
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: <Widget>[
-                                    Expanded(
-                                      child: Text(
-                                        "${bill.utility.name} Bill, ${DateFormat.yMMMM().format(bill.period)}",
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .headline
-                                            .copyWith(fontSize: 15),
-                                      ),
+                                    Row(
+                                      children: <Widget>[
+                                        Expanded(
+                                          child: Text(
+                                            "${_yd.name}",
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .headline
+                                                .copyWith(fontSize: 22),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    SizedBox(
+                                      height: 5.0,
+                                    ),
+                                    Row(
+                                      children: <Widget>[
+                                        Expanded(
+                                          child: Text(
+                                            formatter.format(
+                                                double.parse(_yd.amount)),
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .headline
+                                                .copyWith(fontSize: 20),
+                                          ),
+                                        ),
+                                        RaisedButton(
+                                          padding: EdgeInsets.all(5),
+                                          onPressed: () {
+                                            PaymentsModel _toPay =
+                                                PaymentsModel(
+                                                    year: filterBy,
+                                                    month:
+                                                        ((DateTime.now()).month)
+                                                            .toString(),
+                                                    paymentType: _yd);
+                                            _payBill([_toPay], context);
+                                          },
+                                          child: Text(
+                                              "Pay"), //each outstanding bill payment button
+                                        )
+                                      ],
+                                    ),
+                                    SizedBox(
+                                      height: 1.0,
                                     ),
                                   ],
                                 ),
-                                SizedBox(
-                                  height: 5.0,
-                                ),
-                                Text(
-                                  formatter.format(bill.utility.cost),
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .headline
-                                      .copyWith(fontSize: 20),
-                                ),
-                                SizedBox(
-                                  height: 6.0,
-                                ),
-                                Row(
-                                  children: <Widget>[
-                                    Expanded(
-                                      child: Text(
-                                        "Payment due on ${DateFormat.yMMMMEEEEd().format(bill.dueDate)}",
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .body1,
-                                      ),
-                                    ),
-                                    RaisedButton(
-                                      padding: EdgeInsets.all(5),
-                                      onPressed: () =>
-                                          _payBill([bill], context),
-                                      child: Text("Pay"), //each outstanding bill payment button
-                                    )
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                      separatorBuilder: (context, idx) => Container(
+                              ),
+                            );
+                          },
+                          separatorBuilder: (context, idx) => Container(
                             height: 0.5,
                             color: Colors.grey,
                           ),
+                        ),
+                        SizedBox(
+                          height: 30.0,
+                        ),
+                        RichText(
+                          textAlign: TextAlign.center,
+                          text: TextSpan(
+                            style:
+                                Theme.of(context).textTheme.headline.copyWith(
+                                      fontSize: 14,
+                                      color: shedAppBlue400,
+                                    ),
+                            children: [
+                              TextSpan(
+                                text: "Monthly dues",
+                              ),
+                            ],
+                          ),
+                        ),
+                        /**Render monthly dues below */
+                        ListView.separated(
+                          itemCount: _monthlyDues.length,
+                          shrinkWrap: true,
+                          physics: ClampingScrollPhysics(),
+                          itemBuilder: (context, sn) {
+                            final _md = _monthlyDues[sn];
+                            return SingleChildScrollView(
+                              child: ListView.builder(
+                                itemCount: _md.paymentTypes.length,
+                                shrinkWrap: true,
+                                physics: ClampingScrollPhysics(),
+                                itemBuilder: (context, idx) {
+                                  PaymentTypeModel _mdPaymentType =
+                                      _md.paymentTypes[idx];
+                                  return Card(
+                                    elevation: 0,
+                                    child: Padding(
+                                      padding: EdgeInsets.symmetric(
+                                        vertical: 15.0,
+                                        // horizontal: 10.0,
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: <Widget>[
+                                          idx == 0
+                                              ? Align(
+                                                  child: Padding(
+                                                    child: Badge(
+                                                      shape: BadgeShape.square,
+                                                      borderRadius: 20,
+                                                      toAnimate: true,
+                                                      badgeColor: shedAppBlue50,
+                                                      badgeContent: Text(
+                                                        "${_md.monthName}",
+                                                        style: Theme.of(context)
+                                                            .textTheme
+                                                            .headline
+                                                            .copyWith(
+                                                                fontSize: 15),
+                                                      ),
+                                                    ),
+                                                    padding: EdgeInsets.only(
+                                                        right: 20.0),
+                                                  ),
+                                                  alignment: Alignment.topLeft,
+                                                )
+                                              : SizedBox(),
+                                          SizedBox(
+                                            height: 20.0,
+                                          ),
+                                          Row(
+                                            children: <Widget>[
+                                              Expanded(
+                                                child: Text(
+                                                  "${_mdPaymentType.name}",
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .headline
+                                                      .copyWith(fontSize: 22),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          SizedBox(
+                                            height: 5.0,
+                                          ),
+                                          Row(
+                                            children: <Widget>[
+                                              Expanded(
+                                                child: Text(
+                                                  formatter.format(double.parse(
+                                                      _mdPaymentType.amount)),
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .headline
+                                                      .copyWith(fontSize: 20),
+                                                ),
+                                              ),
+                                              RaisedButton(
+                                                padding: EdgeInsets.all(5),
+                                                onPressed: () {
+                                                  PaymentsModel _toPay =
+                                                      PaymentsModel(
+                                                          year: filterBy,
+                                                          month:
+                                                              ((DateTime.now())
+                                                                      .month)
+                                                                  .toString(),
+                                                          paymentType:
+                                                              _mdPaymentType);
+                                                  _payBill([_toPay], context);
+                                                },
+                                                child: Text(
+                                                    "Pay"), //each monthly outstanding bill payment button
+                                              )
+                                            ],
+                                          ),
+                                          SizedBox(
+                                            height: 1.0,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            );
+                          },
+                          separatorBuilder: (context, idx) => Container(
+                            height: 0.5,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
                     );
                   } else {
                     return AppSpinner();
@@ -391,7 +756,7 @@ class OutstandingBillsPage extends StatelessWidget {
           ],
         ),
       ),
-      pageTitle: ValueNotifier("OUTSTANDING BILLS"),  //page title
+      pageTitle: ValueNotifier("OUTSTANDING BILLS"), //page title
       /*bottomWidget: Container( //bottom widget for paying oustanding bills button
         padding: EdgeInsets.only(
           left: 16.0,

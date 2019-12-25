@@ -15,32 +15,7 @@ import "package:facil_tenant/services/navigation_service.dart";
 import "package:facil_tenant/singleton/locator.dart";
 import "package:facil_tenant/routes/route_paths.dart" as routes;
 
-final List<MessageModel> messages = [
-  MessageModel(
-    isRead: false,
-    title: "November Bills",
-    body: "Your bills for november are due",
-    createdAt: DateTime.now(),
-  ),
-  MessageModel(
-    isRead: false,
-    title: "Rent Increment",
-    body: "Rent will be increased by 10%",
-    createdAt: DateTime.now(),
-  ),
-  MessageModel(
-    isRead: false,
-    title: "Welcome to Aso Rock",
-    body: "I welcome you Dirisu Jesse to Aso Rock villa",
-    createdAt: DateTime.now(),
-  ),
-  MessageModel(
-    isRead: false,
-    title: "Payment Received",
-    body: "Your bill payments were well received for October",
-    createdAt: DateTime.now(),
-  ),
-];
+final List<MessageModel> messages = [];
 
 class DashboardPage extends StatefulWidget {
   @override
@@ -52,7 +27,6 @@ class DashboardPage extends StatefulWidget {
 //Displays notifications overlay at the top of the screen
 //stacked on one another.
 class _DashboardPageState extends State<DashboardPage> {
-  
   String _username = "";
   String _propertyName = "";
   String _propertyAddress = "";
@@ -72,7 +46,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 child: ListTile(
                   leading: CircleAvatar(
                     backgroundColor: shedAppBlue400,
-                    child: Text("AB"),
+                    child: Text("NB"),
                   ),
                   title: Text(
                     message.title,
@@ -105,6 +79,14 @@ class _DashboardPageState extends State<DashboardPage> {
     String un = await AccessService.getUserName();
     setState(() {
       _username = un;
+      if (un == "No name yet") {
+        messages.add(MessageModel(
+          isRead: false,
+          title: "Profile",
+          body: "Please click on the user icon above to update your profile",
+          createdAt: DateTime.now(),
+        ));
+      }
     });
   }
 
@@ -132,7 +114,8 @@ class _DashboardPageState extends State<DashboardPage> {
       actions: <Widget>[
         IconButton(
           icon: Icon(Icons.power_settings_new),
-          onPressed: () => AccessService.logOut(),// Navigator.of(context).pushReplacementNamed('auth'), //logout here
+          onPressed: () => AccessService
+              .logOut(), // Navigator.of(context).pushReplacementNamed('auth'), //logout here
           iconSize: 30,
         ),
       ],
@@ -191,11 +174,12 @@ class _DashboardPageState extends State<DashboardPage> {
             child: ConstrainedBox(
               constraints: BoxConstraints(maxWidth: 90),
               child: ImageButton(
-              "assets/img/megaphone.png",
-              caption: "Announcements",
-              textStyle: TextStyle(fontSize: 10),
-              onPress: () => _navigationService.navigateTo(routes.Announcements),
-            ),
+                "assets/img/megaphone.png",
+                caption: "Announcements",
+                textStyle: TextStyle(fontSize: 10),
+                onPress: () =>
+                    _navigationService.navigateTo(routes.Announcements),
+              ),
             ),
           ),
         ],
@@ -217,13 +201,13 @@ class _DashboardPageState extends State<DashboardPage> {
                 ImageButton(
                   "assets/img/chat.png",
                   caption: "Messages",
-                  onPress: () =>
-                      _navigationService.navigateTo(routes.Messages),
+                  onPress: () => _navigationService.navigateTo(routes.Messages),
                 ),
                 ImageButton(
                   "assets/img/sent_message.png",
                   caption: "Requests",
-                  onPress: () => _navigationService.navigateTo(routes.Complaints),
+                  onPress: () =>
+                      _navigationService.navigateTo(routes.Complaints),
                 ),
                 ImageButton(
                   "assets/img/verified_payment.png",

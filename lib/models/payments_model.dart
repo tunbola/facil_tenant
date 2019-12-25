@@ -14,8 +14,8 @@ class PaymentsModel {
 
   PaymentsModel({
     this.id,
+    this.paidOn,
     @required this.year,
-    @required this.paidOn,
     @required this.month,
     @required this.paymentType,
   })  : assert(year != null),
