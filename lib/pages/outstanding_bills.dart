@@ -4,10 +4,15 @@ import 'package:facil_tenant/models/outstanding_bills_model.dart';
 import 'package:facil_tenant/models/payment_type_model.dart';
 import 'package:facil_tenant/models/payments_model.dart';
 import 'package:facil_tenant/services/http_service.dart';
+import 'package:facil_tenant/services/navigation_service.dart';
 import 'package:intl/intl.dart';
 import 'package:facil_tenant/styles/colors.dart';
 import 'package:flutter/material.dart';
 import '../components/app_scaffold.dart';
+//import 'package:flutter_paystack/flutter_paystack.dart';
+import 'package:flutter_webview_plugin/flutter_webview_plugin.dart';
+import "package:facil_tenant/singleton/locator.dart";
+import "package:facil_tenant/routes/route_paths.dart" as routes;
 
 const Months = const [
   "January",
@@ -37,8 +42,9 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
 
   String filterBy = (DateTime.now().year).toString();
   final choicePeriod = ValueNotifier({"year": (DateTime.now()).year});
-  String errMsg = "";
+  String errMsg = "pk_test_ea57ab81b641e03929a375c0dab3bdb38a922d57";
   //double totalDebt = 0.00;
+  static NavigationService _navigationService = locator<NavigationService>();
 
   Future<bool> _processPayment() async {
     _isPaying.value = true;
@@ -288,8 +294,10 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
                                 height: 20.0,
                               ),
                               RaisedButton(
-                                onPressed: () => _processPayment(),
-                                child: Text("PAY"),
+                                onPressed: () {
+                                  _navigationService.navigateTo(routes.Paystack);
+                                },
+                                child: Text("Proceed"),
                               ),
                             ],
                           ),

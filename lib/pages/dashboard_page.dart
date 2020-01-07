@@ -171,16 +171,18 @@ class _DashboardPageState extends State<DashboardPage> {
           Positioned(
             top: 20,
             right: 10,
-            child: ConstrainedBox(
-              constraints: BoxConstraints(maxWidth: 90),
-              child: ImageButton(
-                "assets/img/megaphone.png",
-                caption: "Announcements",
-                textStyle: TextStyle(fontSize: 10),
-                onPress: () =>
-                    _navigationService.navigateTo(routes.Announcements),
-              ),
-            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.all(Radius.circular(0.0)),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: 90),
+                child: ImageButton(
+                    "assets/img/loud-speaker-1167348_640.png",
+                    caption: "Announcements",
+                    textStyle: TextStyle(fontSize: 10),
+                    onPress: () =>
+                        _navigationService.navigateTo(routes.Announcements),
+                  ),),
+            )
           ),
         ],
       ),

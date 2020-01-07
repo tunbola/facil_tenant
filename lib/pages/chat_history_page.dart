@@ -43,7 +43,8 @@ class _ChatHistoryPageState extends State<ChatHistoryPage> {
     _userId = await AccessService.getUserId();
     List<ChatModel> _msgList = [];
     List<String> _msgIdsList = [];
-    Map<String, dynamic> _response = await _httpService.fetchChatHistory(this.routeParam['senderId'], this.routeParam['title']);
+    Map<String, dynamic> _response = await _httpService.fetchChatHistory(
+        this.routeParam['senderId'], this.routeParam['title']);
     for (var i = 0; i < _response["data"].length; i++) {
       Map<String, dynamic> content = _response["data"][i];
       _msgIdsList.add(content["id"]);
@@ -75,8 +76,7 @@ class _ChatHistoryPageState extends State<ChatHistoryPage> {
     _chat().listen((content) {
       _counter = content.length;
       _chatStreamController.add(content.length);
-      }
-    );
+    });
   }
 
   @override
@@ -123,149 +123,153 @@ class _ChatHistoryPageState extends State<ChatHistoryPage> {
                     ],
                   ));
             }
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              Expanded(
-                  child: Material(
-                      child: ListView.builder(
-                controller: _scrollController,
-                padding: EdgeInsets.all(0.0),
-                itemCount: res.data.length,
-                reverse: true,
-                shrinkWrap: true,
-                itemBuilder: (context, idx) {
-                  final eachContent = res.data[idx];
-                  bool isFromMe = _userId == eachContent.from.toString();
-                  Color _senderBoxColor = Colors.green[200];
-                  Color _receipientBoxColor = Colors.blueAccent;
-                  Future.delayed(Duration.zero, () {
-                    _scrollController.animateTo(
-                      0.0,
-                      curve: Curves.easeOut,
-                      duration: const Duration(milliseconds: 1000),
-                    );
-                  });
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                Expanded(
+                    child: Material(
+                        child: ListView.builder(
+                  controller: _scrollController,
+                  padding: EdgeInsets.all(0.0),
+                  itemCount: res.data.length,
+                  reverse: true,
+                  shrinkWrap: true,
+                  itemBuilder: (context, idx) {
+                    final ChatModel eachContent = res.data[idx];
+                    bool isFromMe = _userId == eachContent.from.toString();
 
-                  return Container(
-                    margin: EdgeInsets.all(5.0),
-                    child: Column(
-                      children: <Widget>[
-                        SizedBox(
-                          height: 5.0,
-                        ),
-                        Align(
-                            alignment: isFromMe
-                                ? Alignment.bottomRight
-                                : Alignment.bottomLeft,
-                            child: Container(
-                              child: Text(
-                                "${eachContent.message}",
-                                style: TextStyle(
-                                    color: isFromMe
-                                        ? Colors.white
-                                        : Colors.blueGrey),
-                              ),
-                              margin: isFromMe
-                                  ? EdgeInsets.only(left: 50.0)
-                                  : EdgeInsets.only(right: 50.0),
-                              padding: const EdgeInsets.all(10.0),
-                              decoration: BoxDecoration(
-                                  border: Border.all(
-                                      color: isFromMe
-                                          ? _receipientBoxColor
-                                          : _senderBoxColor),
-                                  borderRadius: BorderRadius.circular(15.0),
-                                  color: isFromMe
-                                      ? _receipientBoxColor
-                                      : _senderBoxColor,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.blue[100],
-                                      blurRadius:
-                                          20.0, // has the effect of softening the shadow
-                                      spreadRadius:
-                                          5.0, // has the effect of extending the shadow
-                                      offset: Offset(
-                                        10.0, // horizontal, move right 10
-                                        10.0, // vertical, move down 10
-                                      ),
-                                    )
-                                  ]),
-                            )),
+                    Future.delayed(Duration.zero, () {
+                      _scrollController.animateTo(
+                        0.0,
+                        curve: Curves.easeOut,
+                        duration: const Duration(milliseconds: 1000),
+                      );
+                    });
+
+                    return Container(
+                      margin: EdgeInsets.all(5.0),
+                      child: Column(
+                        children: <Widget>[
+                          SizedBox(
+                            height: 5.0,
+                          ),
+                          Align(
+                              alignment: isFromMe
+                                  ? Alignment.bottomRight
+                                  : Alignment.bottomLeft,
+                              child: isFromMe ? Dismissible(
+                                key: Key(eachContent.id),
+                                onDismissed: (direction) {
+                                  //DismissDirection.startToEnd
+                                  //DismissDirection.endToStart
+                                  _httpService.deleteMessages(eachContent.id).then((response){}).catchError((onError){});
+                                },
+                                child: _chatBox(isFromMe, eachContent),
+                              ) : _chatBox(isFromMe, eachContent)),
+                        ],
+                      ),
+                    );
+                  },
+                ))),
+                Container(
+                  color: Colors.white,
+                  padding: EdgeInsets.all(10.0),
+                  child: Form(
+                    key: _formKey,
+                    child: new Table(
+                      columnWidths: {
+                        0: FlexColumnWidth(6),
+                        1: FlexColumnWidth(3)
+                      },
+                      children: [
+                        TableRow(children: [
+                          TextFormField(
+                            controller: _message,
+                            decoration: InputDecoration(
+                                hintText: "Message",
+                                suffixIcon: IconButton(
+                                  icon: Icon(Icons.send),
+                                  color: shedAppBlue400,
+                                  onPressed: () {
+                                    if (_formKey.currentState.validate()) {
+                                      if (_message.text.trim().length < 1) {
+                                        return;
+                                      }
+                                      if (!_validateMsg(_message.text.trim())) {
+                                        Scaffold.of(context)
+                                            .showSnackBar(SnackBar(
+                                          content:
+                                              Text("Message cannot contain |"),
+                                          backgroundColor: Colors.red,
+                                        ));
+                                        return;
+                                      }
+                                      _httpService
+                                          .sendMessage(
+                                              _viewerIdList,
+                                              routeParam['title'],
+                                              _message.text.trim())
+                                          .then((response) {
+                                        _message.clear();
+                                        setState(() {
+                                          _counter += 1;
+                                          _chatStreamController.add(_counter);
+                                        });
+                                      }).catchError((error) {
+                                        Scaffold.of(context)
+                                            .showSnackBar(SnackBar(
+                                          content: Text("Failed..."),
+                                          backgroundColor: Colors.red,
+                                        ));
+                                      });
+                                    }
+                                  },
+                                )),
+                            maxLines: null,
+                            maxLength: 2000,
+                          ),
+                        ]),
                       ],
                     ),
-                  );
-                },
-              ))),
-              Container(
-                color: Colors.white,
-                padding: EdgeInsets.all(10.0),
-                child: Form(
-                  key: _formKey,
-                  child: new Table(
-                    columnWidths: {
-                      0: FlexColumnWidth(6),
-                      1: FlexColumnWidth(3)
-                    },
-                    children: [
-                      TableRow(children: [
-                        TextFormField(
-                          controller: _message,
-                          decoration: InputDecoration(
-                              hintText: "Message",
-                              suffixIcon: IconButton(
-                                icon: Icon(Icons.send),
-                                color: shedAppBlue400,
-                                onPressed: () {
-                                  if (_formKey.currentState.validate()) {
-                                    if (_message.text.trim().length < 1) {
-                                      return;
-                                    }
-                                    if (!_validateMsg(_message.text.trim())) {
-                                      Scaffold.of(context)
-                                          .showSnackBar(SnackBar(
-                                        content: Text("Message cannot contain |"),
-                                        backgroundColor: Colors.red,
-                                      ));
-                                      return;
-                                    }
-                                    _httpService
-                                        .sendMessage(
-                                            _viewerIdList,
-                                            routeParam['title'],
-                                            _message.text.trim())
-                                        .then((response) {
-                                      _message.clear();
-                                      setState(() {
-                                        _counter += 1;
-                                        _chatStreamController.add(_counter);
-                                      });
-                                    }).catchError((error) {
-                                      Scaffold.of(context)
-                                          .showSnackBar(SnackBar(
-                                        content: Text("Failed..."),
-                                        backgroundColor: Colors.red,
-                                      ));
-                                    });
-                                  }
-                                },
-                              )),
-                          maxLines: null,
-                          maxLength: 2000,
-                        ),
-                      ]),
-                    ],
                   ),
                 ),
-              ),
-            ],
-          );
+              ],
+            );
           } else {
             return AppSpinner();
           }
         },
       ),
+    );
+  }
+
+  Widget _chatBox(bool isFromMe, ChatModel eachContent) {
+    Color _senderBoxColor = Colors.green[200];
+    Color _receipientBoxColor = Colors.blueAccent;
+    return Container(
+      child: Text(
+        "${eachContent.message}",
+        style: TextStyle(color: isFromMe ? Colors.white : Colors.blueGrey),
+      ),
+      margin:
+          isFromMe ? EdgeInsets.only(left: 50.0) : EdgeInsets.only(right: 50.0),
+      padding: const EdgeInsets.all(10.0),
+      decoration: BoxDecoration(
+          border: Border.all(
+              color: isFromMe ? _receipientBoxColor : _senderBoxColor),
+          borderRadius: BorderRadius.circular(15.0),
+          color: isFromMe ? _receipientBoxColor : _senderBoxColor,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.blue[100],
+              blurRadius: 20.0, // has the effect of softening the shadow
+              spreadRadius: 5.0, // has the effect of extending the shadow
+              offset: Offset(
+                10.0, // horizontal, move right 10
+                10.0, // vertical, move down 10
+              ),
+            )
+          ]),
     );
   }
 }

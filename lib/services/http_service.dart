@@ -500,4 +500,34 @@ class HttpService {
       };
     }
   }
+
+  Future<Map<String, dynamic>> deleteMessages(String id) async {
+    Map<String, String> requestHeader = await AccessService.requestHeader();
+    String url = "";
+    try {
+        url =
+            "${config['baseUrl']}${config['message']}${config['delete']}?id=$id";
+        print(url);
+      http.Response response = await http.delete(url, headers: requestHeader);
+      final responseJson = conv.json.decode(response.body);
+      final responseObject = ResponseModel.fromJson(responseJson);
+      if (response.statusCode != 200)
+        return {
+          "status": false,
+          "message": responseObject.message,
+          "data": null
+        };
+      return {
+        "status": true,
+        "message": responseObject.message,
+        "data": responseObject.data
+      };
+    } catch (e) {
+      return {
+        "status": false,
+        "message": "Internet connection error",
+        "data": null
+      };
+    }
+  }
 }
