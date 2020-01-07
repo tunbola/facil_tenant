@@ -34,6 +34,8 @@ dependencies:
   datetime_picker_formfield: ^0.4.3
   dropdownfield: ^1.0.3
   badges: ^1.1.0
+  #flutter_paystack: ^1.0.1
+  flutter_webview_plugin: ^0.3.10+1
 
 dev_dependencies:
   flutter_test:
