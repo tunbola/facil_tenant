@@ -159,9 +159,7 @@ class _ChatHistoryPageState extends State<ChatHistoryPage> {
                                   : Alignment.bottomLeft,
                               child: isFromMe ? Dismissible(
                                 key: Key(eachContent.id),
-                                onDismissed: (direction) {
-                                  //DismissDirection.startToEnd
-                                  //DismissDirection.endToStart
+                                onDismissed: (direction) {              
                                   _httpService.deleteMessages(eachContent.id).then((response){}).catchError((onError){});
                                 },
                                 child: _chatBox(isFromMe, eachContent),
