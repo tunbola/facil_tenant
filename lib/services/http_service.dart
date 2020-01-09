@@ -433,16 +433,16 @@ class HttpService {
     }
   }
 
-  Future<Map<String, dynamic>> fetchOutstandingBills({String year}) async {
+  Future<Map<String, dynamic>> fetchOutstandingBills({String year, String month}) async {
     Map<String, String> requestHeader = await AccessService.requestHeader();
     String url = "";
     try {
-      if (year != null) {
-        url =
-            "${config['baseUrl']}${config['payments']}${config['outstanding']}?year=$year";
+      if (month != null) {
+        url = "${config['baseUrl']}${config['payments']}${config['outstanding']}?year=${year}&month=$month";
+      } else if (year != null) {
+        url = "${config['baseUrl']}${config['payments']}${config['outstanding']}?year=$year";
       } else {
-        url =
-            "${config['baseUrl']}${config['payments']}${config['outstanding']}";
+        url = "${config['baseUrl']}${config['payments']}${config['outstanding']}";
       }
       http.Response response = await http.get(url, headers: requestHeader);
       final responseJson = conv.json.decode(response.body);
@@ -467,16 +467,16 @@ class HttpService {
     }
   }
 
-  Future<Map<String, dynamic>> fetchPayments({String year}) async {
+  Future<Map<String, dynamic>> fetchPayments({String year, String month}) async {
     Map<String, String> requestHeader = await AccessService.requestHeader();
     String url = "";
     try {
-      if (year != null) {
-        url =
-            "${config['baseUrl']}${config['payments']}${config['view']}?settled=true&year=$year";
+      if (month != null) {
+        url =  "${config['baseUrl']}${config['payments']}${config['view']}?settled=true&year=$year&month=$month";
+      } else if (year != null) {
+        url = "${config['baseUrl']}${config['payments']}${config['view']}?settled=true&year=$year";
       } else {
-        url =
-            "${config['baseUrl']}${config['payments']}${config['view']}?settled=true";
+        url = "${config['baseUrl']}${config['payments']}${config['view']}?settled=true";
       }
       http.Response response = await http.get(url, headers: requestHeader);
       final responseJson = conv.json.decode(response.body);

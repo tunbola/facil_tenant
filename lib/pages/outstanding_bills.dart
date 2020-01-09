@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:badges/badges.dart';
 import 'package:facil_tenant/components/app_spinner.dart';
 import 'package:facil_tenant/models/outstanding_bills_model.dart';
@@ -9,10 +11,10 @@ import 'package:intl/intl.dart';
 import 'package:facil_tenant/styles/colors.dart';
 import 'package:flutter/material.dart';
 import '../components/app_scaffold.dart';
-//import 'package:flutter_paystack/flutter_paystack.dart';
 import 'package:flutter_webview_plugin/flutter_webview_plugin.dart';
 import "package:facil_tenant/singleton/locator.dart";
 import "package:facil_tenant/routes/route_paths.dart" as routes;
+import 'package:flutter_picker/flutter_picker.dart';
 
 const Months = const [
   "January",
@@ -40,11 +42,58 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
   final ValueNotifier _isPaying = ValueNotifier(false);
   final _httpService = HttpService();
 
-  String filterBy = (DateTime.now().year).toString();
   final choicePeriod = ValueNotifier({"year": (DateTime.now()).year});
   String errMsg = "pk_test_ea57ab81b641e03929a375c0dab3bdb38a922d57";
   //double totalDebt = 0.00;
   static NavigationService _navigationService = locator<NavigationService>();
+  String yearToSearch = ((DateTime.now()).year).toString();
+  String monthToSearch = "00";
+  String monthName = "All";
+
+  Map<String, String> monthsMap = {
+    "All": "00",
+    "January": "01",
+    "February": "02",
+    "March": "03",
+    "April": "04",
+    "May": "05",
+    "June": "06",
+    "July": "07",
+    "August": "08",
+    "September": "09",
+    "October": "10",
+    "November": "11",
+    "December": "12"
+  };
+  static String _getYearsRange() {
+    int _startPoint = 2018;
+    int _endPoint = DateTime.now().year + 2;
+    List<String> _years = [];
+    for (int i = _startPoint; i <= _endPoint; i++) {
+      _years.add(i.toString());
+    }
+    return "$_years";
+  }
+
+  String pickerData2 = '''[
+    ${_OutstandingBillsPageState._getYearsRange()},
+    [
+      "All",
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December"
+    ]
+  ]
+  ''';
 
   Future<bool> _processPayment() async {
     _isPaying.value = true;
@@ -91,9 +140,11 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
     return _monthly;
   }
 
-  Future<Map<String, List>> _fetchOutstandingBills(String year) async {
-    Map<String, dynamic> _response =
-        await _httpService.fetchOutstandingBills(year: year);
+  Future<Map<String, List>> _fetchOutstandingBills(
+      String year, String month) async {
+    Map<String, dynamic> _response = month == "00"
+        ? await _httpService.fetchOutstandingBills(year: year)
+        : await _httpService.fetchOutstandingBills(year: year, month: month);
     if (_response["status"] == false) errMsg = _response["message"];
 
     Map<String, List> _outstanding = {};
@@ -295,7 +346,8 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
                               ),
                               RaisedButton(
                                 onPressed: () {
-                                  _navigationService.navigateTo(routes.Paystack);
+                                  _navigationService
+                                      .navigateTo(routes.Paystack);
                                 },
                                 child: Text("Proceed"),
                               ),
@@ -344,104 +396,23 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
             child: FloatingActionButton(
                 heroTag: "filterHistory",
                 onPressed: () {
-                  showDialog(
-                    context: context,
-                    barrierDismissible: false,
-                    builder: (context) {
-                      return Scaffold(
-                        backgroundColor: Colors.black54,
-                        body: SafeArea(
-                          child: Center(
-                            child: Stack(
-                              alignment: Alignment.center,
-                              // fit: StackFit.loose,
-                              children: <Widget>[
-                                Container(
-                                  margin: EdgeInsets.symmetric(
-                                    vertical: 20.0,
-                                    horizontal: 15.0,
-                                  ),
-                                  // alignment: Alignment.center,
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(20.0),
-                                  ),
-                                  child: ValueListenableBuilder(
-                                    valueListenable: choicePeriod,
-                                    builder: (context, val, child) {
-                                      return Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: <Widget>[
-                                          Text(
-                                            "Select Year",
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .display1,
-                                          ),
-                                          Container(
-                                            alignment: Alignment.center,
-                                            height: 100,
-                                            child: YearPicker(
-                                              selectedDate:
-                                                  DateTime(val["year"]),
-                                              lastDate: DateTime(
-                                                  DateTime.now().year + 5),
-                                              firstDate: DateTime(
-                                                  DateTime.now().year - 5),
-                                              onChanged: (valu) =>
-                                                  choicePeriod.value = {
-                                                "year": valu.year,
-                                              },
-                                            ),
-                                          ),
-                                          Container(
-                                            padding:
-                                                EdgeInsets.only(right: 20.0),
-                                            child: Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.end,
-                                              children: <Widget>[
-                                                FlatButton(
-                                                  onPressed:
-                                                      Navigator.of(context).pop,
-                                                  child: Text("Cancel"),
-                                                ),
-                                                RaisedButton(
-                                                  padding: EdgeInsets.all(5.0),
-                                                  onPressed: () {
-                                                    setState(() {
-                                                      filterBy = val["year"]
-                                                          .toString();
-                                                    });
-                                                    Navigator.of(context).pop();
-                                                  },
-                                                  child: Text("Fetch"),
-                                                ),
-                                              ],
-                                            ),
-                                          )
-                                        ],
-                                      );
-                                    },
-                                  ),
-                                ),
-                                Positioned(
-                                  top: 0,
-                                  right: .5,
-                                  child: FloatingActionButton(
-                                    heroTag: "cls",
-                                    onPressed: () =>
-                                        Navigator.of(context).pop(),
-                                    child: Icon(Icons.close),
-                                  ),
-                                )
-                              ],
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  );
+                  Picker(
+                      adapter: PickerDataAdapter<String>(
+                          pickerdata: new JsonDecoder().convert(pickerData2),
+                          isArray: true),
+                      hideHeader: true,
+                      title: new Text(
+                        "Select year & month",
+                        style: TextStyle(color: shedAppBlue400),
+                      ),
+                      onConfirm: (Picker picker, List value) {
+                        List<dynamic> values = picker.getSelectedValues();
+                        setState(() {
+                          yearToSearch = values[0];
+                          monthToSearch = monthsMap[values[1]];
+                          monthName = values[1];
+                        });
+                      }).showDialog(context);
                 },
                 child: Icon(
                   Icons.calendar_today,
@@ -471,7 +442,7 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
                       ),
                   children: [
                     TextSpan(
-                      text: "Your outstanding bills for $filterBy",
+                      text: "Your outstanding bills for $yearToSearch",
                     ),
                   ],
                 ),
@@ -482,7 +453,7 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
             ),
             Expanded(
               child: FutureBuilder(
-                future: _fetchOutstandingBills(filterBy),
+                future: _fetchOutstandingBills(yearToSearch, monthToSearch),
                 builder: (context, res) {
                   if (res.hasError) {
                     return Container(
@@ -530,21 +501,25 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
                     List<PaymentTypeModel> _yearlyDues = res.data["yearly"];
                     return ListView(
                       children: <Widget>[
-                        RichText(
-                          textAlign: TextAlign.center,
-                          text: TextSpan(
-                            style:
-                                Theme.of(context).textTheme.headline.copyWith(
-                                      fontSize: 14,
-                                      color: shedAppBlue400,
+                        _yearlyDues.length > 0
+                            ? RichText(
+                                textAlign: TextAlign.center,
+                                text: TextSpan(
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .headline
+                                      .copyWith(
+                                        fontSize: 14,
+                                        color: shedAppBlue400,
+                                      ),
+                                  children: [
+                                    TextSpan(
+                                      text: "Yearly dues",
                                     ),
-                            children: [
-                              TextSpan(
-                                text: "Yearly dues",
-                              ),
-                            ],
-                          ),
-                        ),
+                                  ],
+                                ),
+                              )
+                            : SizedBox(),
                         /**List view for rendering yearly dues */
                         ListView.separated(
                           itemCount: _yearlyDues.length,
@@ -595,7 +570,7 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
                                           onPressed: () {
                                             PaymentsModel _toPay =
                                                 PaymentsModel(
-                                                    year: filterBy,
+                                                    year: yearToSearch,
                                                     month:
                                                         ((DateTime.now()).month)
                                                             .toString(),
@@ -645,111 +620,147 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
                           physics: ClampingScrollPhysics(),
                           itemBuilder: (context, sn) {
                             final _md = _monthlyDues[sn];
-                            return SingleChildScrollView(
-                              child: ListView.builder(
-                                itemCount: _md.paymentTypes.length,
-                                shrinkWrap: true,
-                                physics: ClampingScrollPhysics(),
-                                itemBuilder: (context, idx) {
-                                  PaymentTypeModel _mdPaymentType =
-                                      _md.paymentTypes[idx];
-                                  return Card(
-                                    elevation: 0,
-                                    child: Padding(
-                                      padding: EdgeInsets.symmetric(
-                                        vertical: 15.0,
-                                        // horizontal: 10.0,
-                                      ),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: <Widget>[
-                                          idx == 0
-                                              ? Align(
-                                                  child: Padding(
-                                                    child: Badge(
-                                                      shape: BadgeShape.square,
-                                                      borderRadius: 20,
-                                                      toAnimate: true,
-                                                      badgeColor: shedAppBlue50,
-                                                      badgeContent: Text(
-                                                        "${_md.monthName}",
+                            return _md.paymentTypes.length < 1 &&
+                                    monthToSearch != "00"
+                                ? RichText(
+                                    textAlign: TextAlign.center,
+                                    text: TextSpan(
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .headline
+                                          .copyWith(
+                                            fontSize: 12,
+                                            color: Colors.red,
+                                          ),
+                                      children: [
+                                        TextSpan(
+                                          text:
+                                              "No monthly outstanding payment found for ${_md.monthName}",
+                                        ),
+                                      ],
+                                    ),
+                                  )
+                                : SingleChildScrollView(
+                                    child: ListView.builder(
+                                      itemCount: _md.paymentTypes.length,
+                                      shrinkWrap: true,
+                                      physics: ClampingScrollPhysics(),
+                                      itemBuilder: (context, idx) {
+                                        PaymentTypeModel _mdPaymentType =
+                                            _md.paymentTypes[idx];
+                                        print(_mdPaymentType);
+                                        return Card(
+                                          elevation: 0,
+                                          child: Padding(
+                                            padding: EdgeInsets.symmetric(
+                                              vertical: 15.0,
+                                              // horizontal: 10.0,
+                                            ),
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: <Widget>[
+                                                idx == 0
+                                                    ? Align(
+                                                        child: Padding(
+                                                          child: Badge(
+                                                            shape: BadgeShape
+                                                                .square,
+                                                            borderRadius: 20,
+                                                            toAnimate: true,
+                                                            badgeColor:
+                                                                shedAppBlue50,
+                                                            badgeContent: Text(
+                                                              "${_md.monthName}",
+                                                              style: Theme.of(
+                                                                      context)
+                                                                  .textTheme
+                                                                  .headline
+                                                                  .copyWith(
+                                                                      fontSize:
+                                                                          15),
+                                                            ),
+                                                          ),
+                                                          padding:
+                                                              EdgeInsets.only(
+                                                                  right: 20.0),
+                                                        ),
+                                                        alignment:
+                                                            Alignment.topLeft,
+                                                      )
+                                                    : SizedBox(),
+                                                SizedBox(
+                                                  height: 20.0,
+                                                ),
+                                                Row(
+                                                  children: <Widget>[
+                                                    Expanded(
+                                                      child: Text(
+                                                        "${_mdPaymentType.name}",
                                                         style: Theme.of(context)
                                                             .textTheme
                                                             .headline
                                                             .copyWith(
-                                                                fontSize: 15),
+                                                                fontSize: 22),
                                                       ),
                                                     ),
-                                                    padding: EdgeInsets.only(
-                                                        right: 20.0),
-                                                  ),
-                                                  alignment: Alignment.topLeft,
-                                                )
-                                              : SizedBox(),
-                                          SizedBox(
-                                            height: 20.0,
-                                          ),
-                                          Row(
-                                            children: <Widget>[
-                                              Expanded(
-                                                child: Text(
-                                                  "${_mdPaymentType.name}",
-                                                  style: Theme.of(context)
-                                                      .textTheme
-                                                      .headline
-                                                      .copyWith(fontSize: 22),
+                                                  ],
                                                 ),
-                                              ),
-                                            ],
-                                          ),
-                                          SizedBox(
-                                            height: 5.0,
-                                          ),
-                                          Row(
-                                            children: <Widget>[
-                                              Expanded(
-                                                child: Text(
-                                                  formatter.format(double.parse(
-                                                      _mdPaymentType.amount)),
-                                                  style: Theme.of(context)
-                                                      .textTheme
-                                                      .headline
-                                                      .copyWith(fontSize: 20),
+                                                SizedBox(
+                                                  height: 5.0,
                                                 ),
-                                              ),
-                                              RaisedButton(
-                                                padding: EdgeInsets.all(5),
-                                                onPressed: () {
-                                                  PaymentsModel _toPay =
-                                                      PaymentsModel(
-                                                          year: filterBy,
-                                                          month:
-                                                              ((DateTime.now())
-                                                                      .month)
-                                                                  .toString(),
-                                                          paymentType:
-                                                              _mdPaymentType);
-                                                  _payBill([_toPay], context);
-                                                },
-                                                child: Text(
-                                                    "Pay"), //each monthly outstanding bill payment button
-                                              )
-                                            ],
+                                                Row(
+                                                  children: <Widget>[
+                                                    Expanded(
+                                                      child: Text(
+                                                        formatter.format(
+                                                            double.parse(
+                                                                _mdPaymentType
+                                                                    .amount)),
+                                                        style: Theme.of(context)
+                                                            .textTheme
+                                                            .headline
+                                                            .copyWith(
+                                                                fontSize: 20),
+                                                      ),
+                                                    ),
+                                                    RaisedButton(
+                                                      padding:
+                                                          EdgeInsets.all(5),
+                                                      onPressed: () {
+                                                        PaymentsModel _toPay =
+                                                            PaymentsModel(
+                                                                year:
+                                                                    yearToSearch,
+                                                                month: ((DateTime
+                                                                            .now())
+                                                                        .month)
+                                                                    .toString(),
+                                                                paymentType:
+                                                                    _mdPaymentType);
+                                                        _payBill(
+                                                            [_toPay], context);
+                                                      },
+                                                      child: Text(
+                                                          "Pay"), //each monthly outstanding bill payment button
+                                                    )
+                                                  ],
+                                                ),
+                                                SizedBox(
+                                                  height: 1.0,
+                                                ),
+                                              ],
+                                            ),
                                           ),
-                                          SizedBox(
-                                            height: 1.0,
-                                          ),
-                                        ],
-                                      ),
+                                        );
+                                      },
                                     ),
                                   );
-                                },
-                              ),
-                            );
                           },
                           separatorBuilder: (context, idx) => Container(
-                            height: 0.5,
+                            height: _monthlyDues[idx].paymentTypes.length < 1
+                                ? 0.0
+                                : 0.5,
                             color: Colors.grey,
                           ),
                         ),

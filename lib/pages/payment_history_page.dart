@@ -1,10 +1,13 @@
+import 'dart:convert';
+import 'package:intl/intl.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_picker/flutter_picker.dart';
+
 import 'package:facil_tenant/components/app_spinner.dart';
 import 'package:facil_tenant/models/payment_type_model.dart';
 import 'package:facil_tenant/models/payments_model.dart';
 import 'package:facil_tenant/services/http_service.dart';
-import 'package:intl/intl.dart';
 import 'package:facil_tenant/styles/colors.dart';
-import 'package:flutter/material.dart';
 import '../components/app_scaffold.dart';
 
 const Months = const [
@@ -32,14 +35,64 @@ class PaymentHistoryPage extends StatefulWidget {
 class _PaymentHistoryPageState extends State<PaymentHistoryPage> {
   final _httpService = HttpService();
 
+  DateTime initialDate = DateTime.now();
+  DateTime selectedDate = DateTime.now();
+
   String yearToSearch = ((DateTime.now()).year).toString();
-  final choicePeriod = ValueNotifier({"year": (DateTime.now()).year});
+  String monthToSearch = "00";
+  Map<String, String> monthsMap = {
+    "All": "00",
+    "January": "01",
+    "February": "02",
+    "March": "03",
+    "April": "04",
+    "May": "05",
+    "June": "06",
+    "July": "07",
+    "August": "08",
+    "September": "09",
+    "October": "10",
+    "November": "11",
+    "December": "12"
+  };
+  static String _getYearsRange() {
+    int _startPoint = 2018;
+    int _endPoint = DateTime.now().year + 2;
+    List<String> _years = [];
+    for (int i = _startPoint; i <= _endPoint; i++) {
+      _years.add(i.toString());
+    }
+    return "$_years";
+  }
 
-  Future<List<PaymentsModel>> getPayments(String searchYear) async {
-    Map<String, dynamic> response =
-        await _httpService.fetchPayments(year: searchYear);
+  String pickerData2 = '''[
+    ${_PaymentHistoryPageState._getYearsRange()},
+    [
+      "All",
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December"
+    ]
+  ]
+  ''';
+
+  Future<List<PaymentsModel>> getPayments(
+      String searchYear, String monthSearch) async {
+
+    Map<String, dynamic> response = monthSearch == monthsMap["All"]
+        ? await _httpService.fetchPayments(year: searchYear)
+        : await _httpService.fetchPayments(
+            year: searchYear, month: monthSearch);
     List<PaymentsModel> payments = [];
-
     for (var i = 0; i < response["data"].length; i++) {
       Map<String, dynamic> content = response["data"][i];
       payments.add(PaymentsModel(
@@ -62,7 +115,7 @@ class _PaymentHistoryPageState extends State<PaymentHistoryPage> {
   Widget build(BuildContext context) {
     formatter = NumberFormat.currency(
       name: "NGN",
-      symbol: "NGN ", //
+      symbol: "NGN ",
       decimalDigits: 2,
       locale: Localizations.localeOf(context).toString(),
     );
@@ -70,97 +123,22 @@ class _PaymentHistoryPageState extends State<PaymentHistoryPage> {
       floatingActionButton: FloatingActionButton(
         heroTag: "filterHistory",
         onPressed: () {
-          showDialog(
-            context: context,
-            barrierDismissible: false,
-            builder: (context) {
-              return Scaffold(
-                backgroundColor: Colors.black54,
-                body: SafeArea(
-                  child: Center(
-                    child: Stack(
-                      alignment: Alignment.center,
-                      // fit: StackFit.loose,
-                      children: <Widget>[
-                        Container(
-                          margin: EdgeInsets.symmetric(
-                            vertical: 20.0,
-                            horizontal: 15.0,
-                          ),
-                          // alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(20.0),
-                          ),
-                          child: ValueListenableBuilder(
-                            valueListenable: choicePeriod,
-                            builder: (context, val, child) {
-                              return Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: <Widget>[
-                                  Text(
-                                    "Select Year",
-                                    style: Theme.of(context).textTheme.display1,
-                                  ),
-                                  Container(
-                                    alignment: Alignment.center,
-                                    height: 100,
-                                    child: YearPicker(
-                                      selectedDate: DateTime(val["year"]),
-                                      lastDate:
-                                          DateTime(DateTime.now().year + 5),
-                                      firstDate:
-                                          DateTime(DateTime.now().year - 5),
-                                      onChanged: (valu) =>
-                                          choicePeriod.value = {
-                                        "year": valu.year,
-                                      },
-                                    ),
-                                  ),
-                                  Container(
-                                    padding: EdgeInsets.only(right: 20.0),
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.end,
-                                      children: <Widget>[
-                                        FlatButton(
-                                          onPressed: Navigator.of(context).pop,
-                                          child: Text("Cancel"),
-                                        ),
-                                        RaisedButton(
-                                          padding: EdgeInsets.all(5.0),
-                                          onPressed: () {
-                                            setState(() {
-                                              yearToSearch =
-                                                  val["year"].toString();
-                                            });
-                                            Navigator.of(context).pop();
-                                          },
-                                          child: Text("Fetch"),
-                                        ),
-                                      ],
-                                    ),
-                                  )
-                                ],
-                              );
-                            },
-                          ),
-                        ),
-                        Positioned(
-                          top: 0,
-                          right: .5,
-                          child: FloatingActionButton(
-                            heroTag: "cls",
-                            onPressed: () => Navigator.of(context).pop(),
-                            child: Icon(Icons.close),
-                          ),
-                        )
-                      ],
-                    ),
-                  ),
-                ),
-              );
-            },
-          );
+          Picker(
+              adapter: PickerDataAdapter<String>(
+                  pickerdata: new JsonDecoder().convert(pickerData2),
+                  isArray: true),
+              hideHeader: true,
+              title: new Text(
+                "Select year & month",
+                style: TextStyle(color: shedAppBlue400),
+              ),
+              onConfirm: (Picker picker, List value) {
+                List<dynamic> values = picker.getSelectedValues();
+                setState(() {
+                  yearToSearch = values[0];
+                  monthToSearch = monthsMap[values[1]];
+                });
+              }).showDialog(context);
         },
         child: Icon(
           Icons.calendar_today,
@@ -195,7 +173,7 @@ class _PaymentHistoryPageState extends State<PaymentHistoryPage> {
             ),
             Expanded(
               child: FutureBuilder(
-                future: getPayments(yearToSearch),
+                future: getPayments(yearToSearch, monthToSearch),
                 builder: (context, res) {
                   if (res.hasError) {
                     return Container(
@@ -276,7 +254,7 @@ class _PaymentHistoryPageState extends State<PaymentHistoryPage> {
                                     ),
                                     Text(
                                       "Paid on : ${DateFormat.yMMMd().format(DateTime.parse(eachPayment.paidOn))}",
-                                      style: Theme.of(context).textTheme.body1,
+                                      style: Theme.of(context).textTheme.caption,
                                     ),
                                   ],
                                 ),
