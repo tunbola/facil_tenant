@@ -12,7 +12,6 @@ import 'package:intl/intl.dart';
 import 'package:facil_tenant/styles/colors.dart';
 import 'package:flutter/material.dart';
 import '../components/app_scaffold.dart';
-//import 'package:flutter_webview_plugin/flutter_webview_plugin.dart';
 import "package:facil_tenant/singleton/locator.dart";
 import "package:facil_tenant/routes/route_paths.dart" as routes;
 import 'package:flutter_picker/flutter_picker.dart';
