@@ -1,6 +1,6 @@
 const config = {
   //"baseUrl": "http://api.facilng.net/estate/web/",
-  "baseUrl": "http://192.168.8.100/estate/web/",
+  "baseUrl": "http://192.168.8.100/facil/estate/web/",
   "user": "user/",
   "login": "login/",
   "announcements": "announcements/",
@@ -14,5 +14,6 @@ const config = {
   "request": "request/",
   "requestType": "requesttype/",
   "outstanding": "outstanding/",
-  "payments": "payments/"
+  "payments": "payments/",
+  "transaction": "transaction/"
 };

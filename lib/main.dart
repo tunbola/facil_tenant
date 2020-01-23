@@ -11,6 +11,7 @@ import 'pages/splash_screen_page.dart';
 import "package:facil_tenant/routes/router.dart" as router;
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,

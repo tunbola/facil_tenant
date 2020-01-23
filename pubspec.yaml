@@ -34,9 +34,10 @@ dependencies:
   datetime_picker_formfield: ^0.4.3
   dropdownfield: ^1.0.3
   badges: ^1.1.0
-  flutter_webview_plugin: ^0.3.10+1
+  webview_flutter: ^0.3.19+5
   flutter_picker: ^1.1.0
-
+  image_picker: 0.6.2+3
+  
 dev_dependencies:
   flutter_test:
     sdk: flutter
