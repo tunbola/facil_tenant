@@ -461,7 +461,7 @@ class HttpService {
     } catch (e) {
       return {
         "status": false,
-        "message": "Internet connection error",
+        "message": e.toString(),//"Internet connection error",
         "data": null
       };
     }
@@ -507,7 +507,6 @@ class HttpService {
     try {
         url =
             "${config['baseUrl']}${config['message']}${config['delete']}?id=$id";
-        print(url);
       http.Response response = await http.delete(url, headers: requestHeader);
       final responseJson = conv.json.decode(response.body);
       final responseObject = ResponseModel.fromJson(responseJson);
@@ -530,4 +529,37 @@ class HttpService {
       };
     }
   }
+
+  Future<Map<String, dynamic>> getTransactionId(String month, String year, String paymentTypeId) async {
+    Map<String, String> requestHeader = await AccessService.requestHeader();
+    String url =
+            "${config['baseUrl']}${config['transaction']}${config['create']}";
+    try {
+      String requestBody = conv.json.encode({
+        "payment_type_id": paymentTypeId,
+        "month": month,
+        "year" : year
+      });
+      http.Response response = await http.post(url, body: requestBody, headers: requestHeader);
+      final responseJson = conv.json.decode(response.body);
+      final responseObject = ResponseModel.fromJson(responseJson);
+      if (response.statusCode != 200)
+        return {
+          "status": false,
+          "message": responseObject.message,
+          "data": null
+        };
+      return {
+        "status": true,
+        "message": responseObject.message,
+        "data": responseObject.data
+      };
+    } catch (e) {
+      return {
+        "status": false,
+        "message": "Internet connection error",
+        "data": null
+      };
+    }
+  }  
 }

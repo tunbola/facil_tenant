@@ -47,7 +47,8 @@ Route<dynamic> generateRoute(RouteSettings settings) {
       var params = settings.arguments as Map<String, dynamic>;
       return MaterialPageRoute(builder: (context) => ChatHistoryPage(params));
     case routes.Paystack:
-      return MaterialPageRoute(builder: (context) => PayStackWebViewPage());
+      var transactionKey = settings.arguments as String;
+      return MaterialPageRoute(builder: (context) => PayStackWebViewPage(transactionKey));
     default:
       return MaterialPageRoute(builder: (context) => DashboardPage());
   }

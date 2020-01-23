@@ -14,6 +14,7 @@
         android:label="facil_tenant"
         android:icon="@mipmap/ic_launcher"
         android:allowBackup="false"
+        android:usesCleartextTraffic="true"
         android:fullBackupContent="false">
         <activity
             android:name=".MainActivity"
