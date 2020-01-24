@@ -62,11 +62,11 @@ class HttpService {
     }
   }
 
-  Future<Map<String, dynamic>> fetchRequests(int pageNumber) async {
+  Future<Map<String, dynamic>> fetchRequests({int pageNumber, bool fetchAll}) async {
     Map<String, String> requestHeader = await AccessService.requestHeader();
     try {
       http.Response response = await http.get(
-          "${config['baseUrl']}${config['request']}${config['view']}?page=$pageNumber",
+          fetchAll ? "${config['baseUrl']}${config['request']}${config['view']}?all=true" :"${config['baseUrl']}${config['request']}${config['view']}?page=$pageNumber",
           headers: requestHeader);
       final responseJson = conv.json.decode(response.body);
       final responseObject = ResponseModel.fromJson(responseJson);
@@ -541,6 +541,37 @@ class HttpService {
         "year" : year
       });
       http.Response response = await http.post(url, body: requestBody, headers: requestHeader);
+      final responseJson = conv.json.decode(response.body);
+      final responseObject = ResponseModel.fromJson(responseJson);
+      if (response.statusCode != 200)
+        return {
+          "status": false,
+          "message": responseObject.message,
+          "data": null
+        };
+      return {
+        "status": true,
+        "message": responseObject.message,
+        "data": responseObject.data
+      };
+    } catch (e) {
+      return {
+        "status": false,
+        "message": "Internet connection error",
+        "data": null
+      };
+    }
+  }
+
+  Future<Map<String, dynamic>> uploadProfileImage(String imageEncodedString) async {
+    Map<String, String> requestHeader = await AccessService.requestHeader();
+    String url =
+            "${config['baseUrl']}${config['user']}${config['avatar']}";
+    try {
+      String requestBody = conv.json.encode({
+        "user_avatar": imageEncodedString,
+      });
+      http.Response response = await http.put(url, body: requestBody, headers: requestHeader);
       final responseJson = conv.json.decode(response.body);
       final responseObject = ResponseModel.fromJson(responseJson);
       if (response.statusCode != 200)

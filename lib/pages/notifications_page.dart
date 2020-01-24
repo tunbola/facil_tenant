@@ -108,7 +108,7 @@ class _NotificationsListState extends State<NotificationsList> {
       _currentPage = int.parse(response["data"]["currentPage"].toString());
     } else {
       Map<String, dynamic> response =
-          await _httpService.fetchRequests(pageNumber);
+          await _httpService.fetchRequests(pageNumber: pageNumber);
       _numberOfPages = int.parse(response["data"]["numberOfPages"].toString());
 
       _newList = (response["data"]["data"] as List)

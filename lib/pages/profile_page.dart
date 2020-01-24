@@ -1,7 +1,8 @@
+import 'dart:convert';
 import 'package:facil_tenant/components/app_spinner.dart';
 import 'package:facil_tenant/services/access_service.dart';
 import 'package:facil_tenant/styles/colors.dart';
-//import 'package:image_picker/image_picker.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import "package:facil_tenant/services/http_service.dart";
@@ -20,7 +21,6 @@ class _ProfilePageState extends State<ProfilePage>
     with TickerProviderStateMixin {
   ValueNotifier<int> _activePage = ValueNotifier(0);
   TextEditingController _start = TextEditingController(text: "");
-  //TextEditingController _end = TextEditingController(text: "");
   TextEditingController _gender = TextEditingController(text: "");
   TextEditingController _relation = TextEditingController(text: "");
   ValueNotifier _picture = ValueNotifier(null);
@@ -40,12 +40,26 @@ class _ProfilePageState extends State<ProfilePage>
   bool _buttonClicked = false;
   Map<String, dynamic> _report = {"status": false, "message": ""};
 
+  Map<String, dynamic> outStanding = {
+    "status": false,
+    "message": "",
+    "data": {}
+  };
+  Map<String, dynamic> paymentInfo = {
+    "status": false,
+    "message": "",
+    "data": {}
+  };
+    Map<String, dynamic> requestsInfo = {
+    "status": false,
+    "message": "",
+    "data": {"total": 0,"completed": 0, "pending": 0, "failed": 0}
+  };
+
   Future<UserProfileModel> _getUserProfile() async {
     String userId = await AccessService.getUserId();
-
     Map<String, dynamic> response = await _httpService.fetchProfile(userId);
     Map<String, dynamic> profile = response["data"];
-
     UserProfileModel userProfile = UserProfileModel(
       user: UserModel.fromJson(profile),
       visits: (profile["propertyAccesses"] as List)
@@ -132,6 +146,74 @@ class _ProfilePageState extends State<ProfilePage>
         "$surname $othernames", phone, visitDate);
   }
 
+  //get user's outstanding bills information
+  Future<Map<String, dynamic>> getTotalOustanding() async {
+    String year = (DateTime.now().year).toString();
+    Map<String, dynamic> response =
+        await _httpService.fetchOutstandingBills(year: year);
+    double totalMonthBills = 0;
+    double totalYearlyBill = 0;
+    if (!response['status']) return Future.value(null);
+    List<dynamic> monthly = response['data']['monthly'];
+    List<dynamic> yearly = response['data']['yearly'];
+    for (int i = 0; i < monthly.length; i++) {
+      List<dynamic> bill = monthly[i]['data'];
+      bill.forEach((b) {
+        double amount = double.parse(b["amount"]);
+        totalMonthBills += amount;
+      });
+    }
+    yearly.forEach((y) {
+      double amount = double.parse(y["amount"]);
+      totalYearlyBill += amount;
+    });
+    Map<String, dynamic> r = {"mb": totalMonthBills, "yb": totalYearlyBill};
+    return Future.value(r);
+  }
+
+  //get user's payment information
+  Future<Map<String, dynamic>> getPaymentInfo() async {
+    Map<String, dynamic> _response = await _httpService.fetchPayments();
+    if (!_response['status']) return Future.value(null);
+    List<dynamic> r = _response['data'];
+    String lastDate = r.length > 1 ? DateFormat.yMMMMEEEEd().format(DateTime.parse(r[r.length - 1]["transaction"]["created_at"])) : "No payment made this year";
+    Map<String, dynamic> paymentDetail = {"number_of_payments": r.length, "last_payment_date": lastDate};
+    return Future.value(paymentDetail);
+  }
+
+  //fetch all user's request history
+  Future<Map<String, dynamic>> getRequestsInfo() async {
+    Map<String, dynamic> _response = await _httpService.fetchRequests(fetchAll: true);
+    if (!_response['status']) return Future.value(null);
+    List<dynamic> r = _response['data'];
+    int completed = 0;
+    int failed = 0;
+    int pending = 0;
+    r.forEach((data) {
+      int statusId = int.parse(data['request_status_id']);
+      if (statusId == 3) completed += 1;
+      else if (statusId > 3) failed += 1;
+      else pending += 1;
+    }); 
+    Map<String, dynamic> a = {"total": r.length,"completed": completed, "pending": pending, "failed": failed};
+    return Future.value(a);
+  }
+
+  //call all associated methods to get information for the overview tab
+  void overView() async {
+    Map<String, dynamic> os = await getTotalOustanding();
+    if (os == null) setState(() {outStanding = {"status": false, "message": "Error while fetching outstanding payments"};});
+    else setState(() {outStanding = {"status": true, "message": "", "data": os};});
+    
+    Map<String, dynamic> payment = await getPaymentInfo();
+    if (payment == null) setState(() {paymentInfo = {"status": false, "message": "Error while fetching payment information"};});
+    else setState(() {paymentInfo = {"status": true, "message": "", "data": payment};});
+
+    Map<String, dynamic> requests = await getRequestsInfo();
+    if (requests == null) setState(() {requestsInfo = {"status": false, "message": "Error while fetching requests information"};});
+    else setState(() {requestsInfo = {"status": true, "message": "", "data": requests};});
+  }
+
   @override
   void initState() {
     super.initState();
@@ -139,6 +221,8 @@ class _ProfilePageState extends State<ProfilePage>
     _ctrlr.addListener(() {
       _activePage.value = _ctrlr.index;
     });
+    overView();
+    super.initState();
   }
 
   @override
@@ -457,6 +541,7 @@ class _ProfilePageState extends State<ProfilePage>
           }
           if (res.hasData) {
             UserProfileModel _userProfile = res.data;
+            String displayImageUrl = _userProfile.user.pictureUrl;
             return Scaffold(
               backgroundColor: shedAppYellow50,
               floatingActionButtonLocation:
@@ -529,11 +614,38 @@ class _ProfilePageState extends State<ProfilePage>
                               mainAxisAlignment: MainAxisAlignment.center,
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                CircleAvatar(
-                                  backgroundImage: AssetImage(
-                                    "assets/img/loading.png",
+                                GestureDetector(
+                                  child: CircleAvatar(
+                                    backgroundImage: (displayImageUrl == null ||
+                                            displayImageUrl.length < 1)
+                                        ? AssetImage("assets/img/loading.png")
+                                        : NetworkImage(displayImageUrl),
+                                    radius: 80,
                                   ),
-                                  radius: 80,
+                                  onTap: () async {
+                                    var image = await ImagePicker.pickImage(
+                                        source: ImageSource.gallery);
+                                    var imageBytes = image.readAsBytesSync();
+                                    String encodedImage =
+                                        base64Encode(imageBytes);
+                                    setState(() {
+                                      renderSnackBar(context, shedAppBlue300,
+                                          "Uploading image ....");
+                                    });
+                                    Map<String, dynamic> _response =
+                                        await _httpService
+                                            .uploadProfileImage(encodedImage);
+                                    if (_response['status']) {
+                                      setState(() {
+                                        displayImageUrl = _response['data'];
+                                      });
+                                    } else {
+                                      setState(() {
+                                        renderSnackBar(context, Colors.red,
+                                            _response['message']);
+                                      });
+                                    }
+                                  },
                                 ),
                                 SizedBox(
                                   height: 10.0,
@@ -664,7 +776,7 @@ class _ProfilePageState extends State<ProfilePage>
                                             bottom: 5.0,
                                           ),
                                           child: Text(
-                                            "OUTSTANDING BILLS",
+                                            "${DateTime.now().year} OUTSTANDING BILLS (YEARLY)",
                                             style: Theme.of(context)
                                                 .textTheme
                                                 .body2,
@@ -674,14 +786,24 @@ class _ProfilePageState extends State<ProfilePage>
                                         ),
                                         Expanded(
                                           child: Center(
-                                            child: Text(
-                                              formatter.format(200),
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .headline
-                                                  .copyWith(fontSize: 25),
-                                              textAlign: TextAlign.center,
-                                            ),
+                                            child: !outStanding["status"]
+                                                ? outStanding["message"]
+                                                            .length <
+                                                        1
+                                                    ? AppSpinner()
+                                                    : Text(
+                                                        "${outStanding['message']}",
+                                                        style: TextStyle(
+                                                            color: Colors.red),
+                                                      )
+                                                : Text(
+                                                    formatter.format(outStanding['data']['yb']),
+                                                    style: Theme.of(context)
+                                                        .textTheme
+                                                        .headline
+                                                        .copyWith(fontSize: 25),
+                                                    textAlign: TextAlign.center,
+                                                  ),
                                           ),
                                         ),
                                       ],
@@ -712,7 +834,65 @@ class _ProfilePageState extends State<ProfilePage>
                                             bottom: 5.0,
                                           ),
                                           child: Text(
-                                            "LAST PAY DATE",
+                                            "${DateTime.now().year} OUTSTANDING BILLS (MONTHLY)",
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .body2,
+                                            // .copyWith(color: Colors.white)
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ),
+                                        Expanded(
+                                          child: Center(
+                                            child: !outStanding["status"]
+                                                ? outStanding["message"]
+                                                            .length <
+                                                        1
+                                                    ? AppSpinner()
+                                                    : Text(
+                                                        "${outStanding['message']}",
+                                                        style: TextStyle(
+                                                            color: Colors.red),
+                                                      )
+                                                : Text(
+                                                    formatter.format(outStanding['data']['mb']),
+                                                    style: Theme.of(context)
+                                                        .textTheme
+                                                        .headline
+                                                        .copyWith(fontSize: 25),
+                                                    textAlign: TextAlign.center,
+                                                  ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                Container(
+                                  height: 100,
+                                  margin: EdgeInsets.only(
+                                    left: 14.0,
+                                    right: 14.0,
+                                    top: 10.0,
+                                    bottom: 5.0,
+                                  ),
+                                  child: Card(
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: <Widget>[
+                                        Container(
+                                          padding: EdgeInsets.only(
+                                            top: 10.0,
+                                            left: 14.0,
+                                            right: 14.0,
+                                            bottom: 5.0,
+                                          ),
+                                          child: Text(
+                                            "LAST PAYMENT MADE THIS YEAR",
                                             style: Theme.of(context)
                                                 .textTheme
                                                 .body2,
@@ -721,15 +901,24 @@ class _ProfilePageState extends State<ProfilePage>
                                         ),
                                         Expanded(
                                           child: Center(
-                                            child: Text(
-                                              DateFormat.yMMMMEEEEd()
-                                                  .format(DateTime.now()),
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .headline
-                                                  .copyWith(fontSize: 25),
-                                              textAlign: TextAlign.center,
-                                            ),
+                                            child: !paymentInfo["status"]
+                                                ? paymentInfo["message"]
+                                                            .length <
+                                                        1
+                                                    ? AppSpinner()
+                                                    : Text(
+                                                        "${paymentInfo['message']}",
+                                                        style: TextStyle(
+                                                            color: Colors.red),
+                                                      )
+                                                : Text(
+                                                    "${paymentInfo['data']['last_payment_date']}",
+                                                    style: Theme.of(context)
+                                                        .textTheme
+                                                        .headline
+                                                        .copyWith(fontSize: 25),
+                                                    textAlign: TextAlign.center,
+                                                  ),
                                           ),
                                         ),
                                       ],
@@ -760,7 +949,7 @@ class _ProfilePageState extends State<ProfilePage>
                                             bottom: 5.0,
                                           ),
                                           child: Text(
-                                            "COMPLAINTS",
+                                            "REQUESTS",
                                             style: Theme.of(context)
                                                 .textTheme
                                                 .body2,
@@ -781,12 +970,12 @@ class _ProfilePageState extends State<ProfilePage>
                                                     style: Theme.of(context)
                                                         .textTheme
                                                         .title
-                                                        .copyWith(fontSize: 14),
+                                                        .copyWith(fontSize: 12),
                                                     textAlign: TextAlign.center,
                                                   ),
                                                   Expanded(
                                                     child: Text(
-                                                      "10",
+                                                      "${requestsInfo['data']['total']}",
                                                       style: Theme.of(context)
                                                           .textTheme
                                                           .headline
@@ -805,16 +994,16 @@ class _ProfilePageState extends State<ProfilePage>
                                               Column(
                                                 children: <Widget>[
                                                   Text(
-                                                    "OPEN",
+                                                    "COMPLETED",
                                                     style: Theme.of(context)
                                                         .textTheme
                                                         .title
-                                                        .copyWith(fontSize: 14),
+                                                        .copyWith(fontSize: 12),
                                                     textAlign: TextAlign.center,
                                                   ),
                                                   Expanded(
                                                     child: Text(
-                                                      "0",
+                                                      "${requestsInfo['data']['completed']}",
                                                       style: Theme.of(context)
                                                           .textTheme
                                                           .headline
@@ -833,16 +1022,44 @@ class _ProfilePageState extends State<ProfilePage>
                                               Column(
                                                 children: <Widget>[
                                                   Text(
-                                                    "CLOSED",
+                                                    "PENDING",
                                                     style: Theme.of(context)
                                                         .textTheme
                                                         .title
-                                                        .copyWith(fontSize: 14),
+                                                        .copyWith(fontSize: 12),
                                                     textAlign: TextAlign.center,
                                                   ),
                                                   Expanded(
                                                     child: Text(
-                                                      "10",
+                                                      "${requestsInfo['data']['pending']}",
+                                                      style: Theme.of(context)
+                                                          .textTheme
+                                                          .headline
+                                                          .copyWith(
+                                                              fontSize: 25),
+                                                    ),
+                                                  )
+                                                ],
+                                              ),
+                                              Container(
+                                                color: shedAppBlue400,
+                                                width: .5,
+                                                margin: EdgeInsets.symmetric(
+                                                    vertical: 10.0),
+                                              ),
+                                              Column(
+                                                children: <Widget>[
+                                                  Text(
+                                                    "FAILED",
+                                                    style: Theme.of(context)
+                                                        .textTheme
+                                                        .title
+                                                        .copyWith(fontSize: 12),
+                                                    textAlign: TextAlign.center,
+                                                  ),
+                                                  Expanded(
+                                                    child: Text(
+                                                      "${requestsInfo['data']['failed']}",
                                                       style: Theme.of(context)
                                                           .textTheme
                                                           .headline
@@ -883,7 +1100,7 @@ class _ProfilePageState extends State<ProfilePage>
                                             bottom: 5.0,
                                           ),
                                           child: Text(
-                                            "PAYMENTS",
+                                            "PAYMENTS MADE THIS YEAR",
                                             style: Theme.of(context)
                                                 .textTheme
                                                 .body2,
@@ -892,14 +1109,24 @@ class _ProfilePageState extends State<ProfilePage>
                                         ),
                                         Expanded(
                                           child: Center(
-                                            child: Text(
-                                              "20",
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .headline
-                                                  .copyWith(fontSize: 25),
-                                              textAlign: TextAlign.center,
-                                            ),
+                                            child: !paymentInfo["status"]
+                                                ? paymentInfo["message"]
+                                                            .length <
+                                                        1
+                                                    ? AppSpinner()
+                                                    : Text(
+                                                        "${paymentInfo['message']}",
+                                                        style: TextStyle(
+                                                            color: Colors.red),
+                                                      )
+                                                : Text(
+                                                    "${paymentInfo["data"]["number_of_payments"]}",
+                                                    style: Theme.of(context)
+                                                        .textTheme
+                                                        .headline
+                                                        .copyWith(fontSize: 25),
+                                                    textAlign: TextAlign.center,
+                                                  ),
                                           ),
                                         ),
                                       ],
@@ -1067,9 +1294,19 @@ class _ProfilePageState extends State<ProfilePage>
               ),
             );
           } else {
-            return AppSpinner();
+            return Container(color: Colors.white, child: AppSpinner());
           }
         });
+  }
+
+  renderSnackBar(BuildContext context, Color bgColor, String content) {
+    Scaffold.of(context).showSnackBar(SnackBar(
+      backgroundColor: bgColor,
+      content: Text(
+        content,
+        style: TextStyle(fontWeight: FontWeight.bold),
+      ),
+    ));
   }
 }
 

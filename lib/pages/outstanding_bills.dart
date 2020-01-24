@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:badges/badges.dart';
 import 'package:facil_tenant/components/app_spinner.dart';
 import 'package:facil_tenant/components/auth_button_spinner.dart';
@@ -39,13 +38,11 @@ class OutstandingBillsPage extends StatefulWidget {
 }
 
 class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
-  final ValueNotifier _isPaying = ValueNotifier(false);
   final _httpService = HttpService();
   bool _proceedToPayButton = false;
 
   final choicePeriod = ValueNotifier({"year": (DateTime.now()).year});
   String errMsg = "";
-  //double totalDebt = 0.00;
   static NavigationService _navigationService = locator<NavigationService>();
   String yearToSearch = ((DateTime.now()).year).toString();
   String monthToSearch = "00";
@@ -96,14 +93,6 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
   ]
   ''';
 
-  Future<bool> _processPayment() async {
-    _isPaying.value = true;
-    await Future.delayed(
-      Duration(seconds: 3),
-    );
-    return Future.value(true);
-  }
-
   Future<Map<String, dynamic>> _fetchTransactionKey(
       String month, String year, String paymentTypeId) async {
     Map<String, dynamic> _response =
@@ -148,7 +137,7 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
     return _monthly;
   }
 
-  Future<Map<String, List>> _fetchOutstandingBills(
+  Future<Map<String, List>> getUserOutstandingBills(
       String year, String month) async {
     Map<String, dynamic> _response = month == "00"
         ? await _httpService.fetchOutstandingBills(year: year)
@@ -192,81 +181,7 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(20.0),
                       ),
-                      child: ValueListenableBuilder(
-                        valueListenable: _isPaying,
-                        builder: (context, val, child) {
-                          if (val) {
-                            return FutureBuilder(
-                              future: _processPayment(),
-                              builder: (context, AsyncSnapshot<bool> res) {
-                                if (res.hasError) {
-                                  Future.delayed(Duration(seconds: 5), () {
-                                    _isPaying.value = false;
-                                    Navigator.of(context).pop();
-                                  });
-                                  return Container(
-                                    height: 500,
-                                    decoration: BoxDecoration(
-                                      image: DecorationImage(
-                                        image: AssetImage(
-                                          'assets/img/empty_state.png',
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                }
-                                if (res.hasData) {
-                                  Future.delayed(Duration(seconds: 5), () {
-                                    _isPaying.value = false;
-                                    Navigator.of(context).pop();
-                                  });
-                                  return Container(
-                                    alignment: Alignment.center,
-                                    child: Center(
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        children: <Widget>[
-                                          Container(
-                                            child: Image.asset(
-                                              'assets/img/successful_payment.png',
-                                              fit: BoxFit.fitWidth,
-                                            ),
-                                          ),
-                                          Text("You payment has been confirmed")
-                                        ],
-                                      ),
-                                    ),
-                                  );
-                                } else {
-                                  return Container(
-                                    alignment: Alignment.center,
-                                    child: Center(
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        children: <Widget>[
-                                          Container(
-                                            child: AppSpinner(),
-                                          ),
-                                          SizedBox(
-                                            height: 5.0,
-                                          ),
-                                          Text(
-                                              "You payment is being proccessed")
-                                        ],
-                                      ),
-                                    ),
-                                  );
-                                }
-                              },
-                            );
-                          }
-                          return SingleChildScrollView(
+                      child: SingleChildScrollView(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: <Widget>[
@@ -377,9 +292,7 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
                                 ),
                               ],
                             ),
-                          );
-                        },
-                      ),
+                          )
                     ),
                     Positioned(
                       top: 0,
@@ -478,7 +391,7 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
             ),
             Expanded(
               child: FutureBuilder(
-                future: _fetchOutstandingBills(yearToSearch, monthToSearch),
+                future: getUserOutstandingBills(yearToSearch, monthToSearch),
                 builder: (context, res) {
                   if (res.hasError) {
                     return Container(
