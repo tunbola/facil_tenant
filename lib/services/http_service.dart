@@ -62,11 +62,14 @@ class HttpService {
     }
   }
 
-  Future<Map<String, dynamic>> fetchRequests({int pageNumber, bool fetchAll}) async {
+  Future<Map<String, dynamic>> fetchRequests(
+      {int pageNumber, bool fetchAll}) async {
     Map<String, String> requestHeader = await AccessService.requestHeader();
     try {
       http.Response response = await http.get(
-          fetchAll ? "${config['baseUrl']}${config['request']}${config['view']}?all=true" :"${config['baseUrl']}${config['request']}${config['view']}?page=$pageNumber",
+          fetchAll
+              ? "${config['baseUrl']}${config['request']}${config['view']}?all=true"
+              : "${config['baseUrl']}${config['request']}${config['view']}?page=$pageNumber",
           headers: requestHeader);
       final responseJson = conv.json.decode(response.body);
       final responseObject = ResponseModel.fromJson(responseJson);
@@ -216,15 +219,16 @@ class HttpService {
 
   Future<Map<String, dynamic>> registerUser(
       String phone, String email, String password, String smsCode) async {
+    Map<String, dynamic> payload = {
+      "phone": phone,
+      "email": email,
+      "password": password,
+      "sms_code": smsCode
+    };
     try {
       http.Response response = await http.post(
           "${config['baseUrl']}${config['user']}${config['create']}",
-          body: {
-            "phone": phone,
-            "email": email,
-            "password": password,
-            "sms_code": smsCode
-          });
+          body: payload);
       final responseJson = conv.json.decode(response.body);
       final responseObject = ResponseModel.fromJson(responseJson);
       if (response.statusCode != 200) {
@@ -268,10 +272,12 @@ class HttpService {
     }
   }
 
-  Future<Map<String, dynamic>> createDependentUser(String phone, String dependent) async {
+  Future<Map<String, dynamic>> createDependentUser(
+      String phone, String dependent) async {
     Map<String, String> requestHeader = await AccessService.requestHeader();
     try {
-      String requestBody = conv.json.encode({"phone": phone, "dependent_id": dependent});
+      String requestBody =
+          conv.json.encode({"phone": phone, "dependent_id": dependent});
       http.Response response = await http.post(
           "${config['baseUrl']}${config['register']}${config['create']}",
           body: requestBody,
@@ -433,16 +439,20 @@ class HttpService {
     }
   }
 
-  Future<Map<String, dynamic>> fetchOutstandingBills({String year, String month}) async {
+  Future<Map<String, dynamic>> fetchOutstandingBills(
+      {String year, String month}) async {
     Map<String, String> requestHeader = await AccessService.requestHeader();
     String url = "";
     try {
       if (month != null) {
-        url = "${config['baseUrl']}${config['payments']}${config['outstanding']}?year=${year}&month=$month";
+        url =
+            "${config['baseUrl']}${config['payments']}${config['outstanding']}?year=${year}&month=$month";
       } else if (year != null) {
-        url = "${config['baseUrl']}${config['payments']}${config['outstanding']}?year=$year";
+        url =
+            "${config['baseUrl']}${config['payments']}${config['outstanding']}?year=$year";
       } else {
-        url = "${config['baseUrl']}${config['payments']}${config['outstanding']}";
+        url =
+            "${config['baseUrl']}${config['payments']}${config['outstanding']}";
       }
       http.Response response = await http.get(url, headers: requestHeader);
       final responseJson = conv.json.decode(response.body);
@@ -461,22 +471,26 @@ class HttpService {
     } catch (e) {
       return {
         "status": false,
-        "message": e.toString(),//"Internet connection error",
+        "message": e.toString(), //"Internet connection error",
         "data": null
       };
     }
   }
 
-  Future<Map<String, dynamic>> fetchPayments({String year, String month}) async {
+  Future<Map<String, dynamic>> fetchPayments(
+      {String year, String month}) async {
     Map<String, String> requestHeader = await AccessService.requestHeader();
     String url = "";
     try {
       if (month != null) {
-        url =  "${config['baseUrl']}${config['payments']}${config['view']}?settled=true&year=$year&month=$month";
+        url =
+            "${config['baseUrl']}${config['payments']}${config['view']}?settled=true&year=$year&month=$month";
       } else if (year != null) {
-        url = "${config['baseUrl']}${config['payments']}${config['view']}?settled=true&year=$year";
+        url =
+            "${config['baseUrl']}${config['payments']}${config['view']}?settled=true&year=$year";
       } else {
-        url = "${config['baseUrl']}${config['payments']}${config['view']}?settled=true";
+        url =
+            "${config['baseUrl']}${config['payments']}${config['view']}?settled=true";
       }
       http.Response response = await http.get(url, headers: requestHeader);
       final responseJson = conv.json.decode(response.body);
@@ -505,8 +519,8 @@ class HttpService {
     Map<String, String> requestHeader = await AccessService.requestHeader();
     String url = "";
     try {
-        url =
-            "${config['baseUrl']}${config['message']}${config['delete']}?id=$id";
+      url =
+          "${config['baseUrl']}${config['message']}${config['delete']}?id=$id";
       http.Response response = await http.delete(url, headers: requestHeader);
       final responseJson = conv.json.decode(response.body);
       final responseObject = ResponseModel.fromJson(responseJson);
@@ -530,17 +544,16 @@ class HttpService {
     }
   }
 
-  Future<Map<String, dynamic>> getTransactionId(String month, String year, String paymentTypeId) async {
+  Future<Map<String, dynamic>> getTransactionId(
+      String month, String year, String paymentTypeId) async {
     Map<String, String> requestHeader = await AccessService.requestHeader();
     String url =
-            "${config['baseUrl']}${config['transaction']}${config['create']}";
+        "${config['baseUrl']}${config['transaction']}${config['create']}";
     try {
-      String requestBody = conv.json.encode({
-        "payment_type_id": paymentTypeId,
-        "month": month,
-        "year" : year
-      });
-      http.Response response = await http.post(url, body: requestBody, headers: requestHeader);
+      String requestBody = conv.json.encode(
+          {"payment_type_id": paymentTypeId, "month": month, "year": year});
+      http.Response response =
+          await http.post(url, body: requestBody, headers: requestHeader);
       final responseJson = conv.json.decode(response.body);
       final responseObject = ResponseModel.fromJson(responseJson);
       if (response.statusCode != 200)
@@ -563,15 +576,16 @@ class HttpService {
     }
   }
 
-  Future<Map<String, dynamic>> uploadProfileImage(String imageEncodedString) async {
+  Future<Map<String, dynamic>> uploadProfileImage(
+      String imageEncodedString) async {
     Map<String, String> requestHeader = await AccessService.requestHeader();
-    String url =
-            "${config['baseUrl']}${config['user']}${config['avatar']}";
+    String url = "${config['baseUrl']}${config['user']}${config['avatar']}";
     try {
       String requestBody = conv.json.encode({
         "user_avatar": imageEncodedString,
       });
-      http.Response response = await http.put(url, body: requestBody, headers: requestHeader);
+      http.Response response =
+          await http.put(url, body: requestBody, headers: requestHeader);
       final responseJson = conv.json.decode(response.body);
       final responseObject = ResponseModel.fromJson(responseJson);
       if (response.statusCode != 200)
@@ -596,8 +610,7 @@ class HttpService {
 
   Future<Map<String, dynamic>> fetchDependents() async {
     Map<String, String> requestHeader = await AccessService.requestHeader();
-    String url =
-            "${config['baseUrl']}${config['dependents']}index";
+    String url = "${config['baseUrl']}${config['dependents']}index";
     try {
       http.Response response = await http.get(url, headers: requestHeader);
       final responseJson = conv.json.decode(response.body);
@@ -607,15 +620,11 @@ class HttpService {
           "message": "An error occured while fetching dependents",
           "data": null
         };
-      return {
-        "status": true,
-        "message": "",
-        "data": responseJson
-      };
+      return {"status": true, "message": "", "data": responseJson};
     } catch (e) {
       return {
         "status": false,
-        "message": e.toString(),//Internet connection error",
+        "message": "Internet connection error",
         "data": null
       };
     }

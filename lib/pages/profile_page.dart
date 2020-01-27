@@ -1287,6 +1287,7 @@ class _ProfilePageState extends State<ProfilePage>
                                   margin: EdgeInsets.symmetric(
                                       vertical: 5, horizontal: 10),
                                   child: ListTile(
+                                    isThreeLine: true,
                                     leading: CircleAvatar(
                                       backgroundColor: shedAppBlue100,
                                       child: Text(dependent.othernames == null
@@ -1297,14 +1298,7 @@ class _ProfilePageState extends State<ProfilePage>
                                     title: Text(dependent.othernames == null
                                         ? "No name yet"
                                         : "${dependent.surname} ${dependent.othernames}"),
-                                    subtitle: Text(dependent.phone),
-                                    /*trailing: IconButton(
-                                      onPressed: () {},
-                                      icon: Icon(
-                                        Icons.delete_forever,
-                                        color: shedAppBodyBlack,
-                                      ),
-                                    ),*/
+                                    subtitle: Text("${dependent.phone} \n${dependent.relationship}"),
                                   ),
                                 );
                               },
