@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:facil_tenant/components/app_spinner.dart';
+import 'package:facil_tenant/models/dependents_model.dart';
 import 'package:facil_tenant/services/access_service.dart';
 import 'package:facil_tenant/styles/colors.dart';
 import 'package:image_picker/image_picker.dart';
@@ -35,6 +36,7 @@ class _ProfilePageState extends State<ProfilePage>
   final _visitDate = TextEditingController();
   final _address = TextEditingController();
   String _title = "Mr";
+  ValueNotifier _dependent = ValueNotifier(null);
 
   HttpService _httpService = new HttpService();
   bool _buttonClicked = false;
@@ -50,10 +52,15 @@ class _ProfilePageState extends State<ProfilePage>
     "message": "",
     "data": {}
   };
-    Map<String, dynamic> requestsInfo = {
+  Map<String, dynamic> requestsInfo = {
     "status": false,
     "message": "",
-    "data": {"total": 0,"completed": 0, "pending": 0, "failed": 0}
+    "data": {"total": 0, "completed": 0, "pending": 0, "failed": 0}
+  };
+  Map<String, dynamic> dependentsInfo = {
+    "status": false,
+    "message": "",
+    "data": []
   };
 
   Future<UserProfileModel> _getUserProfile() async {
@@ -82,6 +89,7 @@ class _ProfilePageState extends State<ProfilePage>
       String visitDate,
       String address,
       String title,
+      String dependent,
       String pageType) async {
     if (pageType == "visits") {
       //call method to add property access
@@ -90,7 +98,7 @@ class _ProfilePageState extends State<ProfilePage>
 
     if (pageType == "dependents") {
       if (AccessService.isPhoneNumber(phone)) {
-        return await _httpService.createDependentUser(phone);
+        return await _httpService.createDependentUser(phone, dependent);
       }
       return {"status": false, "message": "Phone number is invalid"};
     }
@@ -123,6 +131,14 @@ class _ProfilePageState extends State<ProfilePage>
       return {"status": false, "message": "Email address is invalid"};
     return await _httpService.updateProfile(
         surname, othernames, phone, email, address, title);
+  }
+
+  Future<List<dynamic>> fetchDependents() async {
+    Map<String, dynamic> response = await _httpService.fetchDependents();
+    if (!response['status']) return Future.value(null);
+    List<dynamic> res =
+        response['data'].map((c) => DependentsModel.fromJson(c)).toList();
+    return Future.value(res);
   }
 
   Future<Map<String, dynamic>> createVisit(
@@ -176,14 +192,21 @@ class _ProfilePageState extends State<ProfilePage>
     Map<String, dynamic> _response = await _httpService.fetchPayments();
     if (!_response['status']) return Future.value(null);
     List<dynamic> r = _response['data'];
-    String lastDate = r.length > 1 ? DateFormat.yMMMMEEEEd().format(DateTime.parse(r[r.length - 1]["transaction"]["created_at"])) : "No payment made this year";
-    Map<String, dynamic> paymentDetail = {"number_of_payments": r.length, "last_payment_date": lastDate};
+    String lastDate = r.length > 1
+        ? DateFormat.yMMMMEEEEd().format(
+            DateTime.parse(r[r.length - 1]["transaction"]["created_at"]))
+        : "No payment made this year";
+    Map<String, dynamic> paymentDetail = {
+      "number_of_payments": r.length,
+      "last_payment_date": lastDate
+    };
     return Future.value(paymentDetail);
   }
 
   //fetch all user's request history
   Future<Map<String, dynamic>> getRequestsInfo() async {
-    Map<String, dynamic> _response = await _httpService.fetchRequests(fetchAll: true);
+    Map<String, dynamic> _response =
+        await _httpService.fetchRequests(fetchAll: true);
     if (!_response['status']) return Future.value(null);
     List<dynamic> r = _response['data'];
     int completed = 0;
@@ -191,27 +214,75 @@ class _ProfilePageState extends State<ProfilePage>
     int pending = 0;
     r.forEach((data) {
       int statusId = int.parse(data['request_status_id']);
-      if (statusId == 3) completed += 1;
-      else if (statusId > 3) failed += 1;
-      else pending += 1;
-    }); 
-    Map<String, dynamic> a = {"total": r.length,"completed": completed, "pending": pending, "failed": failed};
+      if (statusId == 3)
+        completed += 1;
+      else if (statusId > 3)
+        failed += 1;
+      else
+        pending += 1;
+    });
+    Map<String, dynamic> a = {
+      "total": r.length,
+      "completed": completed,
+      "pending": pending,
+      "failed": failed
+    };
     return Future.value(a);
   }
 
   //call all associated methods to get information for the overview tab
   void overView() async {
     Map<String, dynamic> os = await getTotalOustanding();
-    if (os == null) setState(() {outStanding = {"status": false, "message": "Error while fetching outstanding payments"};});
-    else setState(() {outStanding = {"status": true, "message": "", "data": os};});
-    
+    if (os == null)
+      setState(() {
+        outStanding = {
+          "status": false,
+          "message": "Error while fetching outstanding payments"
+        };
+      });
+    else
+      setState(() {
+        outStanding = {"status": true, "message": "", "data": os};
+      });
+
+    List<dynamic> dependents = await fetchDependents();
+    if (dependents == null)
+      setState(() {
+        dependentsInfo = {
+          "status": false,
+          "message": "Error while fetching dependents"
+        };
+      });
+    else
+      setState(() {
+        dependentsInfo = {"status": true, "message": "", "data": dependents};
+      });
+
     Map<String, dynamic> payment = await getPaymentInfo();
-    if (payment == null) setState(() {paymentInfo = {"status": false, "message": "Error while fetching payment information"};});
-    else setState(() {paymentInfo = {"status": true, "message": "", "data": payment};});
+    if (payment == null)
+      setState(() {
+        paymentInfo = {
+          "status": false,
+          "message": "Error while fetching payment information"
+        };
+      });
+    else
+      setState(() {
+        paymentInfo = {"status": true, "message": "", "data": payment};
+      });
 
     Map<String, dynamic> requests = await getRequestsInfo();
-    if (requests == null) setState(() {requestsInfo = {"status": false, "message": "Error while fetching requests information"};});
-    else setState(() {requestsInfo = {"status": true, "message": "", "data": requests};});
+    if (requests == null)
+      setState(() {
+        requestsInfo = {
+          "status": false,
+          "message": "Error while fetching requests information"
+        };
+      });
+    else
+      setState(() {
+        requestsInfo = {"status": true, "message": "", "data": requests};
+      });
   }
 
   @override
@@ -318,15 +389,60 @@ class _ProfilePageState extends State<ProfilePage>
                                                     lastDate: DateTime(2100));
                                               },
                                             )
-                                          : TextFormField(
-                                              controller: _phone,
-                                              decoration: InputDecoration(
-                                                hintText:
-                                                    '${pageType == 'dependents' ? 'Dependents ' : ''}Phone Number',
+                                          : Column(children: <Widget>[
+                                              TextFormField(
+                                                controller: _phone,
+                                                decoration: InputDecoration(
+                                                  hintText:
+                                                      '${pageType == 'dependents' ? 'Dependents ' : ''}Phone Number',
+                                                ),
+                                                keyboardType:
+                                                    TextInputType.phone,
+                                                autocorrect: false,
                                               ),
-                                              keyboardType: TextInputType.phone,
-                                              autocorrect: false,
-                                            ),
+                                              SizedBox(
+                                                height: 10.0,
+                                              ),
+                                              Container(
+                                                height: 60.0,
+                                                padding: EdgeInsets.symmetric(
+                                                    horizontal: 10.0),
+                                                decoration: BoxDecoration(
+                                                  borderRadius: new BorderRadius
+                                                          .all(
+                                                      Radius.circular(30.0)),
+                                                  border: Border.all(
+                                                      color: shedAppBlue300),
+                                                ),
+                                                child: ValueListenableBuilder(
+                                                  valueListenable: _dependent,
+                                                  builder:
+                                                      (context, type, child) {
+                                                    List _dep =
+                                                        dependentsInfo["data"];
+                                                    return DropdownButtonHideUnderline(
+                                                      child: DropdownButton(
+                                                        isExpanded: true,
+                                                        value: type,
+                                                        hint: Text(
+                                                            "Select dependents"),
+                                                        items: _dep.map((item) {
+                                                          return DropdownMenuItem(
+                                                              child: Text(
+                                                                  "${item.title}"),
+                                                              value: item.id
+                                                                  .toString());
+                                                        }).toList(),
+                                                        onChanged: (val) {
+                                                          _dependent.value =
+                                                              val;
+                                                        },
+                                                      ),
+                                                    );
+                                                  },
+                                                ),
+                                              ),
+                                            ]),
                                       SizedBox(
                                         height: 10.0,
                                       ),
@@ -446,6 +562,7 @@ class _ProfilePageState extends State<ProfilePage>
                                                   _visitDate.text.trim(),
                                                   _address.text.trim(),
                                                   _title,
+                                                  _dependent.value,
                                                   pageType);
                                           profileUpdate.then((response) {
                                             setState(() {
@@ -532,6 +649,19 @@ class _ProfilePageState extends State<ProfilePage>
           if (res.hasError) {
             return Container(
               height: MediaQuery.of(context).size.height,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: <Widget>[
+                  Text(
+                    "An error occured. Please check your internet connection",
+                    style: TextStyle(
+                        color: Colors.red,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16.0),
+                  )
+                ],
+              ),
               decoration: BoxDecoration(
                 image: DecorationImage(
                   image: AssetImage('assets/img/empty_state.png'),
@@ -797,7 +927,9 @@ class _ProfilePageState extends State<ProfilePage>
                                                             color: Colors.red),
                                                       )
                                                 : Text(
-                                                    formatter.format(outStanding['data']['yb']),
+                                                    formatter.format(
+                                                        outStanding['data']
+                                                            ['yb']),
                                                     style: Theme.of(context)
                                                         .textTheme
                                                         .headline
@@ -855,7 +987,9 @@ class _ProfilePageState extends State<ProfilePage>
                                                             color: Colors.red),
                                                       )
                                                 : Text(
-                                                    formatter.format(outStanding['data']['mb']),
+                                                    formatter.format(
+                                                        outStanding['data']
+                                                            ['mb']),
                                                     style: Theme.of(context)
                                                         .textTheme
                                                         .headline
