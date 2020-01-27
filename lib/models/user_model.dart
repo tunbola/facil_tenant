@@ -14,6 +14,7 @@ class UserModel {
   final String title;
   final String pictureUrl;
   final String address;
+  final String relationship;
   UserModel(
       {this.id,
       this.propertyId,
@@ -24,7 +25,7 @@ class UserModel {
       this.othernames,
       this.title,
       this.pictureUrl,
-      this.address});
+      this.address, this.relationship});
   factory UserModel.fromJson(Map<String, dynamic> json) =>
       _$UserModelFromJson(json);
   Map<String, dynamic> toJson() => _$UserModelToJson(this);
