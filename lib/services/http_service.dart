@@ -268,10 +268,10 @@ class HttpService {
     }
   }
 
-  Future<Map<String, dynamic>> createDependentUser(String phone) async {
+  Future<Map<String, dynamic>> createDependentUser(String phone, String dependent) async {
     Map<String, String> requestHeader = await AccessService.requestHeader();
     try {
-      String requestBody = conv.json.encode({"phone": phone});
+      String requestBody = conv.json.encode({"phone": phone, "dependent_id": dependent});
       http.Response response = await http.post(
           "${config['baseUrl']}${config['register']}${config['create']}",
           body: requestBody,
@@ -592,5 +592,32 @@ class HttpService {
         "data": null
       };
     }
-  }  
+  }
+
+  Future<Map<String, dynamic>> fetchDependents() async {
+    Map<String, String> requestHeader = await AccessService.requestHeader();
+    String url =
+            "${config['baseUrl']}${config['dependents']}index";
+    try {
+      http.Response response = await http.get(url, headers: requestHeader);
+      final responseJson = conv.json.decode(response.body);
+      if (response.statusCode != 200)
+        return {
+          "status": false,
+          "message": "An error occured while fetching dependents",
+          "data": null
+        };
+      return {
+        "status": true,
+        "message": "",
+        "data": responseJson
+      };
+    } catch (e) {
+      return {
+        "status": false,
+        "message": e.toString(),//Internet connection error",
+        "data": null
+      };
+    }
+  }
 }
