@@ -1,4 +1,7 @@
+import 'package:badges/badges.dart';
 import 'package:facil_tenant/models/index.dart';
+import 'package:facil_tenant/pages/update_notification_page.dart';
+import 'package:facil_tenant/styles/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:facil_tenant/components/app_scaffold.dart';
@@ -7,6 +10,7 @@ import "package:facil_tenant/services/http_service.dart";
 import "package:facil_tenant/services/navigation_service.dart";
 import "package:facil_tenant/singleton/locator.dart";
 import "package:facil_tenant/routes/route_paths.dart" as routes;
+import 'package:url_launcher/url_launcher.dart';
 
 //Requests/complaints page
 class NotificationsPage extends StatefulWidget {
@@ -39,7 +43,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
               onPressed: () =>
                   _navigationService.navigateTo(routes.CreateRequest),
               icon: Icon(Icons.edit),
-              label: Text("Make a Request"),
+              label: Text("New Request"),
             )
           : null,
       child: NotificationsList(
@@ -67,7 +71,9 @@ class _NotificationsListState extends State<NotificationsList> {
   int _numberOfPages = 0;
   int _currentPage = 0;
 
-  List<NotificationsModel> _notificationsList;
+  List<NotificationsModel> _notificationsList = [];
+
+  var _scaffoldKey = new GlobalKey<ScaffoldState>();
 
   _NotificationsListState(this.isRequest, this.isAnnouncements);
 
@@ -76,7 +82,7 @@ class _NotificationsListState extends State<NotificationsList> {
 
   @override
   void initState() {
-    super.initState();    
+    super.initState();
     _scrollController.addListener(() async {
       if (_scrollController.position.pixels ==
           _scrollController.position.maxScrollExtent) {
@@ -89,16 +95,19 @@ class _NotificationsListState extends State<NotificationsList> {
   }
 
   Future<List<NotificationsModel>> _getNotifications(int pageNumber) async {
-    List<NotificationsModel> _newList;
-  
+    List<NotificationsModel> _newList = [];
     //if next page is current page, return existing content
     if (_currentPage == _nextPage) {
+      _scaffoldKey.currentState.showSnackBar(SnackBar(content: Text("No more contents"),));
       return Future.value(_notificationsList);
     }
-  
+    if (_notificationsList.length > 1) {
+      _scaffoldKey.currentState.showSnackBar(SnackBar(content: Text("Please wait ... Fetching requests"),));
+    }
     if (this.isAnnouncements) {
       Map<String, dynamic> response =
           await _httpService.fetchAnnounceMents(pageNumber);
+      if (!response['status']) return Future.value(_newList);
       _newList = (response["data"]["data"] as List)
           .map((data) => NotificationsModel(
               id: data["id"],
@@ -109,8 +118,8 @@ class _NotificationsListState extends State<NotificationsList> {
     } else {
       Map<String, dynamic> response =
           await _httpService.fetchRequests(pageNumber: pageNumber);
+      if (!response['status']) return Future.value(_newList);
       _numberOfPages = int.parse(response["data"]["numberOfPages"].toString());
-
       _newList = (response["data"]["data"] as List)
           .map((data) => NotificationsModel(
               id: data["id"],
@@ -118,8 +127,10 @@ class _NotificationsListState extends State<NotificationsList> {
               createdAt: data["created_at"],
               lastUpdated: data["last_updated"],
               requestStatus: data["requestStatus"]["name"],
-              requestStatusId: int.parse(data["requestStatus"]["id"].toString()),
-              requestType: data["requestType"]["name"]))
+              requestStatusId:
+                  int.parse(data["requestStatus"]["id"].toString()),
+              requestType: data["requestType"]["name"],
+              attachmentUrl: data['attachment_url']))
           .toList();
       _currentPage = int.parse(response["data"]["currentPage"].toString());
     }
@@ -132,184 +143,331 @@ class _NotificationsListState extends State<NotificationsList> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: _getNotifications(_nextPage),
-      builder: (context, res) {
-        if (res.hasError) {
-          return Container(
-            height: MediaQuery.of(context).size.height,
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage('assets/img/empty_state.png'),
-              ),
-            ),
-          );
-        }
-        if (res.hasData) {
-          if (res.data.length <= 0) {
-            return Container(
-              height: MediaQuery.of(context).size.height,
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: AssetImage('assets/img/no_messages.png'),
-                ),
-              ),
-              child: Column(children: <Widget>[
-                SizedBox(
-                  height: 50.0,
-                ),
-                Text(
-                  "Sorry, no content was found !",
-                  style: TextStyle(
-                      color: Colors.redAccent, fontWeight: FontWeight.bold),
-                )
-              ]),
-            );
-          }
-          dynamic _notifications = res.data;
-          return ListView.builder(
-            controller: _scrollController,
-            padding: EdgeInsets.all(0),
-            itemCount: res.data.length,
-            itemBuilder: (context, idx) {
-              final content = _notifications[idx];
-              return Dismissible(
-                key: Key(idx.toString()),
-                child: GestureDetector(
-                    child: Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 14.0,
-                      ),
-                      color: Colors.white,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: <Widget>[
-                          Expanded(
-                            child: Container(
-                              padding: EdgeInsets.symmetric(
-                                vertical: 14.0,
-                              ),
-                              decoration: BoxDecoration(
-                                border: Border(
-                                    bottom: idx != (res.data.length - 1)
-                                        ? BorderSide(
-                                            color: Colors.grey, width: 0.5)
-                                        : BorderSide.none),
-                              ),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: <Widget>[
-                                  Table(
-                                    columnWidths: {
-                                      0: FlexColumnWidth(5),
-                                      1: FlexColumnWidth(4)
-                                    },
-                                    children: [
-                                      TableRow(
-                                        children: [
-                                          Text(
-                                            isRequest
-                                                ? "${content.requestType}"
-                                                : "",
-                                            style: TextStyle(
-                                                fontSize: 12.0,
-                                                fontWeight: FontWeight.bold),
-                                            maxLines: 1,
-                                            textAlign: TextAlign.left,
-                                          ),
-                                          Text(
-                                            "On : ${DateFormat.yMEd().format(DateTime.parse(content.createdAt))}",
-                                            textAlign: TextAlign.right,
-                                            style: TextStyle(
-                                                fontSize: 12.0,
-                                                fontWeight: FontWeight.bold),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                  SizedBox(
-                                    height: 5.0,
-                                  ),
-                                  isRequest
-                                      ? Text(
-                                          "${content.requestStatus}",
-                                          maxLines: 1,
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.bold,
-                                            color: content.requestStatusId < 3
-                                                ? Colors.blue
-                                                : content.requestStatusId == 3
-                                                    ? Colors.green
-                                                    : Colors.red,
-                                          ),
-                                        )
-                                      : SizedBox(
-                                          height: 0,
-                                        ),
-                                  SizedBox(
-                                    height: 5.0,
-                                  ),
-                                  Text(
-                                    content.message,
-                                    maxLines: 10,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .body1
-                                        .copyWith(
-                                            fontWeight: FontWeight.normal),
-                                  ),
-                                  SizedBox(
-                                    height: 7.0,
-                                  ),
-                                  isRequest
-                                      ? Table(
-                                          columnWidths: {
-                                            0: FlexColumnWidth(5),
-                                            1: FlexColumnWidth(4)
-                                          },
-                                          children: [
-                                            TableRow(
-                                              children: [
-                                                Text(
-                                                  "",
-                                                ),
-                                                Text(
-                                                  "Updated : ${content.lastUpdated == null ? 'Not yet tended to' : DateFormat.yMEd().format(DateTime.parse(content.lastUpdated))}",
-                                                  textAlign: TextAlign.right,
-                                                  style: TextStyle(
-                                                      fontSize: 12.0,
-                                                      fontWeight:
-                                                          FontWeight.bold),
-                                                ),
-                                              ],
-                                            ),
-                                          ],
-                                        )
-                                      : SizedBox(
-                                          height: 0,
-                                        ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
+    return Scaffold(
+      key: _scaffoldKey,
+        body: FutureBuilder(
+            future: _getNotifications(_nextPage),
+            builder: (context, res) {
+              if (res.hasError) {
+                return Container(
+                  child: Center(child: Text("Error occured ...", style: TextStyle(color: Colors.red),),),
+                  height: MediaQuery.of(context).size.height,
+                  decoration: BoxDecoration(
+                    image: DecorationImage(
+                      image: AssetImage('assets/img/empty_state.png'),
+                    ),
+                  ),
+                );
+              }
+              if (res.hasData) {
+                if (res.data.length <= 0) {
+                  return Container(
+                    height: MediaQuery.of(context).size.height,
+                    decoration: BoxDecoration(
+                      image: DecorationImage(
+                        image: AssetImage('assets/img/no_messages.png'),
                       ),
                     ),
-                    onTap: () {}),
-                onDismissed: (dir) => "",
-                direction: DismissDirection.endToStart,
-              );
+                    child: Column(children: <Widget>[
+                      SizedBox(
+                        height: 50.0,
+                      ),
+                      Text(
+                        "Sorry, no content was found !",
+                        style: TextStyle(
+                            color: Colors.redAccent,
+                            fontWeight: FontWeight.bold),
+                      )
+                    ]),
+                  );
+                }
+                dynamic _notifications = res.data;
+                return ListView.builder(
+                    controller: _scrollController,
+                    padding: EdgeInsets.all(0),
+                    itemCount: res.data.length,
+                    itemBuilder: (context, idx) {
+                      final content = _notifications[idx];
+                      return Container(
+                        margin: EdgeInsets.only(bottom: 20.0),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 10.0,
+                        ),
+                        child: notificationBody(isRequest, content, context),
+                      );
+                    });
+              } else {
+                return AppSpinner();
+              }
+            }));
+  }
+
+  Widget notificationBody(
+      bool isRequest, NotificationsModel content, BuildContext context) {
+    int messageLength = content.message.length;
+    if (!isRequest) {
+      return Card(
+        child: ListTile(
+          isThreeLine: true,
+          title: Text(
+              "${DateFormat.yMMMEd().format(DateTime.parse(content.createdAt))}"),
+          subtitle: messageLength < 100
+              ? Text("${content.message}")
+              : Text("${content.message.substring(0, 100)}"),
+          trailing: Container(
+            child: IconButton(
+              icon: Icon(
+                Icons.keyboard_arrow_right,
+                size: 30.0,
+              ),
+              onPressed: () {
+                showNotificationDialog(context, content, isRequest);
+              },
+            ),
+            decoration: BoxDecoration(
+                border: new Border(
+                    left: new BorderSide(width: 1.0, color: Colors.grey))),
+          ),
+        ),
+      );
+    }
+    Color color = content.requestStatusId < 3
+        ? shedAppBlue300
+        : content.requestStatusId == 3 ? Colors.green : Colors.red;
+    return Card(
+      child: ListTile(
+        isThreeLine: true,
+        title: Text("${content.requestType}"),
+        subtitle: Column(
+          mainAxisSize: MainAxisSize.max,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            SizedBox(
+              height: 5.0,
+            ),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Container(
+                  height: 10.0,
+                  width: 10.0,
+                  decoration: BoxDecoration(
+                      color: color,
+                      borderRadius: BorderRadius.all(Radius.circular(30.0))),
+                ),
+                SizedBox(
+                  width: 5.0,
+                ),
+                Text("${content.requestStatus}")
+              ],
+            ),
+            SizedBox(
+              height: 5.0,
+            ),
+            messageLength < 100
+                ? Text("${content.message}")
+                : Text("${content.message.substring(0, 70)} ..."),
+            SizedBox(
+              height: 5.0,
+            )
+          ],
+        ),
+        trailing: Container(
+          child: IconButton(
+            icon: Icon(
+              Icons.keyboard_arrow_right,
+              size: 30.0,
+            ),
+            onPressed: () {
+              showNotificationDialog(context, content, isRequest, color: color);
             },
-          );
-        } else {
-          return AppSpinner();
-        }
-      },
+          ),
+          decoration: BoxDecoration(
+              border: new Border(
+                  left: new BorderSide(width: 1.0, color: Colors.grey))),
+        ),
+      ),
     );
+  }
+
+  showNotificationDialog(
+      BuildContext context, NotificationsModel content, bool isRequest,
+      {Color color}) {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return Scaffold(
+              backgroundColor: Colors.black54,
+              body: SafeArea(
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: <Widget>[
+                    Container(
+                      height: MediaQuery.of(context).size.height * 75,
+                      width: MediaQuery.of(context).size.width * 80,
+                      margin: EdgeInsets.all(20.0),
+                      padding: EdgeInsets.all(10.0),
+                      decoration: BoxDecoration(
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(4.0)),
+                          color: Colors.white),
+                      child: SingleChildScrollView(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: <Widget>[
+                            SizedBox(
+                              height: 20.0,
+                            ),
+                            Center(
+                                child: Badge(
+                              badgeColor: shedAppBlue400,
+                              shape: BadgeShape.square,
+                              badgeContent: isRequest
+                                  ? Text(
+                                      "Request",
+                                      style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold),
+                                    )
+                                  : Text("Announcement",
+                                      style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold)),
+                            )),
+                            SizedBox(
+                              height: 20.0,
+                            ),
+                            isRequest
+                                ? Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.stretch,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: <Widget>[
+                                        Text(
+                                          "${content.requestType}",
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                        SizedBox(
+                                          height: 20.0,
+                                        ),
+                                        Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: <Widget>[
+                                            Container(
+                                              height: 12.0,
+                                              width: 12.0,
+                                              decoration: BoxDecoration(
+                                                  color: color,
+                                                  borderRadius:
+                                                      BorderRadius.all(
+                                                          Radius.circular(
+                                                              20.0))),
+                                            ),
+                                            SizedBox(
+                                              width: 5.0,
+                                            ),
+                                            Text(
+                                              "${content.requestStatus}",
+                                              style: TextStyle(
+                                                  fontStyle: FontStyle.italic),
+                                            ),
+                                          ],
+                                        ),
+                                        SizedBox(
+                                          height: 20.0,
+                                        )
+                                      ])
+                                : SizedBox(),
+                            Text(
+                                "${DateFormat.yMMMEd().format(DateTime.parse(content.createdAt))}"),
+                            SizedBox(
+                              height: 20.0,
+                            ),
+                            Text("${content.message}"),
+                            SizedBox(
+                              height: 20.0,
+                            ),
+                            content.attachmentUrl != null
+                                ? Column(children: <Widget>[
+                                    FlatButton(
+                                        onPressed: () {
+                                          _launchURL(content.attachmentUrl);
+                                        },
+                                        child:
+                                            Text("${content.attachmentUrl}")),
+                                    SizedBox(
+                                      height: 10.0,
+                                    )
+                                  ])
+                                : SizedBox(),
+                            isRequest
+                                ? Text(content.lastUpdated == null
+                                    ? ""
+                                    : "Last updated ${DateFormat.yMMMEd().format(DateTime.parse(content.lastUpdated))}")
+                                : SizedBox(),
+                            isRequest
+                                ? Column(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: <Widget>[
+                                      SizedBox(
+                                        height: 20.0,
+                                      ),
+                                      Align(
+                                        alignment: Alignment.bottomRight,
+                                        child: GestureDetector(
+                                          onTap: () {
+                                            Navigator.push(context,
+                                                MaterialPageRoute(builder: (_) {
+                                              return UpdateNotificationPage(
+                                                content: content,
+                                                color: color,
+                                              );
+                                            }));
+                                          },
+                                          child: Row(
+                                            children: <Widget>[
+                                              Icon(Icons.edit),
+                                              SizedBox(
+                                                width: 5.0,
+                                              ),
+                                              Text("Edit")
+                                            ],
+                                          ),
+                                        ),
+                                      )
+                                    ],
+                                  )
+                                : SizedBox()
+                          ],
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      top: 0,
+                      right: .5,
+                      child: FloatingActionButton(
+                        heroTag: "cls",
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: Icon(
+                          Icons.close,
+                          color: Colors.white,
+                        ),
+                      ),
+                    )
+                  ],
+                ),
+              ));
+        });
+  }
+
+  _launchURL(String url) async {
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      _scaffoldKey.currentState.showSnackBar(SnackBar(content: Text("Cannot launch file"), backgroundColor: Colors.red,));
+    }
   }
 }

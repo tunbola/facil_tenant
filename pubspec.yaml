@@ -37,6 +37,8 @@ dependencies:
   webview_flutter: ^0.3.19+5
   flutter_picker: ^1.1.0
   image_picker: 0.6.3+1
+  file_picker: ^1.4.3+2
+  url_launcher: ^5.4.1
   
 dev_dependencies:
   flutter_test:

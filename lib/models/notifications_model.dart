@@ -11,6 +11,7 @@ class NotificationsModel {
   String requestStatus;
   int requestStatusId;
   String requestType;
+  String attachmentUrl;
 
   NotificationsModel(
       {this.id,
@@ -19,7 +20,8 @@ class NotificationsModel {
       this.lastUpdated,
       this.requestStatus,
       this.requestStatusId,
-      this.requestType});
+      this.requestType,
+      this.attachmentUrl});
 
   factory NotificationsModel.fromJson(Map<String, dynamic> json) =>
       _$NotificationsModelFromJson(json);
