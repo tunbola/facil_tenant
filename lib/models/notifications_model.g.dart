@@ -14,7 +14,8 @@ NotificationsModel _$NotificationsModelFromJson(Map<String, dynamic> json) {
     lastUpdated: json['last_updated'] as String,
     requestStatus: json['requestStatus']['name'] as String,
     requestStatusId: json['requestStatus']['id'] as int,
-    requestType: json['requestType']['name'] as String
+    requestType: json['requestType']['name'] as String,
+    attachmentUrl: json['attachment_url'] as String
   );
 }
 
@@ -26,5 +27,6 @@ Map<String, dynamic> _$NotificationsModelToJson(NotificationsModel instance) =>
       'last_updated': instance.lastUpdated,
       'requestStatus': instance.requestStatus,
       'requestTypeId': instance.requestStatusId,
-      'requestType': instance.requestType
+      'requestType': instance.requestType,
+      'attachment_url': instance.attachmentUrl
     };

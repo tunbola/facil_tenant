@@ -63,14 +63,13 @@ class HttpService {
   }
 
   Future<Map<String, dynamic>> fetchRequests(
-      {int pageNumber, bool fetchAll}) async {
+      {int pageNumber, bool fetchAll = false}) async {
     Map<String, String> requestHeader = await AccessService.requestHeader();
+    String url = fetchAll
+        ? "${config['baseUrl']}${config['request']}${config['view']}?all=true"
+        : "${config['baseUrl']}${config['request']}${config['view']}?page=$pageNumber";
     try {
-      http.Response response = await http.get(
-          fetchAll
-              ? "${config['baseUrl']}${config['request']}${config['view']}?all=true"
-              : "${config['baseUrl']}${config['request']}${config['view']}?page=$pageNumber",
-          headers: requestHeader);
+      http.Response response = await http.get(url, headers: requestHeader);
       final responseJson = conv.json.decode(response.body);
       final responseObject = ResponseModel.fromJson(responseJson);
       if (response.statusCode != 200) {
@@ -84,7 +83,7 @@ class HttpService {
     } catch (e) {
       return {
         "status": false,
-        "message": "The application could not connect to the server ...}"
+        "message": "The application could not connect to the server ..."
       };
     }
   }
@@ -405,14 +404,20 @@ class HttpService {
   }
 
   Future<Map<String, dynamic>> createRequest(
-      String requestTypeId, String request) async {
+      String requestTypeId, String request,
+      {String attachment}) async {
     Map<String, String> requestHeader = await AccessService.requestHeader();
-
     try {
-      String requestBody = conv.json.encode({
-        "request_type_id": requestTypeId,
-        "comment": request,
-      });
+      String requestBody = attachment == null
+          ? conv.json.encode({
+              "request_type_id": requestTypeId,
+              "comment": request,
+            })
+          : conv.json.encode({
+              "request_type_id": requestTypeId,
+              "comment": request,
+              "attachment": attachment
+            });
       http.Response response = await http.post(
           "${config['baseUrl']}${config['request']}${config['create']}",
           body: requestBody,
@@ -621,6 +626,40 @@ class HttpService {
           "data": null
         };
       return {"status": true, "message": "", "data": responseJson};
+    } catch (e) {
+      return {
+        "status": false,
+        "message": "Internet connection error",
+        "data": null
+      };
+    }
+  }
+
+  Future<Map<String, dynamic>> updateRequest(String id, String message,
+      {String attachment}) async {
+    Map<String, String> requestHeader = await AccessService.requestHeader();
+    String url = "${config['baseUrl']}${config['request']}edit";
+    try {
+      String requestBody = attachment == null
+          ? conv.json.encode({
+              "id": id,
+              "comment": message,
+            })
+          : conv.json.encode({
+              "id": id,
+              "comment": message,
+              "attachment": attachment
+            });
+      http.Response response = await http.put(url, body: requestBody, headers: requestHeader);
+      final responseJson = conv.json.decode(response.body);
+      final responseObject = ResponseModel.fromJson(responseJson);
+      if (response.statusCode != 200)
+        return {
+          "status": false,
+          "message": "An error occured while fetching dependents",
+          "data": null
+        };
+      return {"status": true, "message": responseObject.message , "data": responseObject.data};
     } catch (e) {
       return {
         "status": false,
