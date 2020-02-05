@@ -656,7 +656,7 @@ class HttpService {
       if (response.statusCode != 200)
         return {
           "status": false,
-          "message": "An error occured while fetching dependents",
+          "message": "An error occured while updating request",
           "data": null
         };
       return {"status": true, "message": responseObject.message , "data": responseObject.data};

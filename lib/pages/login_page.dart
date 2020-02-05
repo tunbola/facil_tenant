@@ -105,9 +105,9 @@ class LoginFormState extends State<LoginPage> {
                           });
                           HttpService httpService = new HttpService();
                           Future response = httpService.userLogin(username.text.trim(), password.text.trim());
-                          response.then((response) {
-                            if (response != null) {
-                              presentSnack(context, response, Colors.redAccent, Colors.white);
+                          response.then((res) {
+                            if (res != null) {
+                              presentSnack(context, res, Colors.redAccent, Colors.white);
                             }
                             setState(() {
                               buttonClicked = false;
