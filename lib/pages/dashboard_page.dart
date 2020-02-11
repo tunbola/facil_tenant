@@ -128,7 +128,11 @@ class _DashboardPageState extends State<DashboardPage> {
       actions: <Widget>[
         IconButton(
           icon: Icon(Icons.power_settings_new),
-          onPressed: () { AccessService.logOut(); return;},
+          onPressed: () { 
+            AccessService.logOut();
+            Navigator.of(context).pushReplacementNamed('auth');
+            return;
+          },
           iconSize: 30,
         ),
       ],

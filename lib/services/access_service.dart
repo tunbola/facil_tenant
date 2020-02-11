@@ -47,7 +47,6 @@ class AccessService {
   static void logOut() async {
     await LocalStorage.removeItem(AccessService._key);
     AccessService.clearCache();
-    AccessService._navigationService.navigateTo(routes.Auth);
     return;
   }
 
@@ -160,18 +159,3 @@ class AccessService {
     return numberOfUnread;
   }
 }
-/*
-  static numberOfUnreadMessages(states) {
-    let arrayOfStates = states.split(Helper.seperator);
-    let unread = 0;
-    let userId = (new AppAccess()).userId;
-    for (let i = 0; i < arrayOfStates.length; i++) {
-      let splitEachState = arrayOfStates[i].split(',');
-      if (splitEachState[0].toString() === userId.toString()) {
-        if (splitEachState[1] === '0') {
-          unread += 1;
-        }
-      }
-    }
-    return unread;
-  }*/
