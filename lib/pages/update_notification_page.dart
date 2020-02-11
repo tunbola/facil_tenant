@@ -93,7 +93,8 @@ class _UpdateNotificationPageState extends State<UpdateNotificationPage> {
                         child: Container(
                           child: GestureDetector(
                             onTap: () async {
-                              final file = await FilePicker.getFile();
+                              final file = await FilePicker.getFile(type: FileType.ANY);
+                              if (file == null) return;
                               setState(() {
                                 attachmentName = "Please wait ...";
                               });
@@ -105,7 +106,6 @@ class _UpdateNotificationPageState extends State<UpdateNotificationPage> {
                                   fileExt == 'jpeg' ||
                                   fileExt == 'png' ||
                                   fileExt == 'pdf') {
-                                //upload image
                                 setState(() {
                                   attachmentName = fileName;
                                   response['message'] = "";

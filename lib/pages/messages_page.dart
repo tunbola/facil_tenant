@@ -102,14 +102,22 @@ class _MessageListBySenders extends State<MessagesPage> {
                           : "${eachContent.sender.surname} ${eachContent.sender.othernames}"),
                       subtitle: Text(
                           "Title : ${AccessService.getLastContent(eachContent.title)} \n ${AccessService.getLastTime(eachContent.sentTimeGroup)}"),
-                      trailing: AccessService.numberOfZeros(eachContent.isReadGroup) == 0 ? Text("") : Badge(
-                        badgeContent: Text(
-                          "${AccessService.numberOfZeros(eachContent.isReadGroup)}",
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold, color: Colors.white),
-                        ),
-                        badgeColor: Colors.indigo,
-                      ),
+                      trailing: FutureBuilder(
+                                future: AccessService.numberOfZeros(
+                                    eachContent.isReadGroup),
+                                builder: (BuildContext context, snapshot) {
+                                  if (snapshot.hasError) return SizedBox();
+                                  if (!snapshot.hasData) return SizedBox();
+                                  return snapshot.data == 0 ? SizedBox() : Badge(
+                                    badgeContent: Text(
+                                      "${snapshot.data}",
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white),
+                                    ),
+                                    badgeColor: Colors.redAccent,
+                                  );
+                                })
                     ),
                   ),
                 );

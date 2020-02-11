@@ -22,11 +22,33 @@ class AccessService {
     return true;
   }
 
+  /// saveLogin saves users' login information on the device
+  static Future<bool> saveLogin(String loginDetails) async {
+    dynamic localStorage =
+        await LocalStorage.setItem("facil_login", loginDetails);
+    if (localStorage == false) {
+      return localStorage;
+    }
+    return true;
+  }
+
+  /// saveLogin saves users' login information on the device
+  static Future<Map<String, dynamic>> getLoginInfo() async {
+    dynamic response = await LocalStorage.getItem("facil_login");
+    if (response == false) {
+      return null;
+    }
+    Map<String, dynamic> userlogin = conv.json.decode(response);
+    return userlogin;
+  }
+
+
   /// deletes saved user key and redirects user to login page
-  static void logOut() async{
+  static void logOut() async {
     await LocalStorage.removeItem(AccessService._key);
     AccessService.clearCache();
     AccessService._navigationService.navigateTo(routes.Auth);
+    return;
   }
 
   /// fetches user access details from the file system
@@ -50,6 +72,7 @@ class AccessService {
   static void clearCache() {
     _userAccessCache = "";
   }
+
   /// gets user id from the storage
   static Future<String> getUserId() async {
     String fscontent = await AccessService._fsContent();
@@ -102,8 +125,8 @@ class AccessService {
     return emailValid;
   }
 
-  static Future<Map<String, String>> requestHeader() async{
-    String access = await AccessService.accessToken(); 
+  static Future<Map<String, String>> requestHeader() async {
+    String access = await AccessService.accessToken();
     return {
       "Content-Type": "application/json",
       "Accept": "application/json",
@@ -119,18 +142,36 @@ class AccessService {
 
   static String getLastTime(String sentTimeGroup) {
     String dateTime = AccessService.getLastContent(sentTimeGroup);
-    return DateFormat.yMMMd()
-        .format(DateTime.parse(dateTime));
+    return DateFormat.yMMMd().format(DateTime.parse(dateTime));
   }
 
-  static int numberOfZeros(String msgStateGroup) {
+  static Future<int> numberOfZeros(String msgStateGroup) async {
     List listOfMsgState = msgStateGroup.split("|");
     int numberOfUnread = 0;
+    String userId = await getUserId();
     for (var i = 0; i < listOfMsgState.length; i++) {
-      if (listOfMsgState[i] == "0") {
-        numberOfUnread += 1;
+      List splitEachState = listOfMsgState[i].split(',');
+      if (splitEachState[0].toString() == userId) {
+        if (splitEachState[1] == "0") {
+          numberOfUnread += 1;
+        }
       }
     }
     return numberOfUnread;
   }
 }
+/*
+  static numberOfUnreadMessages(states) {
+    let arrayOfStates = states.split(Helper.seperator);
+    let unread = 0;
+    let userId = (new AppAccess()).userId;
+    for (let i = 0; i < arrayOfStates.length; i++) {
+      let splitEachState = arrayOfStates[i].split(',');
+      if (splitEachState[0].toString() === userId.toString()) {
+        if (splitEachState[1] === '0') {
+          unread += 1;
+        }
+      }
+    }
+    return unread;
+  }*/

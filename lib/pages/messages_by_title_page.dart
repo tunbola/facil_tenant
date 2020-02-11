@@ -84,7 +84,6 @@ class _MessagesByTitleState extends State<MessagesByTitlePage> {
               return ListView.builder(
                 padding: EdgeInsets.all(0),
                 itemCount: res.data.length,
-                
                 itemBuilder: (context, idx) {
                   final eachContent = res.data[idx];
                   return Card(
@@ -92,7 +91,12 @@ class _MessagesByTitleState extends State<MessagesByTitlePage> {
                     margin: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
                     child: InkWell(
                       onTap: () {
-                        Map<String, dynamic> _arg = {"msgsId": eachContent.rowIdsGroup, "senderId":this.routeParam['id'], "title": eachContent.title, "username": this.routeParam["username"]};
+                        Map<String, dynamic> _arg = {
+                          "msgsId": eachContent.rowIdsGroup,
+                          "senderId": this.routeParam['id'],
+                          "title": eachContent.title,
+                          "username": this.routeParam["username"]
+                        };
                         _navigationService.navigateTo(routes.ChatHistory,
                             arg: _arg);
                       },
@@ -106,19 +110,22 @@ class _MessagesByTitleState extends State<MessagesByTitlePage> {
                         ),
                         subtitle: Text(
                             "${AccessService.getLastContent(eachContent.messagesGroup).length > 100 ? AccessService.getLastContent(eachContent.messagesGroup).substring(0, 40) : AccessService.getLastContent(eachContent.messagesGroup)}..."),
-                        trailing: AccessService.numberOfZeros(
-                                    eachContent.isReadGroup) ==
-                                0
-                            ? Text("")
-                            : Badge(
-                                badgeContent: Text(
-                                  "${AccessService.numberOfZeros(eachContent.isReadGroup)}",
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white),
-                                ),
-                                badgeColor: Colors.indigo,
-                              ),
+                        trailing: FutureBuilder(
+                                future: AccessService.numberOfZeros(
+                                    eachContent.isReadGroup),
+                                builder: (BuildContext context, snapshot) {
+                                  if (snapshot.hasError) return SizedBox();
+                                  if (!snapshot.hasData) return SizedBox();
+                                  return snapshot.data == 0 ? SizedBox() : Badge(
+                                    badgeContent: Text(
+                                      "${snapshot.data}",
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white),
+                                    ),
+                                    badgeColor: Colors.redAccent,
+                                  );
+                                }),
                       ),
                     ),
                   );

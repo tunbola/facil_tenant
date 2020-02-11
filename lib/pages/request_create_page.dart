@@ -128,7 +128,9 @@ class _RequesetState extends State<RequestsPage> {
                               child: Container(
                                 child: GestureDetector(
                                   onTap: () async {
-                                    final file = await FilePicker.getFile();
+                                    final file = await FilePicker.getFile(
+                                        type: FileType.ANY);
+                                    if (file == null) return;
                                     setState(() {
                                       attachmentName = "Please wait ...";
                                     });

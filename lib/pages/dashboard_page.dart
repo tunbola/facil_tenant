@@ -1,6 +1,8 @@
 import 'dart:async';
 
+import 'package:badges/badges.dart';
 import 'package:facil_tenant/models/message_model.dart';
+import 'package:facil_tenant/services/http_service.dart';
 import 'package:flutter/material.dart';
 import 'package:facil_tenant/components/image_button.dart';
 import '../components/app_scaffold.dart';
@@ -30,6 +32,18 @@ class _DashboardPageState extends State<DashboardPage> {
   String _username = "";
   String _propertyName = "";
   String _propertyAddress = "";
+  HttpService _httpService = new HttpService();
+
+  Future<String> getUnreadMessages() async {
+    Map<String, dynamic> response = await _httpService.fetchMessageSenders();
+    int unread = 0;
+    if (!response['status']) return null;
+    await response['data'].forEach((c) async {
+      int n = await AccessService.numberOfZeros(c['is_read']);
+      unread = unread + n;
+    });
+    return Future.value(unread.toString());
+  }
 
   static NavigationService _navigationService = locator<NavigationService>();
 
@@ -114,8 +128,7 @@ class _DashboardPageState extends State<DashboardPage> {
       actions: <Widget>[
         IconButton(
           icon: Icon(Icons.power_settings_new),
-          onPressed: () => AccessService
-              .logOut(), // Navigator.of(context).pushReplacementNamed('auth'), //logout here
+          onPressed: () { AccessService.logOut(); return;},
           iconSize: 30,
         ),
       ],
@@ -211,11 +224,34 @@ class _DashboardPageState extends State<DashboardPage> {
                   onPress: () =>
                       _navigationService.navigateTo(routes.OutstandingBills),
                 ),
-                ImageButton(
-                  "assets/img/chat.png",
-                  caption: "Messages",
-                  onPress: () => _navigationService.navigateTo(routes.Messages),
-                ),
+                Stack(children: [
+                  ImageButton(
+                    "assets/img/chat.png",
+                    caption: "Messages",
+                    onPress: () =>
+                        _navigationService.navigateTo(routes.Messages),
+                  ),
+                  Positioned(
+                      top: 0,
+                      right: .5,
+                      child: FutureBuilder(
+                          future: getUnreadMessages(),
+                          builder: (BuildContext context, snapshot) {
+                            if (snapshot.hasError) return SizedBox();
+                            if (!snapshot.hasData) return SizedBox();
+                            return snapshot.data == 0
+                                ? SizedBox()
+                                : Badge(
+                                    badgeContent: Text(
+                                      "${snapshot.data}",
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white),
+                                    ),
+                                    badgeColor: Colors.redAccent,
+                                  );
+                          }))
+                ]),
                 ImageButton(
                   "assets/img/sent_message.png",
                   caption: "Requests",
