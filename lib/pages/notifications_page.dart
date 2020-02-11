@@ -71,6 +71,8 @@ class _NotificationsListState extends State<NotificationsList> {
   int _numberOfPages = 0;
   int _currentPage = 0;
 
+  bool isLoading = false;
+
   List<NotificationsModel> _notificationsList = [];
 
   var _scaffoldKey = new GlobalKey<ScaffoldState>();
@@ -98,7 +100,9 @@ class _NotificationsListState extends State<NotificationsList> {
     List<NotificationsModel> _newList = [];
     //if next page is current page, return existing content
     if (_currentPage == _nextPage) {
-      _scaffoldKey.currentState.showSnackBar(SnackBar(content: Text("No more contents"),));
+      _scaffoldKey.currentState.showSnackBar(SnackBar(
+        content: Text("No more contents"),
+      ));
       return Future.value(_notificationsList);
     }
     if (_notificationsList.length > 1) {
@@ -144,13 +148,18 @@ class _NotificationsListState extends State<NotificationsList> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      key: _scaffoldKey,
+        key: _scaffoldKey,
         body: FutureBuilder(
             future: _getNotifications(_nextPage),
             builder: (context, res) {
               if (res.hasError) {
                 return Container(
-                  child: Center(child: Text("Error occured ...", style: TextStyle(color: Colors.red),),),
+                  child: Center(
+                    child: Text(
+                      "Error occured ...",
+                      style: TextStyle(color: Colors.red),
+                    ),
+                  ),
                   height: MediaQuery.of(context).size.height,
                   decoration: BoxDecoration(
                     image: DecorationImage(
@@ -183,19 +192,20 @@ class _NotificationsListState extends State<NotificationsList> {
                 }
                 dynamic _notifications = res.data;
                 return ListView.builder(
-                    controller: _scrollController,
-                    padding: EdgeInsets.all(0),
-                    itemCount: res.data.length,
-                    itemBuilder: (context, idx) {
-                      final content = _notifications[idx];
-                      return Container(
-                        margin: EdgeInsets.only(bottom: 20.0),
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 10.0,
-                        ),
-                        child: notificationBody(isRequest, content, context),
-                      );
-                    });
+                        controller: _scrollController,
+                        padding: EdgeInsets.all(0),
+                        itemCount: res.data.length,
+                        itemBuilder: (context, idx) {
+                          final content = _notifications[idx];
+                          return Container(
+                            margin: EdgeInsets.only(bottom: 20.0),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 10.0,
+                            ),
+                            child:
+                                notificationBody(isRequest, content, context),
+                          );
+                        });
               } else {
                 return AppSpinner();
               }
@@ -467,7 +477,10 @@ class _NotificationsListState extends State<NotificationsList> {
     if (await canLaunch(url)) {
       await launch(url);
     } else {
-      _scaffoldKey.currentState.showSnackBar(SnackBar(content: Text("Cannot launch file"), backgroundColor: Colors.red,));
+      _scaffoldKey.currentState.showSnackBar(SnackBar(
+        content: Text("Cannot launch file"),
+        backgroundColor: Colors.red,
+      ));
     }
   }
 }

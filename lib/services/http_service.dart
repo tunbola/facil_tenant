@@ -15,10 +15,11 @@ class HttpService {
   static NavigationService _navigationService = locator<NavigationService>();
 
   Future<String> userLogin(String username, String password) async {
+    Map<String, dynamic> _body = {"username": username, "password": password};
     try {
       http.Response response = await http.post(
           "${config['baseUrl']}${config['user']}${config['login']}",
-          body: {"username": username, "password": password});
+          body: _body);
       final responseJson = conv.json.decode(response.body);
       final responseObject = ResponseModel.fromJson(responseJson);
       if (response.statusCode != 200) {
@@ -27,6 +28,7 @@ class HttpService {
       //save access token and other information
       bool access =
           await AccessService.setAccess(conv.json.encode(responseObject.data));
+      await AccessService.saveLogin(conv.json.encode(_body));
       if (access) {
         _navigationService.navigateTo(routes.Home);
         return null;
@@ -45,7 +47,6 @@ class HttpService {
           headers: requestHeader);
       final responseJson = conv.json.decode(response.body);
       final responseObject = ResponseModel.fromJson(responseJson);
-
       if (response.statusCode != 200) {
         return {"status": false, "message": responseObject.message};
       }
@@ -95,7 +96,6 @@ class HttpService {
           "${config['baseUrl']}${config['message']}",
           headers: requestHeader);
       final responseJson = conv.json.decode(response.body);
-
       final responseObject = ResponseModel.fromJson(responseJson);
       if (response.statusCode != 200) {
         return {"status": false, "message": responseObject.message};
@@ -296,7 +296,7 @@ class HttpService {
         "data": responseObject.data
       };
     } catch (e) {
-      return {"status": false, "message": e.toString(), "data": null};
+      return {"status": false, "message": "Internet connection failed", "data": null};
     }
   }
 
@@ -476,7 +476,7 @@ class HttpService {
     } catch (e) {
       return {
         "status": false,
-        "message": e.toString(), //"Internet connection error",
+        "message": "Internet connection error",
         "data": null
       };
     }

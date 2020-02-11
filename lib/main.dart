@@ -27,6 +27,7 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         // showPerformanceOverlay: true,
         // debugShowMaterialGrid: true,
+        debugShowCheckedModeBanner: false,
         title: 'Facil App',
         theme: shedAppThemeData(),
         home: const SplashPage(),

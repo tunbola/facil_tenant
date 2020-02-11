@@ -145,7 +145,6 @@ class _ChatHistoryPageState extends State<ChatHistoryPage> {
                         duration: const Duration(milliseconds: 1000),
                       );
                     });
-
                     return Container(
                       margin: EdgeInsets.all(5.0),
                       child: Column(

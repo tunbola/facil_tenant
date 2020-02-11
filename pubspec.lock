@@ -650,7 +650,7 @@ packages:
       name: webview_flutter
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.3.19+5"
+    version: "0.3.19+6"
   xml:
     dependency: transitive
     description:

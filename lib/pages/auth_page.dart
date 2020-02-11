@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../components/app_scaffold.dart';
-import '../styles/colors.dart';
 import "package:facil_tenant/pages/registration_page.dart";
 
 import "package:facil_tenant/pages/login_page.dart";

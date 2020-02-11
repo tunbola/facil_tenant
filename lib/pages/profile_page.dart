@@ -1385,9 +1385,7 @@ class _ProfilePageState extends State<ProfilePage>
                                                   child: Text(
                                                     "${_visit.visitorName}",
                                                     textAlign: TextAlign.start,
-                                                    style: Theme.of(context)
-                                                        .textTheme
-                                                        .title,
+                                                    style: TextStyle(fontWeight: FontWeight.bold),
                                                   ),
                                                 ),
                                               ),

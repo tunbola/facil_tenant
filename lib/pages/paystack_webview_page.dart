@@ -16,27 +16,41 @@ class PayStackWebViewPage extends StatefulWidget {
 class _PayStackWebViewPage extends State<PayStackWebViewPage> {
   final Completer<WebViewController> _controller =
       Completer<WebViewController>();
+  int _stackToView = 1;
+  void _handleLoad(String value) {
+    setState(() {
+      _stackToView = 0;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return AppScaffold(
         pageTitle: ValueNotifier("Payment gateway"),
         child: Builder(
           builder: (BuildContext context) {
-            return Center(
-              child: WebView(
-                gestureNavigationEnabled: true,
-                onPageStarted: (String url) {
-                  return Center(
-                    child: AppSpinner(),
-                  );
-                },
-                onPageFinished: (String url) {},
-                javascriptMode: JavascriptMode.unrestricted,
-                initialUrl: "${widget.transactionUrl}",
-                onWebViewCreated: (WebViewController webViewController) {
-                  _controller.complete(webViewController);
-                },
-              ),
+            return IndexedStack(
+              index: _stackToView,
+              children: <Widget>[
+                Column(children: <Widget>[
+                  Expanded(
+                      child: Center(
+                    child: WebView(
+                      gestureNavigationEnabled: true,
+                      onPageStarted: (String url) {},
+                      onPageFinished: _handleLoad,
+                      javascriptMode: JavascriptMode.unrestricted,
+                      initialUrl: "${widget.transactionUrl}",
+                      onWebViewCreated: (WebViewController webViewController) {
+                        _controller.complete(webViewController);
+                      },
+                    ),
+                  )),
+                ]),
+                Container(
+                  child: Center(child: AppSpinner()),
+                )
+              ],
             );
           },
         ));

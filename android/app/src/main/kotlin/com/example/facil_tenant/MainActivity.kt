@@ -1,4 +1,4 @@
-package com.example.facil_tenant
+package com.facilng.facilTenant
 
 import android.os.Bundle
 

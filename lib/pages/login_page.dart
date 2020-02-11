@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:facil_tenant/services/access_service.dart';
 import 'package:flutter/material.dart';
 import '../styles/colors.dart';
 import "../services/http_service.dart";
@@ -25,6 +28,20 @@ class LoginFormState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   bool buttonClicked = false;
 
+  Future<void> getLoginInfo() async {
+    Map<String, dynamic> response = await AccessService.getLoginInfo();
+    if (response != null) {
+      username.text = response['username'];
+      password.text = response['password'];
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    getLoginInfo();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Center(
@@ -34,9 +51,7 @@ class LoginFormState extends State<LoginPage> {
           horizontal: 16.0,
         ),
         child: Container(
-          child: Builder(
-            builder: (BuildContext context) {
-              return Form(
+          child: Form(
                 key: _formKey,
                 child: new Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -168,9 +183,8 @@ class LoginFormState extends State<LoginPage> {
                     ),
                   ],
                 ),
-              );
-            },
-          ),
+              )
+
         ),
       ),
     );
