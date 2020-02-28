@@ -105,7 +105,6 @@ class _PaymentHistoryPageState extends State<PaymentHistoryPage> {
             name: content["paymentType"]["name"],
             paymentUnit: content["paymentType"]["payment_unit"],
             amount: content["paymentType"]["amount"],
-            convenienceFee: content["paymentType"]["convenience_fee"],
           )));
     }
     return Future.value(payments);

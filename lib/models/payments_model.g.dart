@@ -12,7 +12,9 @@ PaymentsModel _$PaymentsModelFromJson(Map<String, dynamic> json) {
       paidOn: json['transaction']['created_at'] as String,
       year: json['year'] as String,
       month: json['month'] as String,
+      dueTypeId: json['due_type_id'] as String,
       paymentType: json['paymentType'] as PaymentTypeModel,
+      balanceId: json['balance_id'] as String
     );
 }
 
@@ -21,5 +23,7 @@ Map<String, dynamic> _$PaymentsModelToJson(PaymentsModel instance) => <String, d
       'year': instance.year,
       'month': instance.month,
       'paymentType': instance.paymentType,
-      'trasaction_date': instance.paidOn
+      'due_type_id': instance.dueTypeId,
+      'trasaction_date': instance.paidOn,
+      'balance_id': instance.balanceId
     };
