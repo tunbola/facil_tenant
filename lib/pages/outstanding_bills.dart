@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:badges/badges.dart';
 import 'package:facil_tenant/components/app_spinner.dart';
 import 'package:facil_tenant/components/auth_button_spinner.dart';
+import 'package:facil_tenant/models/balance_model.dart';
 import 'package:facil_tenant/models/outstanding_bills_model.dart';
 import 'package:facil_tenant/models/payment_type_model.dart';
 import 'package:facil_tenant/models/payments_model.dart';
@@ -14,6 +15,7 @@ import '../components/app_scaffold.dart';
 import "package:facil_tenant/singleton/locator.dart";
 import "package:facil_tenant/routes/route_paths.dart" as routes;
 import 'package:flutter_picker/flutter_picker.dart';
+import 'package:crypto/crypto.dart' as crypto;
 
 const Months = const [
   "January",
@@ -40,32 +42,47 @@ class OutstandingBillsPage extends StatefulWidget {
 class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
   final _httpService = HttpService();
   bool _proceedToPayButton = false;
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
+  
+  final String fixedPayment = '1';
+  final String partialPayment = '1';
+  final String fullPayment = '2';
+  final String balancePayment = '3'; //paying off a balance
+  final String hideTextField =
+      '4'; //means partial payment is selected and field is closed
 
   final choicePeriod = ValueNotifier({"year": (DateTime.now()).year});
-  String errMsg = "";
   static NavigationService _navigationService = locator<NavigationService>();
   String yearToSearch = ((DateTime.now()).year).toString();
-  String monthToSearch = "00";
+  String monthToSearch = "0";
   String monthName = "All";
 
+  Map<String, String> selectedChipValues =
+      {}; //selected chip values holds the uniqueKey of the payment type and has it's value a fullPayment/partialPayment
+  Map<String, TextEditingController> partialFeesControllers =
+      {}; //holds each controller for each selected field especially partialPayments
+
+  Map<String, PaymentsModel> selectedBills = {};
+  Map<String, double> selectedBillsAmountClone = {};
+
   Map<String, String> monthsMap = {
-    "All": "00",
-    "January": "01",
-    "February": "02",
-    "March": "03",
-    "April": "04",
-    "May": "05",
-    "June": "06",
-    "July": "07",
-    "August": "08",
-    "September": "09",
+    "All": "0",
+    "January": "1",
+    "February": "2",
+    "March": "3",
+    "April": "4",
+    "May": "5",
+    "June": "6",
+    "July": "7",
+    "August": "8",
+    "September": "9",
     "October": "10",
     "November": "11",
     "December": "12"
   };
   static String _getYearsRange() {
     int _startPoint = 2018;
-    int _endPoint = DateTime.now().year + 2;
+    int _endPoint = DateTime.now().year;
     List<String> _years = [];
     for (int i = _startPoint; i <= _endPoint; i++) {
       _years.add(i.toString());
@@ -93,10 +110,29 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
   ]
   ''';
 
-  Future<Map<String, dynamic>> _fetchTransactionKey(
-      String month, String year, String paymentTypeId) async {
-    Map<String, dynamic> _response =
-        await _httpService.getTransactionId(month, year, paymentTypeId);
+  Future<Map<String, dynamic>> _fetchTransactionKey() async {
+    List<Map<String, dynamic>> requestData = [];
+    for (var i in selectedBills.values) {
+      // add balance id later on when balances are in
+      Map<String, dynamic> eachData = i.balanceId == null
+          ? {
+              "year": i.year,
+              "month": i.month,
+              "unit_amount": i.paymentType.amount,
+              "payment_type_id": i.paymentType.id,
+              "due_type_id": i.dueTypeId
+            }
+          : {
+              "year": i.year,
+              "month": i.month,
+              "unit_amount": i.paymentType.amount,
+              "payment_type_id": i.paymentType.id,
+              "due_type_id": i.dueTypeId,
+              "balance_id": i.balanceId
+            };
+      requestData.add(eachData);
+    }
+    Map<String, dynamic> _response = await _httpService.getTransactionId(requestData);
     return Future.value(_response);
   }
 
@@ -104,14 +140,48 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
     List<PaymentTypeModel> _yearly = [];
     for (var y = 0; y < yearlyDues.length; y++) {
       Map<String, dynamic> _eachYearlyBill = yearlyDues[y];
+      var bytes =
+          utf8.encode("${_eachYearlyBill['name']}${_eachYearlyBill["id"]}");
+      String uniqueKey = crypto.sha1.convert(bytes).toString();
       _yearly.add(PaymentTypeModel(
+          uniqueKey: uniqueKey,
           id: _eachYearlyBill["id"],
           name: _eachYearlyBill["name"],
           amount: _eachYearlyBill["amount"],
-          convenienceFee: _eachYearlyBill["convenience_fee"],
+          fixedPayment: _eachYearlyBill["fixed_payment"],
           paymentUnit: _eachYearlyBill["payment_unit"]));
     }
     return _yearly;
+  }
+
+  List<BalanceModel> sortBalances(List<Map<String, dynamic>> balances) {
+    List<BalanceModel> b = [];
+    balances.forEach((data) {
+      Map<String, dynamic> paymentType = data['paymentType'];
+      List<Map<String, dynamic>> paymentInfo = List<Map<String, dynamic>>.from(
+          json.decode(data['transaction']['payment_info']));
+      Map<String, dynamic> transaction;
+      paymentInfo.forEach((d) {
+        if (d['payment_balance_id'].toString() == data['id']) {
+          transaction = d;
+        }
+      });
+      var bytes = utf8.encode("${data['id']}${paymentType['name']}");
+      String uniqueKey = crypto.sha1.convert(bytes).toString();
+      PaymentTypeModel pt = PaymentTypeModel(
+          uniqueKey: uniqueKey,
+          id: paymentType['id'],
+          name: paymentType['name'],
+          amount: paymentType['amount'],
+          paymentUnit: paymentType['payment_unit']);
+      b.add(BalanceModel(
+          id: data['id'],
+          balance: data['balance'],
+          year: transaction['year'],
+          month: transaction['month'],
+          paymentType: pt));
+    });
+    return b;
   }
 
   List<OutstandingBillsModel> sortMonthlyDues(dynamic monthlyDues) {
@@ -121,11 +191,14 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
       Map<String, dynamic> _eachBill = monthlyDues[m];
       for (var j = 0; j < _eachBill["data"].length; j++) {
         Map<String, dynamic> _eachType = _eachBill["data"][j];
+        var bytes = utf8.encode("${_eachType['name']}${_eachBill['name']}");
+        String uniqueKey = crypto.sha1.convert(bytes).toString();
         _paymentTypesList.add(PaymentTypeModel(
+            uniqueKey: uniqueKey,
             id: _eachType["id"],
             name: _eachType["name"],
             amount: _eachType["amount"],
-            convenienceFee: _eachType["convenience_fee"],
+            fixedPayment: _eachType["fixed_payment"],
             paymentUnit: _eachType["payment_unit"]));
       }
       _monthly.add(OutstandingBillsModel(
@@ -139,26 +212,38 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
 
   Future<Map<String, List>> getUserOutstandingBills(
       String year, String month) async {
-    Map<String, dynamic> _response = month == "00"
+    Map<String, dynamic> _response = (month == "0")
         ? await _httpService.fetchOutstandingBills(year: year)
         : await _httpService.fetchOutstandingBills(year: year, month: month);
-    if (_response["status"] == false) errMsg = _response["message"];
+    Map<String, dynamic> _res = await _httpService.fetchBalances();
+
+    if (!_res['status']) throw new Exception(_res["message"]);
+    if (_response["status"] == false) throw new Exception(_response["message"]);
+
     Map<String, List> _outstanding = {};
     Map<String, dynamic> _content = _response["data"];
+    List<Map<String, dynamic>> _balances =
+        List<Map<String, dynamic>>.from(_res['data']);
+    List<BalanceModel> _balanceList = sortBalances(_balances);
     List<PaymentTypeModel> _yearly = sortYearlyDues(_content["yearly"]);
     List<OutstandingBillsModel> _monthly = sortMonthlyDues(_content["monthly"]);
 
-    _outstanding = {"monthly": _monthly, "yearly": _yearly};
+    _outstanding = {
+      "monthly": _monthly,
+      "yearly": _yearly,
+      "balances": _balanceList
+    };
     return Future.value(_outstanding);
   }
 
-  _payBill(List<PaymentsModel> bills, BuildContext context) {
+  _payBill(Map<String, PaymentsModel> bills, BuildContext context) {
     return showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) {
         return StatefulBuilder(builder: (BuildContext ctx, setState) {
           return Scaffold(
+            key: _scaffoldKey,
             backgroundColor: Colors.black54,
             body: SafeArea(
               child: Center(
@@ -167,35 +252,38 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
                   // fit: StackFit.expand,
                   children: <Widget>[
                     Container(
-                      margin: EdgeInsets.symmetric(
-                        vertical: 20.0,
-                        horizontal: 15.0,
-                      ),
-                      padding: EdgeInsets.only(
-                        top: 40.0,
-                        bottom: 10.0,
-                        left: 15.0,
-                        right: 15.0,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(20.0),
-                      ),
-                      child: SingleChildScrollView(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: <Widget>[
-                                Container(
-                                  height: 2,
-                                  color: shedAppBlue400,
-                                ),
-                                SizedBox(
-                                  height: 10.0,
-                                ),
-                                Column(
-                                  children: bills.map((bill) {
-                                    return Row(
-                                      children: <Widget>[
+                        margin: EdgeInsets.symmetric(
+                          vertical: 20.0,
+                          horizontal: 15.0,
+                        ),
+                        padding: EdgeInsets.only(
+                          top: 40.0,
+                          bottom: 10.0,
+                          left: 15.0,
+                          right: 15.0,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20.0),
+                        ),
+                        child: SingleChildScrollView(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: <Widget>[
+                              Container(
+                                height: 2,
+                                color: shedAppBlue400,
+                              ),
+                              SizedBox(
+                                height: 10.0,
+                              ),
+                              for (var bill in bills.values)
+                                Column(children: [
+                                  Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceAround,
+                                      children: [
                                         Expanded(
                                           child: Text(
                                             "${bill.paymentType.name}",
@@ -206,100 +294,263 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
                                           ),
                                         ),
                                         Text(
-                                          formatter.format(double.parse(
-                                              bill.paymentType.amount)),
+                                          "${double.parse(bill.paymentType.amount)}0",
                                           style: Theme.of(context)
                                               .textTheme
                                               .headline
-                                              .copyWith(fontSize: 13),
+                                              .copyWith(fontSize: 15),
                                         ),
-                                      ],
-                                    );
-                                  }).toList(),
-                                ),
-                                SizedBox(
-                                  height: 10.0,
-                                ),
-                                Container(
-                                  height: 2,
-                                  color: shedAppBlue400,
-                                ),
-                                Padding(
-                                    padding: EdgeInsets.all(5.0),
-                                    child: Row(
-                                      children: <Widget>[
-                                        Expanded(
-                                          child: Text(
-                                            "TOTAL",
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .headline
-                                                .copyWith(
-                                                  fontSize: 20,
-                                                  // color: Colors.white,
-                                                ),
-                                            textAlign: TextAlign.left,
-                                          ),
+                                        SizedBox(
+                                          width: 4.0,
                                         ),
-                                        Text(
-                                          "${formatter.format(
-                                            bills
-                                                .map((it) => double.parse(
-                                                    it.paymentType.amount))
-                                                .toList()
-                                                .reduce(
-                                                    (prev, nxt) => prev + nxt),
-                                          )}",
+                                        bill.paymentType.fixedPayment !=
+                                                fixedPayment
+                                            ? Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: <Widget>[
+                                                    (bill.balanceId != null) ? ChoiceChip(
+                                                            label:
+                                                                Text("Balance"),
+                                                            selected: (selectedChipValues[bill
+                                                                    .paymentType
+                                                                    .uniqueKey] ==
+                                                                balancePayment),
+                                                            onSelected: (bool
+                                                                newValue) {
+                                                              setState(() {
+                                                                selectedChipValues[bill
+                                                                        .paymentType
+                                                                        .uniqueKey] =
+                                                                    balancePayment;
+                                                                bill.paymentType
+                                                                    .amount = selectedBillsAmountClone[bill
+                                                                        .paymentType
+                                                                        .uniqueKey]
+                                                                    .toString();
+                                                                bill.dueTypeId =
+                                                                    balancePayment;
+                                                              });
+                                                            },
+                                                          ) : ChoiceChip(
+                                                            label: Text("Full"),
+                                                            selected: (selectedChipValues[bill
+                                                                    .paymentType
+                                                                    .uniqueKey] ==
+                                                                fullPayment),
+                                                            onSelected: (bool
+                                                                newValue) {
+                                                              setState(() {
+                                                                selectedChipValues[bill
+                                                                        .paymentType
+                                                                        .uniqueKey] =
+                                                                    fullPayment;
+                                                                bill.paymentType
+                                                                    .amount = selectedBillsAmountClone[bill
+                                                                        .paymentType
+                                                                        .uniqueKey]
+                                                                    .toString();
+                                                                bill.dueTypeId =
+                                                                    fullPayment;
+                                                              });
+                                                            },
+                                                          ),
+                                                    ChoiceChip(
+                                                      label: Text("Partial"),
+                                                      selected: (selectedChipValues[bill
+                                                                  .paymentType
+                                                                  .uniqueKey] ==
+                                                              partialPayment ||
+                                                          selectedChipValues[bill
+                                                                  .paymentType
+                                                                  .uniqueKey] ==
+                                                              hideTextField),
+                                                      onSelected:
+                                                          (bool newValue) {
+                                                        setState(() {
+                                                          selectedChipValues[bill
+                                                                  .paymentType
+                                                                  .uniqueKey] =
+                                                              partialPayment;
+                                                        });
+                                                      },
+                                                    ),
+                                                  ])
+                                            : Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: <Widget>[
+                                                    ChoiceChip(
+                                                        label: Text("Full"),
+                                                        selected: true),
+                                                    ChoiceChip(
+                                                        label: Text("Partial",
+                                                            style: TextStyle(
+                                                                decoration:
+                                                                    TextDecoration
+                                                                        .lineThrough)),
+                                                        selected: false),
+                                                  ]),
+                                      ]),
+                                  (selectedChipValues[
+                                              bill.paymentType.uniqueKey] ==
+                                          partialPayment)
+                                      ? Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: <Widget>[
+                                            Expanded(
+                                                child: TextFormField(
+                                              controller:
+                                                  partialFeesControllers[bill
+                                                      .paymentType.uniqueKey],
+                                              decoration: InputDecoration(
+                                                border: null,
+                                                hintText: "Enter value",
+                                              ),
+                                              keyboardType:
+                                                  TextInputType.number,
+                                              autocorrect: false,
+                                            )),
+                                            Container(
+                                                alignment: Alignment.center,
+                                                width: 60.0,
+                                                child: FlatButton(
+                                                  onPressed: () {
+                                                    try {
+                                                      String key = bill
+                                                          .paymentType
+                                                          .uniqueKey;
+                                                      double actualAmount =
+                                                          selectedBillsAmountClone[
+                                                              key];
+                                                      double _fieldValue =
+                                                          double.parse(
+                                                              partialFeesControllers[
+                                                                      key]
+                                                                  .text);
+                                                      if (_fieldValue < 1) {
+                                                        renderSnackBar(
+                                                            "Value cannot be less than 1");
+                                                        return;
+                                                      }
+                                                      if (_fieldValue >
+                                                          actualAmount) {
+                                                        renderSnackBar(
+                                                            'Value cannot be greater than ${formatter.format(actualAmount)}');
+                                                        return;
+                                                      }
+                                                      setState(() {
+                                                        bill.paymentType
+                                                                .amount =
+                                                            _fieldValue
+                                                                .toString();
+                                                        selectedChipValues[
+                                                                key] =
+                                                            hideTextField;
+                                                        bill.dueTypeId =
+                                                                    partialPayment;
+                                                      });
+                                                    } catch (e) {
+                                                      renderSnackBar(
+                                                          "Value should contain numbers only");
+                                                      return;
+                                                    }
+                                                  },
+                                                  child: Text("Ok"),
+                                                ))
+                                          ],
+                                        )
+                                      : SizedBox()
+                                ]),
+                              SizedBox(
+                                height: 10.0,
+                              ),
+                              Container(
+                                height: 2,
+                                color: shedAppBlue400,
+                              ),
+                              Padding(
+                                  padding: EdgeInsets.all(5.0),
+                                  child: Row(
+                                    children: <Widget>[
+                                      Expanded(
+                                        child: Text(
+                                          "TOTAL",
                                           style: Theme.of(context)
                                               .textTheme
                                               .headline
                                               .copyWith(
                                                 fontSize: 20,
-                                                // color: Colors.white,
                                               ),
-                                          textAlign: TextAlign.right,
+                                          textAlign: TextAlign.left,
                                         ),
-                                      ],
-                                    )),
-                                Container(
-                                  height: 2,
-                                  color: shedAppBlue400,
-                                ),
-                                SizedBox(
-                                  height: 20.0,
-                                ),
-                                RaisedButton(
-                                  onPressed: () async {
-                                    setState(() {
-                                      _proceedToPayButton = true;
-                                    });
-                                    PaymentsModel _bill = bills[0];
-                                    Map<String, dynamic> _response =  await _fetchTransactionKey(
-                                        _bill.month, _bill.year, _bill.id);
-                                    setState(() {
-                                      _proceedToPayButton = false;
-                                    });
-                                    if (!_response['status']) {
-                                      Scaffold.of(context).showSnackBar(SnackBar(content: Text(_response['message']), backgroundColor: Colors.red,));
-                                      return;
-                                    }
-                                    _navigationService
-                                      .navigateTo(routes.Paystack, arg: _response['data']);
-                                  },
-                                  child: _proceedToPayButton
-                                      ? AuthButtonSpinner(Colors.white)
-                                      : Text("Proceed"),
-                                ),
-                              ],
-                            ),
-                          )
-                    ),
+                                      ),
+                                      Text(
+                                        "${formatter.format(
+                                          bills.values
+                                              .map((it) => double.parse(
+                                                  it.paymentType.amount))
+                                              .toList()
+                                              .reduce(
+                                                  (prev, nxt) => prev + nxt),
+                                        )}",
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .headline
+                                            .copyWith(
+                                              fontSize: 20,
+                                              // color: Colors.white,
+                                            ),
+                                        textAlign: TextAlign.right,
+                                      ),
+                                    ],
+                                  )),
+                              Container(
+                                height: 2,
+                                color: shedAppBlue400,
+                              ),
+                              SizedBox(
+                                height: 10.0,
+                              ),
+                              RaisedButton(
+                                onPressed: () async {
+                                  //due_type_id should be 2 once the amount matches the original amount
+                                  setState(() {
+                                    _proceedToPayButton = true;
+                                  });
+                                  Map<String, dynamic> _response =
+                                      await _fetchTransactionKey();
+                                  setState(() {
+                                    _proceedToPayButton = false;
+                                  });
+                                  if (!_response['status']) {
+                                    renderSnackBar(_response['message']);
+                                    return;
+                                  }
+                                  _navigationService.navigateTo(routes.Paystack,
+                                      arg: _response['data']);
+                                },
+                                child: _proceedToPayButton
+                                    ? AuthButtonSpinner(Colors.white)
+                                    : Text("Proceed"),
+                              )
+                            ],
+                          ),
+                        )),
                     Positioned(
                       top: 0,
                       right: .5,
                       child: FloatingActionButton(
                         heroTag: "cls",
                         onPressed: () {
+                          selectedBillsAmountClone.forEach((k, v) {
+                            if (selectedBills[k] != null) {
+                              selectedBills[k].paymentType.amount =
+                                  v.toString();
+                              selectedBills[k].dueTypeId =
+                                  (selectedBills[k].balanceId == null)
+                                      ? fullPayment
+                                      : balancePayment;
+                            }
+                          });
                           Navigator.of(context).pop();
                         },
                         child: Icon(Icons.close),
@@ -315,6 +566,13 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
     );
   }
 
+  renderSnackBar(String text) {
+    _scaffoldKey.currentState.showSnackBar(SnackBar(
+      content: Text(text),
+      backgroundColor: Colors.red,
+    ));
+  }
+
   /// page widget that displays notification for outstanding bills,
   /// displays a list of bills and a button that pops up the
   /// pay outstanding bills window
@@ -327,35 +585,59 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
       locale: Localizations.localeOf(context).toString(),
     );
     return AppScaffold(
-      floatingActionButton: Container(
-          margin: EdgeInsets.only(left: 30.0),
-          child: Align(
-            alignment: Alignment.bottomCenter,
-            child: FloatingActionButton(
-                heroTag: "filterHistory",
-                onPressed: () {
-                  Picker(
-                      adapter: PickerDataAdapter<String>(
-                          pickerdata: new JsonDecoder().convert(pickerData2),
-                          isArray: true),
-                      hideHeader: true,
-                      title: new Text(
-                        "Select year & month",
-                        style: TextStyle(color: shedAppBlue400),
-                      ),
-                      onConfirm: (Picker picker, List value) {
-                        List<dynamic> values = picker.getSelectedValues();
-                        setState(() {
-                          yearToSearch = values[0];
-                          monthToSearch = monthsMap[values[1]];
-                          monthName = values[1];
-                        });
-                      }).showDialog(context);
-                },
-                child: Icon(
-                  Icons.calendar_today,
-                )),
-          )),
+      floatingActionButton: (selectedBills.length < 1)
+          ? Container(
+              margin: EdgeInsets.only(left: 30.0),
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                child: FloatingActionButton(
+                    heroTag: "filterHistory",
+                    onPressed: () {
+                      Picker(
+                          adapter: PickerDataAdapter<String>(
+                              pickerdata:
+                                  new JsonDecoder().convert(pickerData2),
+                              isArray: true),
+                          hideHeader: true,
+                          title: new Text(
+                            "Select year & month",
+                            style: TextStyle(color: shedAppBlue400),
+                          ),
+                          onConfirm: (Picker picker, List value) {
+                            List<dynamic> values = picker.getSelectedValues();
+                            setState(() {
+                              yearToSearch = values[0];
+                              monthToSearch = monthsMap[values[1]];
+                              monthName = values[1];
+                            });
+                          }).showDialog(context);
+                    },
+                    child: Icon(
+                      Icons.calendar_today,
+                    )),
+              ))
+          : Container(
+              margin: EdgeInsets.only(left: 30.0),
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                child: RaisedButton(
+                    padding: EdgeInsets.all(5),
+                    onPressed: () {
+                      selectedBills.forEach((k, v) {
+                        selectedChipValues[k] = (v.balanceId == null)
+                            ? fullPayment
+                            : balancePayment;
+                        partialFeesControllers[k] = TextEditingController(
+                            text: selectedBills[k].paymentType.amount);
+                        selectedBillsAmountClone[k] =
+                            double.parse(selectedBills[k].paymentType.amount);
+                      });
+                      _payBill(selectedBills, context);
+                    },
+                    child: Text("Pay",
+                        style: TextStyle(
+                            color: Colors.white, fontWeight: FontWeight.bold))),
+              )),
       child: Container(
         padding: EdgeInsets.only(
           top: 10.0,
@@ -390,6 +672,8 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
               height: 10.0,
             ),
             Expanded(
+                child: Container(
+              margin: EdgeInsets.only(bottom: 20.0),
               child: FutureBuilder(
                 future: getUserOutstandingBills(yearToSearch, monthToSearch),
                 builder: (context, res) {
@@ -405,7 +689,7 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
                           margin: EdgeInsets.only(bottom: 100.0),
                           child: Center(
                             child: Text(
-                              errMsg,
+                              res.error.toString(),
                               style: TextStyle(
                                   color: Colors.red,
                                   fontWeight: FontWeight.bold),
@@ -437,6 +721,7 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
                     List<OutstandingBillsModel> _monthlyDues =
                         res.data["monthly"];
                     List<PaymentTypeModel> _yearlyDues = res.data["yearly"];
+                    List<BalanceModel> _balances = res.data["balances"];
                     return ListView(
                       children: <Widget>[
                         _yearlyDues.length > 0
@@ -447,7 +732,7 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
                                       .textTheme
                                       .headline
                                       .copyWith(
-                                        fontSize: 14,
+                                        fontSize: 16,
                                         color: shedAppBlue400,
                                       ),
                                   children: [
@@ -483,7 +768,7 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
                                             style: Theme.of(context)
                                                 .textTheme
                                                 .headline
-                                                .copyWith(fontSize: 22),
+                                                .copyWith(fontSize: 20),
                                           ),
                                         ),
                                       ],
@@ -503,22 +788,37 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
                                                 .copyWith(fontSize: 20),
                                           ),
                                         ),
-                                        RaisedButton(
-                                          padding: EdgeInsets.all(5),
-                                          onPressed: () {
-                                            PaymentsModel _toPay =
-                                                PaymentsModel(
-                                                    id: _yd.id,
-                                                    year: yearToSearch,
-                                                    month:
-                                                        ((DateTime.now()).month)
-                                                            .toString(),
-                                                    paymentType: _yd);
-                                            _payBill([_toPay], context);
+                                        ChoiceChip(
+                                          label: selectedBills
+                                                  .containsKey(_yd.uniqueKey)
+                                              ? Text("Selected")
+                                              : Text("Select"),
+                                          selected: (selectedBills
+                                              .containsKey(_yd.uniqueKey)),
+                                          onSelected: (bool newValue) {
+                                            if (!selectedBills
+                                                .containsKey(_yd.uniqueKey)) {
+                                              PaymentsModel _toPay =
+                                                  PaymentsModel(
+                                                      id: _yd.id,
+                                                      year: yearToSearch,
+                                                      month: ((DateTime.now())
+                                                              .month)
+                                                          .toString(),
+                                                      dueTypeId: fullPayment,
+                                                      paymentType: _yd);
+                                              setState(() {
+                                                selectedBills[_yd.uniqueKey] =
+                                                    _toPay;
+                                              });
+                                            } else {
+                                              setState(() {
+                                                selectedBills
+                                                    .remove(_yd.uniqueKey);
+                                              });
+                                            }
                                           },
-                                          child: Text(
-                                              "Pay"), //each outstanding bill payment button
-                                        )
+                                        ),
                                       ],
                                     ),
                                     SizedBox(
@@ -542,7 +842,7 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
                           text: TextSpan(
                             style:
                                 Theme.of(context).textTheme.headline.copyWith(
-                                      fontSize: 14,
+                                      fontSize: 16,
                                       color: shedAppBlue400,
                                     ),
                             children: [
@@ -560,7 +860,7 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
                           itemBuilder: (context, sn) {
                             final _md = _monthlyDues[sn];
                             return _md.paymentTypes.length < 1 &&
-                                    monthToSearch != "00"
+                                    monthToSearch != "0"
                                 ? RichText(
                                     textAlign: TextAlign.center,
                                     text: TextSpan(
@@ -639,7 +939,7 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
                                                             .textTheme
                                                             .headline
                                                             .copyWith(
-                                                                fontSize: 22),
+                                                                fontSize: 20),
                                                       ),
                                                     ),
                                                   ],
@@ -662,27 +962,49 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
                                                                 fontSize: 20),
                                                       ),
                                                     ),
-                                                    RaisedButton(
-                                                      padding:
-                                                          EdgeInsets.all(5),
-                                                      onPressed: () {
-                                                        PaymentsModel _toPay =
-                                                            PaymentsModel(
-                                                                id:
+                                                    ChoiceChip(
+                                                      label: selectedBills
+                                                              .containsKey(
+                                                                  _mdPaymentType
+                                                                      .uniqueKey)
+                                                          ? Text("Selected")
+                                                          : Text("Select"),
+                                                      selected: (selectedBills
+                                                          .containsKey(
+                                                              _mdPaymentType
+                                                                  .uniqueKey)),
+                                                      onSelected:
+                                                          (bool newValue) {
+                                                        if (!selectedBills
+                                                            .containsKey(
+                                                                _mdPaymentType
+                                                                    .uniqueKey)) {
+                                                          PaymentsModel _toPay = PaymentsModel(
+                                                              id: _mdPaymentType
+                                                                  .id,
+                                                              year:
+                                                                  yearToSearch,
+                                                              month: monthsMap[_md
+                                                                  .monthName],
+                                                              dueTypeId:
+                                                                  fullPayment,
+                                                              paymentType:
+                                                                  _mdPaymentType);
+                                                          setState(() {
+                                                            selectedBills[
                                                                     _mdPaymentType
-                                                                        .id,
-                                                                year:
-                                                                    yearToSearch,
-                                                                month: monthsMap[_md
-                                                                    .monthName],
-                                                                paymentType:
-                                                                    _mdPaymentType);
-                                                        _payBill(
-                                                            [_toPay], context);
+                                                                        .uniqueKey] =
+                                                                _toPay;
+                                                          });
+                                                        } else {
+                                                          setState(() {
+                                                            selectedBills.remove(
+                                                                _mdPaymentType
+                                                                    .uniqueKey);
+                                                          });
+                                                        }
                                                       },
-                                                      child: Text(
-                                                          "Pay"), //each monthly outstanding bill payment button
-                                                    )
+                                                    ),
                                                   ],
                                                 ),
                                                 SizedBox(
@@ -703,6 +1025,143 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
                             color: Colors.grey,
                           ),
                         ),
+                        SizedBox(
+                          height: 30.0,
+                        ),
+                        _balances.length > 0
+                            ? RichText(
+                                textAlign: TextAlign.center,
+                                text: TextSpan(
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .headline
+                                      .copyWith(
+                                        fontSize: 16,
+                                        color: shedAppBlue400,
+                                      ),
+                                  children: [
+                                    TextSpan(
+                                      text: "Balances",
+                                    ),
+                                  ],
+                                ),
+                              )
+                            : SizedBox(),
+                        /**Render balances below */
+                        ListView.separated(
+                          itemCount: _balances.length,
+                          shrinkWrap: true,
+                          physics: ClampingScrollPhysics(),
+                          itemBuilder: (context, idx) {
+                            final _b = _balances[idx];
+                            PaymentTypeModel _bPaymentType = _b.paymentType;
+                            return Card(
+                              elevation: 0,
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(
+                                  vertical: 15.0,
+                                  // horizontal: 10.0,
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: <Widget>[
+                                    Align(
+                                      child: Padding(
+                                        child: Badge(
+                                          shape: BadgeShape.square,
+                                          borderRadius: 20,
+                                          toAnimate: true,
+                                          badgeColor: shedAppBlue50,
+                                          badgeContent: Text(
+                                            "${Months[int.parse(_b.month) - 1]}, ${_b.year}",
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .headline
+                                                .copyWith(fontSize: 15),
+                                          ),
+                                        ),
+                                        padding: EdgeInsets.only(right: 20.0),
+                                      ),
+                                      alignment: Alignment.topLeft,
+                                    ),
+                                    SizedBox(
+                                      height: 20.0,
+                                    ),
+                                    Row(
+                                      children: <Widget>[
+                                        Expanded(
+                                          child: Text(
+                                            "${_bPaymentType.name}",
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .headline
+                                                .copyWith(fontSize: 20),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    SizedBox(
+                                      height: 5.0,
+                                    ),
+                                    Row(
+                                      children: <Widget>[
+                                        Expanded(
+                                          child: Text(
+                                            "${formatter.format(double.parse(_b.balance))}",
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .headline
+                                                .copyWith(fontSize: 20),
+                                          ),
+                                        ),
+                                        ChoiceChip(
+                                          label: selectedBills.containsKey(
+                                                  _b.paymentType.uniqueKey)
+                                              ? Text("Selected")
+                                              : Text("Select"),
+                                          selected: (selectedBills.containsKey(
+                                              _b.paymentType.uniqueKey)),
+                                          onSelected: (bool newValue) {
+                                            if (!selectedBills.containsKey(
+                                                _b.paymentType.uniqueKey)) {
+                                              _b.paymentType.amount =
+                                                  _b.balance;
+                                              PaymentsModel _toPay =
+                                                  PaymentsModel(
+                                                      id: _b.paymentType.id,
+                                                      year: _b.year,
+                                                      balanceId: _b.id,
+                                                      month: _b.month,
+                                                      dueTypeId: balancePayment,
+                                                      paymentType:
+                                                          _bPaymentType);
+                                              setState(() {
+                                                selectedBills[_bPaymentType
+                                                    .uniqueKey] = _toPay;
+                                              });
+                                            } else {
+                                              setState(() {
+                                                selectedBills.remove(
+                                                    _bPaymentType.uniqueKey);
+                                              });
+                                            }
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                    SizedBox(
+                                      height: 1.0,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                          separatorBuilder: (context, idx) => Container(
+                            height: 0.5,
+                            color: Colors.grey,
+                          ),
+                        ),
                       ],
                     );
                   } else {
@@ -710,23 +1169,11 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
                   }
                 },
               ),
-            ),
+            )),
           ],
         ),
       ),
-      pageTitle: ValueNotifier("OUTSTANDING BILLS"), //page title
-      /*bottomWidget: Container( //bottom widget for paying oustanding bills button
-        padding: EdgeInsets.only(
-          left: 16.0,
-          right: 16.0,
-          bottom: 10.0,
-        ),
-        color: Colors.white.withOpacity(0.1),
-        child: RaisedButton(
-          onPressed: () => _payBill(_bills, context),
-          child: Text("Pay Outstanding Bills"),
-        ),
-      ),*/
+      pageTitle: ValueNotifier("OUTSTANDING BILLS"),
     );
   }
 }

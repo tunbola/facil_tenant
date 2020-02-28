@@ -9,12 +9,16 @@ class PaymentsModel {
   String id;
   final String year;
   final String month;
+  String dueTypeId;
+  final String balanceId;
   final String paidOn;
   final PaymentTypeModel paymentType;
 
   PaymentsModel({
     this.id,
     this.paidOn,
+    this.dueTypeId,
+    this.balanceId,
     @required this.year,
     @required this.month,
     @required this.paymentType,

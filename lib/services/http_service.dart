@@ -482,6 +482,34 @@ class HttpService {
     }
   }
 
+
+  Future<Map<String, dynamic>> fetchBalances() async {
+    Map<String, String> requestHeader = await AccessService.requestHeader();
+    String url = "${config['baseUrl']}${config['balances']}${config['view']}";
+    try {
+      http.Response response = await http.get(url, headers: requestHeader);
+      final responseJson = conv.json.decode(response.body);
+      final responseObject = ResponseModel.fromJson(responseJson);
+      if (response.statusCode != 200)
+        return {
+          "status": false,
+          "message": responseObject.message,
+          "data": null
+        };
+      return {
+        "status": true,
+        "message": responseObject.message,
+        "data": responseObject.data
+      };
+    } catch (e) {
+      return {
+        "status": false,
+        "message": "Internet connection error",
+        "data": null
+      };
+    }
+  }
+
   Future<Map<String, dynamic>> fetchPayments(
       {String year, String month}) async {
     Map<String, String> requestHeader = await AccessService.requestHeader();
@@ -549,14 +577,13 @@ class HttpService {
     }
   }
 
-  Future<Map<String, dynamic>> getTransactionId(
-      String month, String year, String paymentTypeId) async {
+  Future<Map<String, dynamic>> getTransactionId(List<Map<String, dynamic>> paymentData) async {
     Map<String, String> requestHeader = await AccessService.requestHeader();
     String url =
         "${config['baseUrl']}${config['transaction']}${config['create']}";
     try {
       String requestBody = conv.json.encode(
-          {"payment_type_id": paymentTypeId, "month": month, "year": year});
+          {"payment_info": paymentData});
       http.Response response =
           await http.post(url, body: requestBody, headers: requestHeader);
       final responseJson = conv.json.decode(response.body);
@@ -651,6 +678,29 @@ class HttpService {
               "attachment": attachment
             });
       http.Response response = await http.put(url, body: requestBody, headers: requestHeader);
+      final responseJson = conv.json.decode(response.body);
+      final responseObject = ResponseModel.fromJson(responseJson);
+      if (response.statusCode != 200)
+        return {
+          "status": false,
+          "message": "An error occured while updating request",
+          "data": null
+        };
+      return {"status": true, "message": responseObject.message , "data": responseObject.data};
+    } catch (e) {
+      return {
+        "status": false,
+        "message": "Internet connection error",
+        "data": null
+      };
+    }
+  }
+
+  Future<Map<String, dynamic>> fetchDuePaymentTypes() async {
+    Map<String, String> requestHeader = await AccessService.requestHeader();
+    String url = "${config['baseUrl']}${config['duetypes']}";
+    try {
+      http.Response response = await http.get(url, headers: requestHeader);
       final responseJson = conv.json.decode(response.body);
       final responseObject = ResponseModel.fromJson(responseJson);
       if (response.statusCode != 200)

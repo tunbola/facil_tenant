@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:facil_tenant/components/app_scaffold.dart';
 import 'package:facil_tenant/components/app_spinner.dart';
 import 'package:flutter/material.dart';
-//import 'package:flutter_webview_plugin/flutter_webview_plugin.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 class PayStackWebViewPage extends StatefulWidget {

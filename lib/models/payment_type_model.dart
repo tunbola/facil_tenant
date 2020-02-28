@@ -5,21 +5,22 @@ part 'payment_type_model.g.dart';
 
 @JsonSerializable()
 class PaymentTypeModel {
+  String uniqueKey;
   String id;
   final String name;
-  final String amount;
-  final String convenienceFee;
+  String amount;
   final String paymentUnit;
+  final String fixedPayment;
 
   PaymentTypeModel({
+    this.uniqueKey,
     this.id,
+    this.fixedPayment,
     @required this.name,
     @required this.amount,
-    @required this.convenienceFee,
     @required this.paymentUnit,
   })  : assert(name != null),
         assert(amount != null),
-        assert(convenienceFee != null),
         assert(paymentUnit != null){
   }
 
