@@ -5,6 +5,7 @@ part 'chat_model.g.dart';
 class ChatModel {
   String id;
   String message;
+  String attachmentUrl;
   String createdAt;
   String from;
 
@@ -12,7 +13,8 @@ class ChatModel {
     this.id,
     this.message,
     this.createdAt,
-    this.from
+    this.from,
+    this.attachmentUrl
   });
 
   factory ChatModel.fromJson(Map<String, dynamic> json) => _$ChatModelFromJson(json);

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:facil_tenant/components/app_scaffold.dart';
 import 'package:facil_tenant/components/auth_button_spinner.dart';
 import 'package:facil_tenant/models/index.dart';
+import 'package:facil_tenant/services/access_service.dart';
 import 'package:facil_tenant/services/http_service.dart';
 import 'package:facil_tenant/styles/colors.dart';
 import 'package:file_picker/file_picker.dart';
@@ -102,10 +103,7 @@ class _UpdateNotificationPageState extends State<UpdateNotificationPage> {
                               String fileName = splitPath[splitPath.length - 1];
                               List splitName = fileName.split(".");
                               String fileExt = splitName[splitName.length - 1];
-                              if (fileExt == 'jpg' ||
-                                  fileExt == 'jpeg' ||
-                                  fileExt == 'png' ||
-                                  fileExt == 'pdf') {
+                              if (AccessService.supportedExtensions.contains(fileExt)) {
                                 setState(() {
                                   attachmentName = fileName;
                                   response['message'] = "";

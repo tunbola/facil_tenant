@@ -11,6 +11,7 @@ ChatModel _$ChatModelFromJson(Map<String, dynamic> json) {
       id: json['id'] as String,
       message: json['message'] as String,
       createdAt: json['created_at'] as String,
+      attachmentUrl: json['attachment_url'],
       from: json['added_by'] as String);
 }
 
@@ -19,5 +20,6 @@ Map<String, dynamic> _$ChatModelToJson(ChatModel instance) =>
       'id': instance.id,
       'message': instance.message,
       'created_at': instance.createdAt,
-      'added_by': instance.from
+      'added_by': instance.from,
+      'attachment_url': instance.attachmentUrl
     };

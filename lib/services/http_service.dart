@@ -163,11 +163,11 @@ class HttpService {
   }
 
   Future<Map<String, dynamic>> sendMessage(
-      List<String> viewableBy, String title, String message) async {
+      List<String> viewableBy, String title, {String message, String attachment}) async {
     Map<String, String> requestHeader = await AccessService.requestHeader();
     try {
       String requestBody = conv.json.encode(
-          {"viewable_by": viewableBy, "title": title, "message": message});
+          {"viewable_by": viewableBy, "title": title, "message": message, "attachment": attachment});
       http.Response response = await http.post(
           "${config['baseUrl']}${config['message']}${config['create']}",
           body: requestBody,
