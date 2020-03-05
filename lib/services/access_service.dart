@@ -9,7 +9,8 @@ class AccessService {
   static final String _key = "FacilAccessKey";
   static String _userAccessCache = "";
   static NavigationService _navigationService = locator<NavigationService>();
-
+  static List<String> _supportedExtensions = ['pdf', 'jpg', 'jpeg', 'png'];
+  static List<String> _imageExtensions = ['jpg', 'png', 'jpeg'];
   /// setAccess method takes information sent from the server
   /// and calls a method from LocalStorage class to save information
   /// in storage
@@ -20,6 +21,25 @@ class AccessService {
       return localStorage;
     }
     return true;
+  }
+
+  static List<String> get supportedExtensions {
+    return _supportedExtensions;
+  }
+
+  static List<String> get supportedImagesExtensions {
+    return _imageExtensions;
+  }
+
+  static String getfileExtension(String fileName) {
+    List splitName = fileName.split(".");
+    String fileExt = splitName[splitName.length - 1];
+    return fileExt;
+  }
+
+  static String getfileName(String filePath) {
+    List<String> fileInfo = filePath.split('/');
+    return fileInfo[fileInfo.length - 1];
   }
 
   /// saveLogin saves users' login information on the device

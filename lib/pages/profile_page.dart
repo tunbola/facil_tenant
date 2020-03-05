@@ -1317,6 +1317,7 @@ class _ProfilePageState extends State<ProfilePage>
                               (context, idx) {
                                 VisitModel _visit = _userProfile.visits[idx];
                                 return Card(
+                                  elevation: 3,
                                   margin: EdgeInsets.symmetric(
                                       vertical: 5, horizontal: 10),
                                   child: Container(
@@ -1324,7 +1325,7 @@ class _ProfilePageState extends State<ProfilePage>
                                       vertical: 10,
                                       horizontal: 13,
                                     ),
-                                    constraints: BoxConstraints(maxHeight: 100),
+                                    constraints: BoxConstraints(maxHeight: 130),
                                     child: Row(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.stretch,
@@ -1371,6 +1372,7 @@ class _ProfilePageState extends State<ProfilePage>
                                           child: Column(
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.start,
+                                            mainAxisAlignment: MainAxisAlignment.center,
                                             children: <Widget>[
                                               Text(
                                                 "Added at : ${DateFormat.yMMMd().format(DateTime.parse(_visit.createdAt))}",
@@ -1378,25 +1380,21 @@ class _ProfilePageState extends State<ProfilePage>
                                                     .textTheme
                                                     .subtitle,
                                               ),
-                                              Expanded(
-                                                child: Align(
-                                                  alignment:
-                                                      Alignment.centerLeft,
-                                                  child: Text(
+                                              SizedBox(height: 7.0),
+                                              Text(
                                                     "${_visit.visitorName}",
                                                     textAlign: TextAlign.start,
                                                     style: TextStyle(fontWeight: FontWeight.bold),
                                                   ),
-                                                ),
-                                              ),
+                                              SizedBox(height: 7.0),
                                               Text(
                                                 "${_visit.visitorPhone}",
                                               ),
                                               SizedBox(
-                                                height: 5.0,
+                                                height: 7.0,
                                               ),
                                               Text(
-                                                "Expected at : ${DateFormat.yMMMd().format(DateTime.parse(_visit.expectedVisitTime))}",
+                                                "Expected on : ${DateFormat.yMMMd().format(DateTime.parse(_visit.expectedVisitTime))}",
                                                 style: Theme.of(context)
                                                     .textTheme
                                                     .subtitle,
