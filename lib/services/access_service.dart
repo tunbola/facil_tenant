@@ -1,16 +1,13 @@
 import "package:facil_tenant/services/storage_service.dart";
 import "dart:convert" as conv;
 import 'package:intl/intl.dart';
-import "package:facil_tenant/services/navigation_service.dart";
-import "package:facil_tenant/singleton/locator.dart";
-import "package:facil_tenant/routes/route_paths.dart" as routes;
 
 class AccessService {
   static final String _key = "FacilAccessKey";
   static String _userAccessCache = "";
-  static NavigationService _navigationService = locator<NavigationService>();
   static List<String> _supportedExtensions = ['pdf', 'jpg', 'jpeg', 'png'];
   static List<String> _imageExtensions = ['jpg', 'png', 'jpeg'];
+  
   /// setAccess method takes information sent from the server
   /// and calls a method from LocalStorage class to save information
   /// in storage

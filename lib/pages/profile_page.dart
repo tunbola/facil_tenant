@@ -1286,20 +1286,48 @@ class _ProfilePageState extends State<ProfilePage>
                                   elevation: 1,
                                   margin: EdgeInsets.symmetric(
                                       vertical: 5, horizontal: 10),
-                                  child: ListTile(
-                                    isThreeLine: true,
-                                    leading: CircleAvatar(
-                                      backgroundColor: shedAppBlue100,
-                                      child: Text(dependent.othernames == null
-                                          ? "NN"
-                                          : "${dependent.surname[0]}${dependent.othernames[0]}"),
-                                      radius: 30,
-                                    ),
-                                    title: Text(dependent.othernames == null
-                                        ? "No name yet"
-                                        : "${dependent.surname} ${dependent.othernames}"),
-                                    subtitle: Text("${dependent.phone} \n${dependent.relationship}"),
-                                  ),
+                                  child: Container(child:  Row(
+                                    children: <Widget>[
+                                      Container(
+                                        width: MediaQuery.of(context).size.width * 0.25,
+                                        height: 100.0,
+                                        decoration: BoxDecoration(
+                                          color: dependent.pictureUrl == null ? shedAppBlue400 : null
+                                        ),
+                                        child: dependent.pictureUrl == null
+                                            ? Icon(Icons.info_outline, color: Colors.white,)
+                                            : Image.network(
+                                                dependent.pictureUrl,
+                                                fit: BoxFit.cover),
+                                      ),
+                                      SizedBox(width: 10.0),
+                                      Expanded(
+                                        child: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
+                                          Wrap(children: <Widget>[
+                                            Icon(Icons.person_outline, size: 20.0,),
+                                            SizedBox(width: 10.0),
+                                            Text(dependent.othernames == null
+                                              ? "No name yet"
+                                              : "${dependent.surname} ${dependent.othernames}"),
+                                          ]),
+                                          Row(
+                                            children: <Widget>[
+                                              Icon(Icons.phone_in_talk, size: 20.0,),
+                                            SizedBox(width: 10.0),
+                                            Text("${dependent.phone}"),
+                                            ]
+                                          ),
+                                          Row(
+                                            children: <Widget>[
+                                              Icon(Icons.group , size: 20.0,),
+                                            SizedBox(width: 10.0),
+                                            Text("${dependent.relationship}"),
+                                            ]
+                                          ),
+                                        ]),
+                                      )
+                                    ],
+                                  ), )
                                 );
                               },
                               childCount: _userProfile.childrenUser.length,
@@ -1372,7 +1400,8 @@ class _ProfilePageState extends State<ProfilePage>
                                           child: Column(
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.start,
-                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
                                             children: <Widget>[
                                               Text(
                                                 "Added at : ${DateFormat.yMMMd().format(DateTime.parse(_visit.createdAt))}",
@@ -1382,10 +1411,12 @@ class _ProfilePageState extends State<ProfilePage>
                                               ),
                                               SizedBox(height: 7.0),
                                               Text(
-                                                    "${_visit.visitorName}",
-                                                    textAlign: TextAlign.start,
-                                                    style: TextStyle(fontWeight: FontWeight.bold),
-                                                  ),
+                                                "${_visit.visitorName}",
+                                                textAlign: TextAlign.start,
+                                                style: TextStyle(
+                                                    fontWeight:
+                                                        FontWeight.bold),
+                                              ),
                                               SizedBox(height: 7.0),
                                               Text(
                                                 "${_visit.visitorPhone}",
