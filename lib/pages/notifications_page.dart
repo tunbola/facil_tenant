@@ -1,6 +1,4 @@
-import 'package:badges/badges.dart';
 import 'package:facil_tenant/models/index.dart';
-import 'package:facil_tenant/pages/paystack_webview_page.dart';
 import 'package:facil_tenant/pages/update_notification_page.dart';
 import 'package:facil_tenant/services/access_service.dart';
 import 'package:facil_tenant/styles/colors.dart';

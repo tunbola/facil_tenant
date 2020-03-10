@@ -21,8 +21,7 @@ class PaymentTypeModel {
     @required this.paymentUnit,
   })  : assert(name != null),
         assert(amount != null),
-        assert(paymentUnit != null){
-  }
+        assert(paymentUnit != null);
 
   factory PaymentTypeModel.fromJson(Map<String, dynamic> json) => _$PaymentTypeModelFromJson(json);
   Map<String, dynamic> toJson() => _$PaymentTypeModelToJson(this);
