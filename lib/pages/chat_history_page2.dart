@@ -38,15 +38,15 @@ class _ChatHistoryPageState extends State<ChatHistoryPage> {
   final _message = TextEditingController();
 
   Duration interval = Duration(seconds: 1);
-  ScrollController _scrollController =
-      new ScrollController();
+  ScrollController _scrollController = new ScrollController();
 
   List<String> _viewerIdList = [];
-
-  List<ChatModel> _chatList = [];
-  ValueNotifier _listLength = ValueNotifier(0);
+  int _counter = 0;
 
   int _indexToShow = 1;
+
+  final StreamController<int> _chatStreamController = StreamController<int>();
+  List<ChatModel> _chatContent = [];
 
   _updateMessagesState(List<String> msgsIdList) {
     final msgIds = msgsIdList.reduce((value, element) => value + '|' + element);
@@ -74,9 +74,12 @@ class _ChatHistoryPageState extends State<ChatHistoryPage> {
       }
     }
     _updateMessagesState(_msgIdsList);
-    _chatList = _msgList;
-    _listLength.value = _msgList.length;
-    return Future.value(_msgList.reversed.toList());
+    return _msgList.reversed.toList();
+  }
+
+  Stream<List<ChatModel>> _chat() async* {
+    _chatContent = await _fetchChatFromDB();
+    yield await _chatContent;
   }
 
   bool _validateMsg(String content) {
@@ -84,27 +87,17 @@ class _ChatHistoryPageState extends State<ChatHistoryPage> {
     return true;
   }
 
-  _ChatHistoryPageState(this.routeParam);
-
-  @override
-  void initState() {
-    super.initState();
-    _listLength.addListener(() {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        Future.delayed(Duration.zero, () {
-          _scrollController.animateTo(
-            _scrollController.position.maxScrollExtent,
-            curve: Curves.easeOut,
-            duration: const Duration(milliseconds: 300),
-          );
-        });
-      });
+  _ChatHistoryPageState(this.routeParam) {
+    _chat().listen((content) {
+      _counter = content.length;
+      _chatStreamController.add(content.length);
     });
   }
 
   @override
   void dispose() {
     super.dispose();
+    _chatStreamController.close();
   }
 
   @override
@@ -112,8 +105,8 @@ class _ChatHistoryPageState extends State<ChatHistoryPage> {
     return AppScaffold(
       pageTitle: ValueNotifier(
           "${routeParam['username'].toUpperCase()} (${routeParam['title']})"),
-      child: FutureBuilder(
-        future: _fetchChatFromDB(),
+      child: StreamBuilder(
+        stream: _chat(),
         builder: (context, res) {
           if (res.hasError) {
             return Container(
@@ -153,11 +146,20 @@ class _ChatHistoryPageState extends State<ChatHistoryPage> {
                         child: ListView.builder(
                   controller: _scrollController,
                   padding: EdgeInsets.all(0.0),
-                  itemCount: _chatList.length,
+                  itemCount: res.data.length,
+                  reverse: true,
                   shrinkWrap: true,
                   itemBuilder: (context, idx) {
-                    final ChatModel eachContent = _chatList[idx];
+                    final ChatModel eachContent = res.data[idx];
                     bool isFromMe = _userId == eachContent.from.toString();
+
+                    Future.delayed(Duration.zero, () {
+                      _scrollController.animateTo(
+                        0.0,
+                        curve: Curves.easeOut,
+                        duration: const Duration(milliseconds: 1000),
+                      );
+                    });
                     return Container(
                       margin: EdgeInsets.all(5.0),
                       child: Column(
@@ -175,28 +177,21 @@ class _ChatHistoryPageState extends State<ChatHistoryPage> {
                                       onDismissed: (direction) {
                                         _httpService
                                             .deleteMessages(eachContent.id)
-                                            .then((response) {
-                                          setState(() {});
-                                        }).catchError((onError) {});
+                                            .then((response) {setState(() {});})
+                                            .catchError((onError) {});
                                       },
                                       child: _chatBox(isFromMe, eachContent),
                                     )
                                   : _chatBox(isFromMe, eachContent)),
                           Container(
                             margin: EdgeInsets.symmetric(horizontal: 10.0),
-                            alignment: isFromMe
-                                ? Alignment.bottomRight
-                                : Alignment.bottomLeft,
-                            child: Text(
-                              "${DateFormat.yMMMd().format(DateTime.parse(eachContent.createdAt))}, ${DateFormat.Hm().format(DateTime.parse(eachContent.createdAt))}",
-                              style: TextStyle(
-                                  fontSize: 10.0, fontWeight: FontWeight.bold),
-                            ),
+                            alignment: isFromMe? Alignment.bottomRight : Alignment.bottomLeft,
+                            child: Text("${DateFormat.yMMMEd().format(DateTime.parse(eachContent.createdAt))}", style: TextStyle(fontSize: 10.0, fontWeight: FontWeight.bold),),
                           )
                         ],
                       ),
                     );
-                  },  
+                  },
                 ))),
                 Container(
                   color: Colors.white,
@@ -237,28 +232,14 @@ class _ChatHistoryPageState extends State<ChatHistoryPage> {
                                               message: _message.text.trim())
                                           .then((response) {
                                         _message.clear();
-                                        Map<String, dynamic> responseContent =
-                                            Map.from(response['data']);
                                         setState(() {
-                                          _chatList.add(ChatModel(
-                                              id: responseContent["id"]
-                                                  .toString(),
-                                              message:
-                                                  responseContent["message"]
-                                                      .toString(),
-                                              createdAt: DateFormat(
-                                                      "yyyy-MM-dd HH:mm:ss")
-                                                  .format(DateTime.now()),
-                                              attachmentUrl: null,
-                                              from: responseContent['added_by']
-                                                  .toString()));
+                                          _counter += 1;
+                                          _chatStreamController.add(_counter);
                                         });
-                                        _listLength.value += 1;
                                       }).catchError((error) {
                                         Scaffold.of(context)
                                             .showSnackBar(SnackBar(
-                                          content: Text(
-                                              "Sorry, could not send message..."),
+                                          content: Text("Failed..."),
                                           backgroundColor: Colors.red,
                                         ));
                                       });
@@ -307,7 +288,6 @@ class _ChatHistoryPageState extends State<ChatHistoryPage> {
   }
 
   showAttachmentPreview(BuildContext context, File file, String fileExt) {
-    DateFormat.yMMM();
     showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -323,18 +303,10 @@ class _ChatHistoryPageState extends State<ChatHistoryPage> {
                         .sendMessage(_viewerIdList, routeParam['title'],
                             attachment: encodedAttachment)
                         .then((response) {
-                      Map<String, dynamic> responseContent =
-                          Map.from(response['data']);
                       chatHistoryPage.setState(() {
-                        _chatList.add(ChatModel(
-                            id: responseContent["id"].toString(),
-                            message: null.toString(),
-                            createdAt: DateFormat("yyyy-MM-dd HH:mm:ss")
-                                .format(DateTime.now()),
-                            attachmentUrl: responseContent['attachment_url'],
-                            from: responseContent['added_by'].toString()));
+                        _counter += 1;
+                        _chatStreamController.add(_counter);
                       });
-                      _listLength.value += 1;
                       Navigator.of(context).pop();
                     }).catchError((error) {
                       Scaffold.of(context).showSnackBar(SnackBar(
