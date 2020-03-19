@@ -71,8 +71,6 @@ class _NotificationsListState extends State<NotificationsList> {
   int _numberOfPages = 0;
   int _currentPage = 0;
 
-  bool isLoading = false;
-
   List<NotificationsModel> _notificationsList = [];
 
   var _scaffoldKey = new GlobalKey<ScaffoldState>();
@@ -151,65 +149,78 @@ class _NotificationsListState extends State<NotificationsList> {
   Widget build(BuildContext context) {
     return Scaffold(
         key: _scaffoldKey,
-        body: FutureBuilder(
-            future: _getNotifications(_nextPage),
-            builder: (context, res) {
-              if (res.hasError) {
-                return Container(
-                  child: Center(
-                    child: Text(
-                      "Error occured ...",
-                      style: TextStyle(color: Colors.red),
-                    ),
-                  ),
-                  height: MediaQuery.of(context).size.height,
-                  decoration: BoxDecoration(
-                    image: DecorationImage(
-                      image: AssetImage('assets/img/empty_state.png'),
-                    ),
-                  ),
-                );
-              }
-              if (res.hasData) {
-                if (res.data.length <= 0) {
-                  return Container(
-                    height: MediaQuery.of(context).size.height,
-                    decoration: BoxDecoration(
-                      image: DecorationImage(
-                        image: AssetImage('assets/img/no_messages.png'),
-                      ),
-                    ),
-                    child: Column(children: <Widget>[
-                      SizedBox(
-                        height: 50.0,
-                      ),
-                      Text(
-                        "Sorry, no content was found !",
-                        style: TextStyle(
-                            color: Colors.redAccent,
-                            fontWeight: FontWeight.bold),
-                      )
-                    ]),
-                  );
-                }
-                dynamic _notifications = res.data;
-                return ListView.builder(
-                    controller: _scrollController,
-                    padding: EdgeInsets.all(0),
-                    itemCount: res.data.length,
-                    itemBuilder: (context, idx) {
-                      final content = _notifications[idx];
-                      return Container(
-                        margin: EdgeInsets.only(bottom: 20.0),
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 10.0,
+        body: RefreshIndicator(
+            child: FutureBuilder(
+                future: _getNotifications(_nextPage),
+                builder: (context, res) {
+                  if (res.hasError) {
+                    return Container(
+                      child: Center(
+                        child: Text(
+                          "Error occured ...",
+                          style: TextStyle(color: Colors.red),
                         ),
-                        child: notificationBody(isRequest, content, context),
+                      ),
+                      height: MediaQuery.of(context).size.height,
+                      decoration: BoxDecoration(
+                        image: DecorationImage(
+                          image: AssetImage('assets/img/empty_state.png'),
+                        ),
+                      ),
+                    );
+                  }
+                  if (res.hasData) {
+                    if (res.data.length <= 0) {
+                      return Container(
+                        height: MediaQuery.of(context).size.height,
+                        decoration: BoxDecoration(
+                          image: DecorationImage(
+                            image: AssetImage('assets/img/no_messages.png'),
+                          ),
+                        ),
+                        child: Column(children: <Widget>[
+                          SizedBox(
+                            height: 50.0,
+                          ),
+                          Text(
+                            "Sorry, no content was found !",
+                            style: TextStyle(
+                                color: Colors.redAccent,
+                                fontWeight: FontWeight.bold),
+                          )
+                        ]),
                       );
-                    });
-              } else {
-                return AppSpinner();
-              }
+                    }
+                    dynamic _notifications = res.data;
+                    return ListView.builder(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        controller: _scrollController,
+                        padding: EdgeInsets.all(0),
+                        itemCount: res.data.length,
+                        itemBuilder: (context, idx) {
+                          final content = _notifications[idx];
+                          return Container(
+                            margin: EdgeInsets.only(bottom: 20.0),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 10.0,
+                            ),
+                            child:
+                                notificationBody(isRequest, content, context),
+                          );
+                        });
+                  } else {
+                    return AppSpinner();
+                  }
+                }),
+            onRefresh: () {
+              _notificationsList = [];
+              setState(() {
+                _nextPage = 1;
+                _numberOfPages = 0;
+                _currentPage = 0;
+                _getNotifications(1);
+              });
+              return Future.value(null);
             }));
   }
 
@@ -435,8 +446,9 @@ class _NotificationsListState extends State<NotificationsList> {
                         content.attachmentUrl != null
                             ? Column(children: <Widget>[
                                 AccessService.supportedImagesExtensions
-                                        .contains(AccessService.getfileExtension(
-                                            content.attachmentUrl))
+                                        .contains(
+                                            AccessService.getfileExtension(
+                                                content.attachmentUrl))
                                     ? Image.network(
                                         content.attachmentUrl,
                                         height: 300.0,

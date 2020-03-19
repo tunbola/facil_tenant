@@ -33,7 +33,7 @@ Route<dynamic> generateRoute(RouteSettings settings) {
       return MaterialPageRoute(builder: (context) => NotificationsPage());
     case routes.Announcements:
       return MaterialPageRoute(builder: (context) => NotificationsPage(isAnnouncements: true));
-    case routes.Complaints:
+    case routes.Requests:
       return MaterialPageRoute(builder: (context) => NotificationsPage(isRequests: true));
     case routes.CreateRequest:
       return MaterialPageRoute(builder: (context) => RequestsPage());
