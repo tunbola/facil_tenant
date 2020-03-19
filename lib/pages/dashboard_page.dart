@@ -8,9 +8,7 @@ import 'package:facil_tenant/components/image_button.dart';
 import '../components/app_scaffold.dart';
 
 import 'package:overlay_support/overlay_support.dart';
-
 import '../styles/colors.dart';
-
 import "package:facil_tenant/services/access_service.dart";
 
 import "package:facil_tenant/services/navigation_service.dart";
@@ -260,7 +258,7 @@ class _DashboardPageState extends State<DashboardPage> {
                   "assets/img/sent_message.png",
                   caption: "Requests",
                   onPress: () =>
-                      _navigationService.navigateTo(routes.Complaints),
+                      _navigationService.navigateTo(routes.Requests),
                 ),
                 ImageButton(
                   "assets/img/verified_payment.png",

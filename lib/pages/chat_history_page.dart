@@ -13,7 +13,10 @@ import 'package:flutter/material.dart';
 import 'package:facil_tenant/components/app_scaffold.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:intl/intl.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:image/image.dart' as Im;
+import 'dart:math' as Math;
 
 _ChatHistoryPageState chatHistoryPage;
 
@@ -38,8 +41,7 @@ class _ChatHistoryPageState extends State<ChatHistoryPage> {
   final _message = TextEditingController();
 
   Duration interval = Duration(seconds: 1);
-  ScrollController _scrollController =
-      new ScrollController();
+  ScrollController _scrollController = new ScrollController();
 
   List<String> _viewerIdList = [];
 
@@ -47,6 +49,8 @@ class _ChatHistoryPageState extends State<ChatHistoryPage> {
   ValueNotifier _listLength = ValueNotifier(0);
 
   int _indexToShow = 1;
+  int _loaderViewIndex =
+      1; //holds the index of indexedstack widget to show when a file has been selected for upload
 
   _updateMessagesState(List<String> msgsIdList) {
     final msgIds = msgsIdList.reduce((value, element) => value + '|' + element);
@@ -77,6 +81,20 @@ class _ChatHistoryPageState extends State<ChatHistoryPage> {
     _chatList = _msgList;
     _listLength.value = _msgList.length;
     return Future.value(_msgList.reversed.toList());
+  }
+
+  Future<File> compressFile(File file) async {
+    final tempDir = await getTemporaryDirectory();
+    final path = tempDir.path;
+    int rand = new Math.Random().nextInt(10000);
+
+    Im.Image image = Im.decodeImage(file.readAsBytesSync());
+    Im.Image smallerImage = Im.copyResize(image,
+        height: 500,
+        width: 500); // choose the size here, it will maintain aspect ratio
+    var compressedImage = new File('$path/img_$rand.png')
+      ..writeAsBytesSync(Im.encodeJpg(smallerImage, quality: 85));
+    return Future.value(compressedImage);
   }
 
   bool _validateMsg(String content) {
@@ -145,159 +163,192 @@ class _ChatHistoryPageState extends State<ChatHistoryPage> {
                     ],
                   ));
             }
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: <Widget>[
-                Expanded(
-                    child: Material(
-                        child: ListView.builder(
-                  controller: _scrollController,
-                  padding: EdgeInsets.all(0.0),
-                  itemCount: _chatList.length,
-                  shrinkWrap: true,
-                  itemBuilder: (context, idx) {
-                    final ChatModel eachContent = _chatList[idx];
-                    bool isFromMe = _userId == eachContent.from.toString();
-                    return Container(
-                      margin: EdgeInsets.all(5.0),
-                      child: Column(
-                        children: <Widget>[
-                          SizedBox(
-                            height: 5.0,
-                          ),
-                          Container(
+            return IndexedStack(index: _loaderViewIndex, children: [
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  AppSpinner(),
+                  SizedBox(height: 10.0),
+                  Text(
+                    "Image is processing, please wait ...",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  )
+                ],
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  Expanded(
+                      child: Material(
+                          child: ListView.builder(
+                    controller: _scrollController,
+                    padding: EdgeInsets.all(0.0),
+                    itemCount: _chatList.length,
+                    shrinkWrap: true,
+                    itemBuilder: (context, idx) {
+                      final ChatModel eachContent = _chatList[idx];
+                      bool isFromMe = _userId == eachContent.from.toString();
+                      return Container(
+                        margin: EdgeInsets.all(5.0),
+                        child: Column(
+                          children: <Widget>[
+                            SizedBox(
+                              height: 5.0,
+                            ),
+                            Container(
+                                alignment: isFromMe
+                                    ? Alignment.bottomRight
+                                    : Alignment.bottomLeft,
+                                child: isFromMe
+                                    ? Dismissible(
+                                        key: UniqueKey(),
+                                        onDismissed: (direction) {
+                                          _httpService
+                                              .deleteMessages(eachContent.id)
+                                              .then((response) {
+                                            setState(() {});
+                                          }).catchError((onError) {});
+                                        },
+                                        child: _chatBox(isFromMe, eachContent),
+                                      )
+                                    : _chatBox(isFromMe, eachContent)),
+                            Container(
+                              margin: EdgeInsets.symmetric(horizontal: 10.0),
                               alignment: isFromMe
                                   ? Alignment.bottomRight
                                   : Alignment.bottomLeft,
-                              child: isFromMe
-                                  ? Dismissible(
-                                      key: UniqueKey(),
-                                      onDismissed: (direction) {
+                              child: Text(
+                                "${DateFormat.yMMMd().format(DateTime.parse(eachContent.createdAt))}, ${DateFormat.Hm().format(DateTime.parse(eachContent.createdAt))}",
+                                style: TextStyle(fontSize: 10.0),
+                              ),
+                            )
+                          ],
+                        ),
+                      );
+                    },
+                  ))),
+                  Container(
+                    color: Colors.white,
+                    padding: EdgeInsets.all(10.0),
+                    child: Form(
+                      key: _formKey,
+                      child: new Table(
+                        columnWidths: {
+                          0: FlexColumnWidth(8),
+                          1: FlexColumnWidth(1)
+                        },
+                        children: [
+                          TableRow(children: [
+                            TextFormField(
+                              controller: _message,
+                              decoration: InputDecoration(
+                                  hintText: "Message",
+                                  suffixIcon: IconButton(
+                                    icon: Icon(Icons.send),
+                                    color: shedAppBlue400,
+                                    onPressed: () {
+                                      if (_formKey.currentState.validate()) {
+                                        if (_message.text.trim().length < 1) {
+                                          return;
+                                        }
+                                        if (!_validateMsg(
+                                            _message.text.trim())) {
+                                          Scaffold.of(context)
+                                              .showSnackBar(SnackBar(
+                                            content: Text(
+                                                "Message cannot contain |"),
+                                            backgroundColor: Colors.red,
+                                          ));
+                                          return;
+                                        }
                                         _httpService
-                                            .deleteMessages(eachContent.id)
+                                            .sendMessage(_viewerIdList,
+                                                routeParam['title'],
+                                                message: _message.text.trim())
                                             .then((response) {
-                                          setState(() {});
-                                        }).catchError((onError) {});
-                                      },
-                                      child: _chatBox(isFromMe, eachContent),
-                                    )
-                                  : _chatBox(isFromMe, eachContent)),
-                          Container(
-                            margin: EdgeInsets.symmetric(horizontal: 10.0),
-                            alignment: isFromMe
-                                ? Alignment.bottomRight
-                                : Alignment.bottomLeft,
-                            child: Text(
-                              "${DateFormat.yMMMd().format(DateTime.parse(eachContent.createdAt))}, ${DateFormat.Hm().format(DateTime.parse(eachContent.createdAt))}",
-                              style: TextStyle(
-                                  fontSize: 10.0, fontWeight: FontWeight.bold),
+                                          _message.clear();
+                                          Map<String, dynamic> responseContent =
+                                              Map.from(response['data']);
+                                          setState(() {
+                                            _chatList.add(ChatModel(
+                                                id: responseContent["id"]
+                                                    .toString(),
+                                                message:
+                                                    responseContent["message"]
+                                                        .toString(),
+                                                createdAt: DateFormat(
+                                                        "yyyy-MM-dd HH:mm:ss")
+                                                    .format(DateTime.now()),
+                                                attachmentUrl: null,
+                                                from:
+                                                    responseContent['added_by']
+                                                        .toString()));
+                                          });
+                                          _listLength.value += 1;
+                                        }).catchError((error) {
+                                          Scaffold.of(context)
+                                              .showSnackBar(SnackBar(
+                                            content: Text(
+                                                "Sorry, could not send message..."),
+                                            backgroundColor: Colors.red,
+                                          ));
+                                        });
+                                      }
+                                    },
+                                  )),
+                              maxLines: null,
+                              maxLength: 2000,
                             ),
-                          )
+                            IconButton(
+                                icon: Icon(Icons.attach_file),
+                                onPressed: () async {
+                                  final file = await FilePicker.getFile(
+                                      type: FileType.ANY);
+                                  if (file == null) return;
+                                  setState(() {
+                                    _loaderViewIndex = 0;
+                                  });
+                                  List splitPath = file.path.split('/');
+                                  String fileName =
+                                      splitPath[splitPath.length - 1];
+                                  List splitName = fileName.split(".");
+                                  String fileExt =
+                                      splitName[splitName.length - 1];
+                                  if (!AccessService.supportedExtensions
+                                      .contains(fileExt)) {
+                                    setState(() {
+                                      _loaderViewIndex = 1;
+                                    });
+                                    Scaffold.of(context).showSnackBar(SnackBar(
+                                      content: Text(
+                                        'File type is not supported',
+                                      ),
+                                      backgroundColor: Colors.red,
+                                    ));
+                                    return;
+                                  }
+
+                                  if (fileExt.toLowerCase() == 'pdf') {
+                                    showAttachmentPreview(
+                                        context, file, fileExt);
+                                    return;
+                                  } else {
+                                    File compressedFile =
+                                        await compressFile(file);
+                                    showAttachmentPreview(
+                                        context, compressedFile, fileExt);
+                                    return;
+                                  }
+                                })
+                          ]),
                         ],
                       ),
-                    );
-                  },  
-                ))),
-                Container(
-                  color: Colors.white,
-                  padding: EdgeInsets.all(10.0),
-                  child: Form(
-                    key: _formKey,
-                    child: new Table(
-                      columnWidths: {
-                        0: FlexColumnWidth(8),
-                        1: FlexColumnWidth(1)
-                      },
-                      children: [
-                        TableRow(children: [
-                          TextFormField(
-                            controller: _message,
-                            decoration: InputDecoration(
-                                hintText: "Message",
-                                suffixIcon: IconButton(
-                                  icon: Icon(Icons.send),
-                                  color: shedAppBlue400,
-                                  onPressed: () {
-                                    if (_formKey.currentState.validate()) {
-                                      if (_message.text.trim().length < 1) {
-                                        return;
-                                      }
-                                      if (!_validateMsg(_message.text.trim())) {
-                                        Scaffold.of(context)
-                                            .showSnackBar(SnackBar(
-                                          content:
-                                              Text("Message cannot contain |"),
-                                          backgroundColor: Colors.red,
-                                        ));
-                                        return;
-                                      }
-                                      _httpService
-                                          .sendMessage(_viewerIdList,
-                                              routeParam['title'],
-                                              message: _message.text.trim())
-                                          .then((response) {
-                                        _message.clear();
-                                        Map<String, dynamic> responseContent =
-                                            Map.from(response['data']);
-                                        setState(() {
-                                          _chatList.add(ChatModel(
-                                              id: responseContent["id"]
-                                                  .toString(),
-                                              message:
-                                                  responseContent["message"]
-                                                      .toString(),
-                                              createdAt: DateFormat(
-                                                      "yyyy-MM-dd HH:mm:ss")
-                                                  .format(DateTime.now()),
-                                              attachmentUrl: null,
-                                              from: responseContent['added_by']
-                                                  .toString()));
-                                        });
-                                        _listLength.value += 1;
-                                      }).catchError((error) {
-                                        Scaffold.of(context)
-                                            .showSnackBar(SnackBar(
-                                          content: Text(
-                                              "Sorry, could not send message..."),
-                                          backgroundColor: Colors.red,
-                                        ));
-                                      });
-                                    }
-                                  },
-                                )),
-                            maxLines: null,
-                            maxLength: 2000,
-                          ),
-                          IconButton(
-                              icon: Icon(Icons.attach_file),
-                              onPressed: () async {
-                                final file = await FilePicker.getFile(
-                                    type: FileType.ANY);
-                                if (file == null) return;
-                                List splitPath = file.path.split('/');
-                                String fileName =
-                                    splitPath[splitPath.length - 1];
-                                List splitName = fileName.split(".");
-                                String fileExt =
-                                    splitName[splitName.length - 1];
-                                if (!AccessService.supportedExtensions
-                                    .contains(fileExt)) {
-                                  //extension is not supported
-                                  Scaffold.of(context).showSnackBar(SnackBar(
-                                    content: Text("File type is not supported"),
-                                    backgroundColor: Colors.red,
-                                  ));
-                                  return;
-                                }
-                                showAttachmentPreview(context, file, fileExt);
-                              })
-                        ]),
-                      ],
                     ),
                   ),
-                ),
-              ],
-            );
+                ],
+              )
+            ]);
           } else {
             return AppSpinner();
           }
@@ -307,7 +358,9 @@ class _ChatHistoryPageState extends State<ChatHistoryPage> {
   }
 
   showAttachmentPreview(BuildContext context, File file, String fileExt) {
-    DateFormat.yMMM();
+    chatHistoryPage.setState(() {
+      _loaderViewIndex = 1;
+    });
     showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -328,7 +381,7 @@ class _ChatHistoryPageState extends State<ChatHistoryPage> {
                       chatHistoryPage.setState(() {
                         _chatList.add(ChatModel(
                             id: responseContent["id"].toString(),
-                            message: null.toString(),
+                            message: null,
                             createdAt: DateFormat("yyyy-MM-dd HH:mm:ss")
                                 .format(DateTime.now()),
                             attachmentUrl: responseContent['attachment_url'],
@@ -349,7 +402,7 @@ class _ChatHistoryPageState extends State<ChatHistoryPage> {
                   )),
               backgroundColor: Colors.grey[400],
               appBar: AppBar(
-                  backgroundColor: shedAppBlue400,
+                  backgroundColor: shedAppBlue300,
                   title: Text(
                     "Preview",
                     style: TextStyle(color: Colors.white),
@@ -365,33 +418,39 @@ class _ChatHistoryPageState extends State<ChatHistoryPage> {
                   )),
               body: SafeArea(
                   child: Container(
-                height: MediaQuery.of(context).size.height * 80,
-                width: MediaQuery.of(context).size.width,
-                child: Container(
-                    child: fileExt.toLowerCase() == 'pdf'
-                        ? IndexedStack(index: _indexToShow, children: [
-                            PDFView(
-                              filePath: file.path,
-                              autoSpacing: true,
-                              enableSwipe: true,
-                              pageSnap: true,
-                              onError: (e) {
-                                Scaffold.of(context).showSnackBar(SnackBar(
-                                  content: Text("${e.toString()}"),
-                                ));
-                              },
-                              onRender: (_pages) {
-                                setState(() {
-                                  _indexToShow = 0;
-                                });
-                              },
-                            ),
-                            AppSpinner()
-                          ])
-                        : Image.file(
-                            file,
-                          )),
-              )),
+                      //height: MediaQuery.of(context).size.height * 80,
+                      //width: MediaQuery.of(context).size.width,
+                      child: (fileExt == 'pdf')
+                          ? IndexedStack(index: _indexToShow, children: [
+                              PDFView(
+                                filePath: file.path,
+                                autoSpacing: true,
+                                enableSwipe: true,
+                                pageSnap: true,
+                                onError: (e) {
+                                  Scaffold.of(context).showSnackBar(SnackBar(
+                                    content: Text("${e.toString()}"),
+                                  ));
+                                },
+                                onRender: (_pages) {
+                                  setState(() {
+                                    _indexToShow = 0;
+                                  });
+                                },
+                              ),
+                              Container(
+                                child: AppSpinner(),
+                              )
+                            ])
+                          : Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                  Builder(builder: (BuildContext context) {
+                                    return Image.file(
+                                      file,
+                                    );
+                                  })
+                                ]))),
             );
           });
         });
