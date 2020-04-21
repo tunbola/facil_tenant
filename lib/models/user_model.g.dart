@@ -10,7 +10,7 @@ UserModel _$UserModelFromJson(Map<String, dynamic> json) {
   return UserModel(
       id: json['id'] as String,
       propertyId: json['property_id'] as String,
-      parentUserId: json['parent_user_id'] as String,
+      addedBy: json['added_by'] as String,
       email: json['email'] as String,
       phone: json['phone'] as String,
       surname: json['surname'] as String,
@@ -24,7 +24,7 @@ UserModel _$UserModelFromJson(Map<String, dynamic> json) {
 Map<String, dynamic> _$UserModelToJson(UserModel instance) => <String, dynamic>{
       'id': instance.id,
       'property_id': instance.propertyId,
-      'parent_user_id': instance.parentUserId,
+      'added_by': instance.addedBy,
       'email': instance.email,
       'phone': instance.phone,
       'surname': instance.surname,

@@ -106,7 +106,7 @@ class AccessService {
   /// gets user's role from storage
   static Future<String> userRole() async {
     String fscontent = await AccessService._fsContent();
-    String response = conv.json.decode(fscontent)["role"]["name"];
+    String response = (conv.json.decode(fscontent)["role"]["id"]).toString();
     return response;
   }
 
