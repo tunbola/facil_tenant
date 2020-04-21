@@ -36,6 +36,7 @@ class _ProfilePageState extends State<ProfilePage>
   final _visitDate = TextEditingController();
   final _address = TextEditingController();
   String _title = "Mr";
+  var userRoleId;
   ValueNotifier _dependent = ValueNotifier(null);
 
   HttpService _httpService = new HttpService();
@@ -65,6 +66,7 @@ class _ProfilePageState extends State<ProfilePage>
 
   Future<UserProfileModel> _getUserProfile() async {
     String userId = await AccessService.getUserId();
+    this.userRoleId = await AccessService.userRole();
     Map<String, dynamic> response = await _httpService.fetchProfile(userId);
     Map<String, dynamic> profile = response["data"];
     UserProfileModel userProfile = UserProfileModel(
@@ -548,7 +550,7 @@ class _ProfilePageState extends State<ProfilePage>
                                                 : pageType == "dependents"
                                                     ? "ADD DEPENDENT"
                                                     : "UPDATE PROFILE"),
-                                        onPressed: () {
+                                        onPressed: () async {
                                           setState(() {
                                             _buttonClicked = true;
                                           });
@@ -582,13 +584,15 @@ class _ProfilePageState extends State<ProfilePage>
                                       SizedBox(
                                         height: 10.0,
                                       ),
-                                      Text(_report["message"],
-                                          style: TextStyle(
-                                              color: _report["status"]
-                                                  ? Colors.greenAccent
-                                                  : Colors.redAccent,
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 15.0)),
+                                      Center(
+                                        child: Text(_report["message"],
+                                            style: TextStyle(
+                                                color: _report["status"]
+                                                    ? Colors.green[700]
+                                                    : Colors.redAccent,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 15.0)),
+                                      ),
                                       SizedBox(
                                         height: 30.0,
                                       )
@@ -654,7 +658,8 @@ class _ProfilePageState extends State<ProfilePage>
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: <Widget>[
                   Text(
-                    "An error occured. Please check your internet connection",
+                    res.error
+                        .toString(), //"An error occured. Please check your internet connection",
                     style: TextStyle(
                         color: Colors.red,
                         fontWeight: FontWeight.bold,
@@ -687,6 +692,40 @@ class _ProfilePageState extends State<ProfilePage>
                         val == 1 ? Icons.person_add : Icons.verified_user,
                       ),
                       onPressed: () {
+                        if (val == 1) {
+                          if (userRoleId != '3') {
+                            showDialog(
+                              context: context,
+                              builder: (_) {
+                                return SizedBox(
+                                    height: 80.0,
+                                    child: AlertDialog(
+                                      title: Text(
+                                        'User account',
+                                        style: TextStyle(fontSize: 16.0),
+                                      ),
+                                      content: Text(
+                                        'Sorry, you cannot create a user account',
+                                        //style: TextStyle(fontSize: 14.0),
+                                      ),
+                                      actions: [
+                                        FlatButton(
+                                          child: Text(
+                                            "Ok, thanks",
+                                            style: TextStyle(
+                                                color: shedAppBlue300),
+                                          ),
+                                          onPressed: () {
+                                            Navigator.of(context).pop();
+                                          },
+                                        )
+                                      ],
+                                    ));
+                              },
+                            );
+                            return;
+                          }
+                        }
                         openModal(context,
                             pageType: val == 1 ? 'dependents' : 'visits');
                       },
@@ -1283,52 +1322,97 @@ class _ProfilePageState extends State<ProfilePage>
                                 UserModel dependent =
                                     _userProfile.childrenUser[idx];
                                 return Card(
-                                  elevation: 1,
-                                  margin: EdgeInsets.symmetric(
-                                      vertical: 5, horizontal: 10),
-                                  child: Container(child:  Row(
-                                    children: <Widget>[
-                                      Container(
-                                        width: MediaQuery.of(context).size.width * 0.25,
-                                        height: 100.0,
-                                        decoration: BoxDecoration(
-                                          color: dependent.pictureUrl == null ? shedAppBlue400 : null
-                                        ),
-                                        child: dependent.pictureUrl == null
-                                            ? Icon(Icons.info_outline, color: Colors.white,)
-                                            : Image.network(
-                                                dependent.pictureUrl,
-                                                fit: BoxFit.cover),
+                                    elevation: 1,
+                                    margin: EdgeInsets.symmetric(
+                                        vertical: 5, horizontal: 10),
+                                    child: Container(
+                                      child: Row(
+                                        children: <Widget>[
+                                          Container(
+                                            width: MediaQuery.of(context)
+                                                    .size
+                                                    .width *
+                                                0.25,
+                                            height: 100.0,
+                                            decoration: BoxDecoration(
+                                                color:
+                                                    dependent.pictureUrl == null
+                                                        ? shedAppBlue400
+                                                        : null),
+                                            child: dependent.pictureUrl == null
+                                                ? Icon(
+                                                    Icons.info_outline,
+                                                    color: Colors.white,
+                                                  )
+                                                : Image.network(
+                                                    dependent.pictureUrl,
+                                                    fit: BoxFit.cover,
+                                                    loadingBuilder: (BuildContext
+                                                            context,
+                                                        Widget child,
+                                                        ImageChunkEvent
+                                                            loadingProgress) {
+                                                      if (loadingProgress ==
+                                                          null) return child;
+                                                      return Center(
+                                                        child:
+                                                            CircularProgressIndicator(
+                                                          backgroundColor:
+                                                              Colors.white,
+                                                          value: loadingProgress
+                                                                      .expectedTotalBytes !=
+                                                                  null
+                                                              ? loadingProgress
+                                                                      .cumulativeBytesLoaded /
+                                                                  loadingProgress
+                                                                      .expectedTotalBytes
+                                                              : null,
+                                                        ),
+                                                      );
+                                                    },
+                                                  ),
+                                          ),
+                                          SizedBox(width: 10.0),
+                                          Expanded(
+                                            child: Column(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: <Widget>[
+                                                  Wrap(children: <Widget>[
+                                                    Icon(
+                                                      Icons.person_outline,
+                                                      size: 20.0,
+                                                    ),
+                                                    SizedBox(width: 10.0),
+                                                    Text(dependent.othernames ==
+                                                            null
+                                                        ? "No name yet"
+                                                        : "${dependent.surname} ${dependent.othernames}"),
+                                                  ]),
+                                                  Row(children: <Widget>[
+                                                    Icon(
+                                                      Icons.phone_in_talk,
+                                                      size: 20.0,
+                                                    ),
+                                                    SizedBox(width: 10.0),
+                                                    Text("${dependent.phone}"),
+                                                  ]),
+                                                  Row(children: <Widget>[
+                                                    Icon(
+                                                      Icons.group,
+                                                      size: 20.0,
+                                                    ),
+                                                    SizedBox(width: 10.0),
+                                                    Text(
+                                                        "${dependent.relationship}"),
+                                                  ]),
+                                                ]),
+                                          )
+                                        ],
                                       ),
-                                      SizedBox(width: 10.0),
-                                      Expanded(
-                                        child: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
-                                          Wrap(children: <Widget>[
-                                            Icon(Icons.person_outline, size: 20.0,),
-                                            SizedBox(width: 10.0),
-                                            Text(dependent.othernames == null
-                                              ? "No name yet"
-                                              : "${dependent.surname} ${dependent.othernames}"),
-                                          ]),
-                                          Row(
-                                            children: <Widget>[
-                                              Icon(Icons.phone_in_talk, size: 20.0,),
-                                            SizedBox(width: 10.0),
-                                            Text("${dependent.phone}"),
-                                            ]
-                                          ),
-                                          Row(
-                                            children: <Widget>[
-                                              Icon(Icons.group , size: 20.0,),
-                                            SizedBox(width: 10.0),
-                                            Text("${dependent.relationship}"),
-                                            ]
-                                          ),
-                                        ]),
-                                      )
-                                    ],
-                                  ), )
-                                );
+                                    ));
                               },
                               childCount: _userProfile.childrenUser.length,
                             ),

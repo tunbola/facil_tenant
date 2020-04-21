@@ -12,4 +12,4 @@ const String UserProfile = 'profile';
 const String Messages = 'messages';
 const String MessagesByTitle = 'messages/title';
 const String ChatHistory = 'chat/reply';
-const String Paystack = 'payment/gateway';
+const String Webview = 'payment/gateway';

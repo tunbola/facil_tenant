@@ -90,8 +90,8 @@ class _ChatHistoryPageState extends State<ChatHistoryPage> {
 
     Im.Image image = Im.decodeImage(file.readAsBytesSync());
     Im.Image smallerImage = Im.copyResize(image,
-        height: 500,
-        width: 500); // choose the size here, it will maintain aspect ratio
+        height: 300,
+        width: 400); // choose the size here, it will maintain aspect ratio
     var compressedImage = new File('$path/img_$rand.png')
       ..writeAsBytesSync(Im.encodeJpg(smallerImage, quality: 85));
     return Future.value(compressedImage);
@@ -168,10 +168,9 @@ class _ChatHistoryPageState extends State<ChatHistoryPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  AppSpinner(),
                   SizedBox(height: 10.0),
                   Text(
-                    "Image is processing, please wait ...",
+                    "Processing image, please wait ...",
                     style: TextStyle(fontWeight: FontWeight.bold),
                   )
                 ],
@@ -470,13 +469,24 @@ class _ChatHistoryPageState extends State<ChatHistoryPage> {
                       }));
                     },
                     child: Container(
-                      height: 270,
+                      height: 200,
                       width: 250,
-                      decoration: BoxDecoration(
-                        image: DecorationImage(
-                          fit: BoxFit.fill,
-                          image: NetworkImage(eachContent.attachmentUrl),
-                        ),
+                      child: Image.network(
+                        eachContent.attachmentUrl,
+                        fit: BoxFit.fill,
+                        loadingBuilder: (BuildContext context, Widget child,
+                            ImageChunkEvent loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return Center(
+                            child: CircularProgressIndicator(
+                              backgroundColor: Colors.white,
+                              value: loadingProgress.expectedTotalBytes != null
+                                  ? loadingProgress.cumulativeBytesLoaded /
+                                      loadingProgress.expectedTotalBytes
+                                  : null,
+                            ),
+                          );
+                        },
                       ),
                     ))
                 : InkWell(

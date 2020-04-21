@@ -6,14 +6,12 @@ import 'package:facil_tenant/models/balance_model.dart';
 import 'package:facil_tenant/models/outstanding_bills_model.dart';
 import 'package:facil_tenant/models/payment_type_model.dart';
 import 'package:facil_tenant/models/payments_model.dart';
+import 'package:facil_tenant/pages/webview_page.dart';
 import 'package:facil_tenant/services/http_service.dart';
-import 'package:facil_tenant/services/navigation_service.dart';
 import 'package:intl/intl.dart';
 import 'package:facil_tenant/styles/colors.dart';
 import 'package:flutter/material.dart';
 import '../components/app_scaffold.dart';
-import "package:facil_tenant/singleton/locator.dart";
-import "package:facil_tenant/routes/route_paths.dart" as routes;
 import 'package:flutter_picker/flutter_picker.dart';
 import 'package:crypto/crypto.dart' as crypto;
 
@@ -43,7 +41,7 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
   final _httpService = HttpService();
   bool _proceedToPayButton = false;
   final _scaffoldKey = GlobalKey<ScaffoldState>();
-  
+
   final String fixedPayment = '1';
   final String partialPayment = '1';
   final String fullPayment = '2';
@@ -52,7 +50,6 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
       '4'; //means partial payment is selected and field is closed
 
   final choicePeriod = ValueNotifier({"year": (DateTime.now()).year});
-  static NavigationService _navigationService = locator<NavigationService>();
   String yearToSearch = ((DateTime.now()).year).toString();
   String monthToSearch = "0";
   String monthName = "All";
@@ -132,7 +129,8 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
             };
       requestData.add(eachData);
     }
-    Map<String, dynamic> _response = await _httpService.getTransactionId(requestData);
+    Map<String, dynamic> _response =
+        await _httpService.getTransactionId(requestData);
     return Future.value(_response);
   }
 
@@ -308,7 +306,8 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
                                             ? Row(
                                                 mainAxisSize: MainAxisSize.min,
                                                 children: <Widget>[
-                                                    (bill.balanceId != null) ? ChoiceChip(
+                                                    (bill.balanceId != null)
+                                                        ? ChoiceChip(
                                                             label:
                                                                 Text("Balance"),
                                                             selected: (selectedChipValues[bill
@@ -331,7 +330,8 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
                                                                     balancePayment;
                                                               });
                                                             },
-                                                          ) : ChoiceChip(
+                                                          )
+                                                        : ChoiceChip(
                                                             label: Text("Full"),
                                                             selected: (selectedChipValues[bill
                                                                     .paymentType
@@ -446,7 +446,7 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
                                                                 key] =
                                                             hideTextField;
                                                         bill.dueTypeId =
-                                                                    partialPayment;
+                                                            partialPayment;
                                                       });
                                                     } catch (e) {
                                                       renderSnackBar(
@@ -525,8 +525,8 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
                                     renderSnackBar(_response['message']);
                                     return;
                                   }
-                                  _navigationService.navigateTo(routes.Paystack,
-                                      arg: _response['data']);
+                                  String url = _response['data'];
+                                  await FacilWebView(url).openWebView();
                                 },
                                 child: _proceedToPayButton
                                     ? AuthButtonSpinner(Colors.white)
@@ -551,6 +551,7 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
                                       : balancePayment;
                             }
                           });
+                          _proceedToPayButton = false;
                           Navigator.of(context).pop();
                         },
                         child: Icon(Icons.close),

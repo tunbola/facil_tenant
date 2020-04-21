@@ -1,8 +1,13 @@
+import 'dart:convert';
+
 import 'package:facil_tenant/services/access_service.dart';
+import 'package:facil_tenant/services/navigation_service.dart';
+import 'package:facil_tenant/singleton/locator.dart';
 import 'package:flutter/material.dart';
 import '../styles/colors.dart';
 import "../services/http_service.dart";
 import "package:facil_tenant/components/auth_button_spinner.dart";
+import "package:facil_tenant/routes/route_paths.dart" as routes;
 
 class LoginPage extends StatefulWidget {
   final Function presentSnack;  //snack bar for all pages connected to authentication
@@ -22,6 +27,8 @@ class LoginFormState extends State<LoginPage> {
   
   final username = TextEditingController();
   final password = TextEditingController();
+
+  NavigationService _navigationService = locator<NavigationService>();
   
   final _formKey = GlobalKey<FormState>();
   bool buttonClicked = false;
@@ -111,23 +118,27 @@ class LoginFormState extends State<LoginPage> {
                               width: 20.0,
                             )
                           : Text('LOGIN'),
-                      onPressed: () {
+                      onPressed: () async {
                         if (_formKey.currentState.validate()) {
                           setState(() {
                             buttonClicked = true;
                           });
                           HttpService httpService = new HttpService();
-                          Future response = httpService.userLogin(username.text.trim(), password.text.trim());
-                          response.then((res) {
-                            if (res != null) {
-                              presentSnack(context, res, Colors.redAccent, Colors.white);
-                            }
-                            setState(() {
-                              buttonClicked = false;
-                            });
-                          }).catchError((onError) {
-                            presentSnack(context, "Fatal error occured while logging in", Colors.redAccent, Colors.white);
+                          Map<String, dynamic> response = await httpService.userLogin(username.text.trim(), password.text.trim());
+                          //save access token and other information
+                          setState(() {
+                            buttonClicked = false;
                           });
+                          if (response['status']) {
+                            bool access = await AccessService.setAccess(json.encode(response['data']));
+                            await AccessService.saveLogin(json.encode({"username": username.text.trim(), "password": password.text.trim()}));
+                            if (access) {
+                              _navigationService.navigateTo(routes.Home);
+                              return;
+                            }
+                          }
+                          presentSnack(context, response['message'], Colors.redAccent, Colors.white);
+                          return;
                         } 
                       },
                     ),

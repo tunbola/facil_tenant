@@ -6,7 +6,7 @@ part 'user_model.g.dart';
 class UserModel {
   final String id;
   final String propertyId;
-  final String parentUserId;
+  final String addedBy;
   final String email;
   final String phone;
   final String surname;
@@ -18,7 +18,7 @@ class UserModel {
   UserModel(
       {this.id,
       this.propertyId,
-      this.parentUserId,
+      this.addedBy,
       this.email,
       this.phone,
       this.surname,
