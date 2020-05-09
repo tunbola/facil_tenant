@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:facil_tenant/models/received_messages_model.dart';
 import 'package:facil_tenant/services/http_service.dart';
 import 'package:facil_tenant/styles/colors.dart';
@@ -19,6 +20,7 @@ class MessagesPage extends StatefulWidget {
 class _MessageListBySenders extends State<MessagesPage> {
   final _httpService = new HttpService();
   NavigationService _navigationService = locator<NavigationService>();
+  AccessService accessService = AccessService();
 
   Future<List<ReceivedMessagesModel>> _getMessages() async {
     Map<String, dynamic> response = await _httpService.fetchMessageSenders();
@@ -41,93 +43,162 @@ class _MessageListBySenders extends State<MessagesPage> {
   Widget build(BuildContext context) {
     return AppScaffold(
       pageTitle: ValueNotifier("MESSAGES"),
-      child: FutureBuilder(
-        future: _getMessages(),
-        builder: (context, res) {
-          if (res.hasError) {
-            return Container(
-              height: MediaQuery.of(context).size.height,
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: AssetImage('assets/img/empty_state.png'),
-                ),
-              ),
-            );
-          }
-          if (res.hasData) {
-            if (res.data.length <= 0) {
-              return Container(
+      child: Container(
+          padding: EdgeInsets.only(
+            top: 10.0,
+            left: 16.0,
+            right: 16.0,
+          ),
+          child: FutureBuilder(
+            future: _getMessages(),
+            builder: (context, res) {
+              if (res.hasError) {
+                return Container(
                   height: MediaQuery.of(context).size.height,
                   decoration: BoxDecoration(
                     image: DecorationImage(
-                      image: AssetImage('assets/img/no_messages.png'),
-                    ),
-                  ),
-                  child: Column(
-                    children: <Widget>[
-                      SizedBox(
-                        height: 50.0,
-                      ),
-                      Text("No messages!",
-                          style: TextStyle(
-                              color: Colors.red, fontWeight: FontWeight.bold)),
-                    ],
-                  ));
-            }
-            return ListView.builder(
-              padding: EdgeInsets.all(0),
-              itemCount: res.data.length,
-              itemExtent: 90.0,
-              itemBuilder: (context, idx) {
-                final eachContent = res.data[idx];
-                return Card(
-                  elevation: 1,
-                  margin: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-                  child: InkWell(
-                    onTap: () {
-                      String _name = eachContent.sender.othernames == null ? eachContent.sender.email : "${eachContent.sender.othernames}";
-                      _navigationService.navigateTo(routes.MessagesByTitle, arg: {"id": eachContent.sender.id, "username": _name});
-                    },
-                    child: ListTile(
-                      isThreeLine: true,
-                      leading: CircleAvatar(
-                        backgroundColor: shedAppBlue100,
-                        child: Text(eachContent.sender.othernames == null
-                            ? "NN"
-                            : "${eachContent.sender.surname[0].toUpperCase()}${eachContent.sender.othernames[0].toUpperCase()}"),
-                        radius: 30,
-                      ),
-                      title: Text(eachContent.sender.othernames == null
-                          ? "${eachContent.sender.email}"
-                          : "${eachContent.sender.surname} ${eachContent.sender.othernames}"),
-                      subtitle: Text(
-                          "Title : ${AccessService.getLastContent(eachContent.title)} \n ${AccessService.getLastTime(eachContent.sentTimeGroup)}"),
-                      trailing: FutureBuilder(
-                                future: AccessService.numberOfZeros(
-                                    eachContent.isReadGroup),
-                                builder: (BuildContext context, snapshot) {
-                                  if (snapshot.hasError) return SizedBox();
-                                  if (!snapshot.hasData) return SizedBox();
-                                  return snapshot.data == 0 ? SizedBox() : Badge(
-                                    badgeContent: Text(
-                                      "${snapshot.data}",
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white),
-                                    ),
-                                    badgeColor: Colors.redAccent,
-                                  );
-                                })
+                      image: AssetImage('assets/img/empty_state.png'),
                     ),
                   ),
                 );
-              },
-            );
-          } else {
-            return AppSpinner();
-          }
-        },
-      ),
+              }
+              if (res.hasData) {
+                if (res.data.length <= 0) {
+                  return Container(
+                      height: MediaQuery.of(context).size.height,
+                      decoration: BoxDecoration(
+                        image: DecorationImage(
+                          image: AssetImage('assets/img/no_messages.png'),
+                        ),
+                      ),
+                      child: Column(
+                        children: <Widget>[
+                          SizedBox(
+                            height: 50.0,
+                          ),
+                          Text("No messages!",
+                              style: TextStyle(
+                                  color: Colors.red,
+                                  fontWeight: FontWeight.bold)),
+                        ],
+                      ));
+                }
+                return ListView.separated(
+                  itemCount: res.data.length,
+                  itemBuilder: (context, idx) {
+                    ReceivedMessagesModel eachContent = res.data[idx];
+                    return Card(
+                        elevation: 0,
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(
+                            vertical: 10.0,
+                          ),
+                          child: InkWell(
+                              onTap: () {
+                                String _name =
+                                    eachContent.sender.othernames == null
+                                        ? eachContent.sender.email
+                                        : "${eachContent.sender.othernames}";
+                                _navigationService
+                                    .navigateTo(routes.MessagesByTitle, arg: {
+                                  "id": eachContent.sender.id,
+                                  "username": _name
+                                });
+                              },
+                              child: Row(
+                                children: <Widget>[
+                                  SizedBox(
+                                    width: 60.0,
+                                    child: eachContent.sender.pictureUrl == null
+                                        ? CircleAvatar(
+                                            radius: 30.0,
+                                            backgroundColor: shedAppBlue100,
+                                            child: Text(eachContent
+                                                        .sender.othernames ==
+                                                    null
+                                                ? "NN"
+                                                : "${eachContent.sender.surname[0].toUpperCase()}${eachContent.sender.othernames[0].toUpperCase()}"))
+                                        : CircleAvatar(
+                                            backgroundColor: Colors.transparent,
+                                            backgroundImage:
+                                                CachedNetworkImageProvider(
+                                                    eachContent
+                                                        .sender.pictureUrl),
+                                            radius: 30.0,
+                                          ),
+                                  ),
+                                  SizedBox(width: 10.0),
+                                  Expanded(
+                                      child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: <Widget>[
+                                        eachContent.sender.othernames == null
+                                            ? Text(
+                                                "${eachContent.sender.email}",
+                                                style: TextStyle(
+                                                    fontWeight:
+                                                        FontWeight.bold),
+                                              )
+                                            : Text(
+                                                "${eachContent.sender.surname} ${eachContent.sender.othernames}",
+                                                style: TextStyle(
+                                                    fontWeight:
+                                                        FontWeight.bold)),
+                                        SizedBox(height: 5.0),
+                                        Text(
+                                            "${AccessService.getLastContent(eachContent.title)}"),
+                                      ])),
+                                  SizedBox(
+                                    width: 60.0,
+                                    child: Column(
+                                      children: <Widget>[
+                                        Text(
+                                          "${AccessService.getLastTime(eachContent.sentTimeGroup)}",
+                                          style: TextStyle(fontSize: 10.0),
+                                        ),
+                                        SizedBox(height: 5.0),
+                                        FutureBuilder(
+                                            future: this
+                                                .accessService
+                                                .numberOfZeros(
+                                                    eachContent.isReadGroup),
+                                            builder: (BuildContext context,
+                                                snapshot) {
+                                              if (snapshot.hasError)
+                                                return SizedBox();
+                                              if (!snapshot.hasData)
+                                                return SizedBox();
+                                              return snapshot.data == 0
+                                                  ? SizedBox()
+                                                  : Badge(
+                                                      badgeContent: Text(
+                                                        "${snapshot.data}",
+                                                        style: TextStyle(
+                                                            color:
+                                                                Colors.white),
+                                                      ),
+                                                      badgeColor:
+                                                          shedAppBlue300,
+                                                    );
+                                            })
+                                      ],
+                                    ),
+                                  )
+                                ],
+                              )),
+                        ));
+                  },
+                  separatorBuilder: (context, idx) => Container(
+                    height: 0.5,
+                    color: Colors.grey,
+                  ),
+                );
+              } else {
+                return AppSpinner();
+              }
+            },
+          )),
     );
   }
 }

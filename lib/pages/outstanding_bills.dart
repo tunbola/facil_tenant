@@ -6,8 +6,8 @@ import 'package:facil_tenant/models/balance_model.dart';
 import 'package:facil_tenant/models/outstanding_bills_model.dart';
 import 'package:facil_tenant/models/payment_type_model.dart';
 import 'package:facil_tenant/models/payments_model.dart';
-import 'package:facil_tenant/pages/webview_page.dart';
 import 'package:facil_tenant/services/http_service.dart';
+import 'package:flutter_web_browser/flutter_web_browser.dart';
 import 'package:intl/intl.dart';
 import 'package:facil_tenant/styles/colors.dart';
 import 'package:flutter/material.dart';
@@ -526,7 +526,7 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
                                     return;
                                   }
                                   String url = _response['data'];
-                                  await FacilWebView(url).openWebView();
+                                  await FlutterWebBrowser.openWebPage(url: url, androidToolbarColor: Colors.white);
                                 },
                                 child: _proceedToPayButton
                                     ? AuthButtonSpinner(Colors.white)
@@ -755,7 +755,7 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
                               elevation: 0,
                               child: Padding(
                                 padding: EdgeInsets.symmetric(
-                                  vertical: 15.0,
+                                  vertical: 10.0,
                                   // horizontal: 10.0,
                                 ),
                                 child: Column(
@@ -892,7 +892,7 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
                                           elevation: 0,
                                           child: Padding(
                                             padding: EdgeInsets.symmetric(
-                                              vertical: 15.0,
+                                              vertical: 10.0,
                                               // horizontal: 10.0,
                                             ),
                                             child: Column(
@@ -929,7 +929,7 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
                                                       )
                                                     : SizedBox(),
                                                 SizedBox(
-                                                  height: 20.0,
+                                                  height: 15.0,
                                                 ),
                                                 Row(
                                                   children: <Widget>[
@@ -1027,7 +1027,7 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
                           ),
                         ),
                         SizedBox(
-                          height: 30.0,
+                          height: 20.0,
                         ),
                         _balances.length > 0
                             ? RichText(
@@ -1060,7 +1060,7 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
                               elevation: 0,
                               child: Padding(
                                 padding: EdgeInsets.symmetric(
-                                  vertical: 15.0,
+                                  vertical: 10.0,
                                   // horizontal: 10.0,
                                 ),
                                 child: Column(
@@ -1086,7 +1086,7 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
                                       alignment: Alignment.topLeft,
                                     ),
                                     SizedBox(
-                                      height: 20.0,
+                                      height: 15.0,
                                     ),
                                     Row(
                                       children: <Widget>[

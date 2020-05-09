@@ -2,11 +2,8 @@ import 'package:facil_tenant/singleton/locator.dart';
 import 'package:facil_tenant/services/navigation_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
 import 'package:overlay_support/overlay_support.dart';
-
 import 'styles/theme.dart';
-
 import 'pages/splash_screen_page.dart';
 import "package:facil_tenant/routes/router.dart" as router;
 
@@ -30,7 +27,7 @@ class MyApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         title: 'Facil App',
         theme: shedAppThemeData(),
-        home: const SplashPage(),
+        home: SplashPage(),
         onGenerateRoute: router.generateRoute,
         navigatorKey: locator<NavigationService>().navigatorKey,
       ),

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:facil_tenant/components/app_spinner.dart';
 import 'package:facil_tenant/models/chat_model.dart';
 import 'package:facil_tenant/pages/Image_viewer.dart';
@@ -9,6 +10,7 @@ import 'package:facil_tenant/services/access_service.dart';
 import 'package:facil_tenant/services/http_service.dart';
 import 'package:facil_tenant/styles/colors.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:facil_tenant/components/app_scaffold.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
@@ -42,10 +44,11 @@ class _ChatHistoryPageState extends State<ChatHistoryPage> {
 
   Duration interval = Duration(seconds: 1);
   ScrollController _scrollController = new ScrollController();
+  AccessService accessService = AccessService();
 
   List<String> _viewerIdList = [];
-
   List<ChatModel> _chatList = [];
+
   ValueNotifier _listLength = ValueNotifier(0);
 
   int _indexToShow = 1;
@@ -58,7 +61,7 @@ class _ChatHistoryPageState extends State<ChatHistoryPage> {
   }
 
   Future<List<ChatModel>> _fetchChatFromDB() async {
-    _userId = await AccessService.getUserId();
+    _userId = await this.accessService.getUserId();
     List<ChatModel> _msgList = [];
     List<String> _msgIdsList = [];
     Map<String, dynamic> _response = await _httpService.fetchChatHistory(
@@ -113,7 +116,7 @@ class _ChatHistoryPageState extends State<ChatHistoryPage> {
           _scrollController.animateTo(
             _scrollController.position.maxScrollExtent,
             curve: Curves.easeOut,
-            duration: const Duration(milliseconds: 300),
+            duration: const Duration(milliseconds: 500),
           );
         });
       });
@@ -469,26 +472,32 @@ class _ChatHistoryPageState extends State<ChatHistoryPage> {
                       }));
                     },
                     child: Container(
-                      height: 200,
-                      width: 250,
-                      child: Image.network(
-                        eachContent.attachmentUrl,
-                        fit: BoxFit.fill,
-                        loadingBuilder: (BuildContext context, Widget child,
-                            ImageChunkEvent loadingProgress) {
-                          if (loadingProgress == null) return child;
-                          return Center(
-                            child: CircularProgressIndicator(
-                              backgroundColor: Colors.white,
-                              value: loadingProgress.expectedTotalBytes != null
-                                  ? loadingProgress.cumulativeBytesLoaded /
-                                      loadingProgress.expectedTotalBytes
-                                  : null,
+                        height: 200,
+                        width: 250,
+                        child: CachedNetworkImage(
+                          imageUrl: eachContent.attachmentUrl,
+                          progressIndicatorBuilder: (context, url, progress) =>
+                              Center(
+                                  child: SizedBox(
+                                      height: 30.0,
+                                      width: 30.0,
+                                      child: Platform.isAndroid
+                                          ? CircularProgressIndicator(
+                                              value: progress.progress,
+                                            )
+                                          : CupertinoActivityIndicator())),
+                          imageBuilder: (context, imageProvider) => Container(
+                            decoration: BoxDecoration(
+                              image: DecorationImage(
+                                image: imageProvider,
+                                fit: BoxFit.cover,
+                              ),
                             ),
-                          );
-                        },
-                      ),
-                    ))
+                          ),
+                          errorWidget: (context, url, error) =>
+                              const Icon(Icons.error),
+                        )
+                        ))
                 : InkWell(
                     child: Container(
                       child: Column(

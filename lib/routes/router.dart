@@ -22,30 +22,30 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     case routes.Auth:
       return MaterialPageRoute(builder: (context) => AuthPage());
     case routes.Home:
-      return MaterialPageRoute(builder: (context) => DashboardPage());
+      return CupertinoPageRoute(builder: (context) => DashboardPage());
     case routes.Messages:
-      return MaterialPageRoute(builder: (context) => MessagesPage());
+      return CupertinoPageRoute(builder: (context) => MessagesPage());
     case routes.MessagesByTitle:
       var params = settings.arguments as Map<String, dynamic>;
-      return MaterialPageRoute(builder: (context) => MessagesByTitlePage(params));
+      return CupertinoPageRoute(builder: (context) => MessagesByTitlePage(params));
     case routes.Notifications:
-      return MaterialPageRoute(builder: (context) => NotificationsPage());
+      return CupertinoPageRoute(builder: (context) => NotificationsPage());
     case routes.Announcements:
-      return MaterialPageRoute(builder: (context) => NotificationsPage(isAnnouncements: true));
+      return CupertinoPageRoute(builder: (context) => NotificationsPage(isAnnouncements: true));
     case routes.Requests:
-      return MaterialPageRoute(builder: (context) => NotificationsPage(isRequests: true));
+      return CupertinoPageRoute(builder: (context) => NotificationsPage(isRequests: true));
     case routes.CreateRequest:
-      return MaterialPageRoute(builder: (context) => RequestsPage());
+      return CupertinoPageRoute(builder: (context) => RequestsPage());
     case routes.PaymentHistory:
-      return MaterialPageRoute(builder: (context) => PaymentHistoryPage());
+      return CupertinoPageRoute(builder: (context) => PaymentHistoryPage());
     case routes.OutstandingBills:
-      return MaterialPageRoute(builder: (context) => OutstandingBillsPage());
+      return CupertinoPageRoute(builder: (context) => OutstandingBillsPage());
     case routes.UserProfile:
-      return MaterialPageRoute(builder: (context) => ProfilePage());
+      return CupertinoPageRoute(builder: (context) => ProfilePage());
     case routes.ChatHistory:
       var params = settings.arguments as Map<String, dynamic>;
-      return MaterialPageRoute(builder: (context) => ChatHistoryPage(params));
+      return CupertinoPageRoute(builder: (context) => ChatHistoryPage(params));
     default:
-      return MaterialPageRoute(builder: (context) => DashboardPage());
+      return CupertinoPageRoute(builder: (context) => DashboardPage());
   }
 }

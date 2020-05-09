@@ -7,7 +7,7 @@ class ImageViewer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Image viewer", style: TextStyle(color: shedAppBlue400),),),
+      appBar: AppBar(elevation: 0, title: Text("Image viewer", style: TextStyle(color: shedAppBlue400),),),
       body: Container(
         height: MediaQuery.of(context).size.height,
         width: MediaQuery.of(context).size.width,

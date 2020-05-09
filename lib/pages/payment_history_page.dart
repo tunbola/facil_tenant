@@ -214,7 +214,7 @@ class _PaymentHistoryPageState extends State<PaymentHistoryPage> {
                           elevation: 0,
                           child: Padding(
                             padding: EdgeInsets.symmetric(
-                              vertical: 15.0,
+                              vertical: 10.0,
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,

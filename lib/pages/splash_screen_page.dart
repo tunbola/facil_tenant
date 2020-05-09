@@ -1,9 +1,11 @@
 import 'dart:async';
+import 'package:facil_tenant/services/access_service.dart';
 import 'package:flutter/material.dart';
 import '../services/storage_service.dart';
+import "package:facil_tenant/routes/route_paths.dart" as routes;
 
 class SplashPage extends StatelessWidget {
-  const SplashPage();
+  SplashPage();
 
   _checkAuthState(BuildContext context) async {
     final isReturningUser = await LocalStorage.getItem("oldUser");
@@ -11,18 +13,22 @@ class SplashPage extends StatelessWidget {
       await LocalStorage.setItem("oldUser", true);
       Navigator.of(context).pushReplacementNamed('onboarding');
     } else {
-      final isLoggedIn = await LocalStorage.getItem("isLoggedIn");
-      if (isLoggedIn) {
-        Navigator.of(context).pushReplacementNamed('auth');
-      } else {
-        Navigator.of(context).pushReplacementNamed('auth');
+      var _route = await AccessService.getLastVisitedRoute();
+      if (_route != null) {
+        //user has used the application before because this
+        //_navigationService handler is used to register routes
+        //only after the user has logged in
+        //_navigationService.navigateTo(_route);
+        Navigator.of(context).pushReplacementNamed(routes.Home);
+        return;
       }
+      Navigator.of(context).pushReplacementNamed('auth');
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    Timer(Duration(seconds: 2), () => _checkAuthState(context));
+    Timer(Duration(seconds: 3), () => _checkAuthState(context));
     return Scaffold(
       body: SafeArea(
         child: Center(
@@ -31,8 +37,22 @@ class SplashPage extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              Text("FACIL", style: Theme.of(context).textTheme.headline.copyWith(fontSize: 100.0), textAlign: TextAlign.center,),
-              Text("The Real Estate Manager", style: Theme.of(context).textTheme.subtitle.copyWith(fontSize: 20.0), textAlign: TextAlign.center,)
+              Text(
+                "FACIL",
+                style: Theme.of(context)
+                    .textTheme
+                    .headline
+                    .copyWith(fontSize: 100.0),
+                textAlign: TextAlign.center,
+              ),
+              Text(
+                "The Real Estate Manager",
+                style: Theme.of(context)
+                    .textTheme
+                    .subtitle
+                    .copyWith(fontSize: 20.0),
+                textAlign: TextAlign.center,
+              )
             ],
           ),
         ),

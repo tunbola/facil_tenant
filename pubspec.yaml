@@ -22,18 +22,17 @@ dependencies:
     sdk: flutter
   cupertino_icons: ^0.1.2
   dio: ^3.0.9
-  intl: ^0.15.6
+  intl: ^0.15.8
   overlay_support: ^1.0.1
-  path_provider: ^0.4.1
+  #path_provider: ^0.4.1
+  path_provider: ^1.6.7
   provider: ^2.0.0+1
   sembast: ^1.15.4+1
-  http: ^0.12.0+2
-  get_it: ^3.0.3
+  get_it: ^4.0.2
   json_annotation: ^2.2.0
   datetime_picker_formfield: ^0.4.3
   dropdownfield: ^1.0.3
   badges: ^1.1.0
-  flutter_inappwebview: ^2.1.0+1
   flutter_picker: ^1.1.0
   image_picker: 0.6.3+1
   file_picker: ^1.4.3+2
@@ -41,7 +40,9 @@ dependencies:
   crypto: ^2.1.3
   flutter_pdfview: ^1.0.1
   image: ^2.1.4
-  flutter_image_compress: ^0.6.5+1
+  flutter_web_browser: ^0.11.0
+  fluttertoast: ^4.0.1
+  cached_network_image: ^2.2.0+1
 
 dev_dependencies:
   flutter_test:
