@@ -23,6 +23,7 @@ class _MessagesByTitleState extends State<MessagesByTitlePage> {
 
   HttpService _httpService = HttpService();
   NavigationService _navigationService = locator<NavigationService>();
+  AccessService accessService = AccessService();
 
   Future<List<MessagesByTitleModel>> _getMessagesByTitle() async {
     List<MessagesByTitleModel> _myList = [];
@@ -47,94 +48,123 @@ class _MessagesByTitleState extends State<MessagesByTitlePage> {
     return AppScaffold(
         pageTitle:
             ValueNotifier("${routeParam['username'].toUpperCase()}'S THREAD"),
-        child: FutureBuilder(
-          future: _getMessagesByTitle(),
-          builder: (context, res) {
-            if (res.hasError) {
-              return Container(
-                height: MediaQuery.of(context).size.height,
-                decoration: BoxDecoration(
-                  image: DecorationImage(
-                    image: AssetImage('assets/img/empty_state.png'),
-                  ),
-                ),
-              );
-            }
-            if (res.hasData) {
-              if (res.data.length <= 0) {
-                return Container(
+        child: Container(
+            padding: EdgeInsets.only(
+              top: 10.0,
+              left: 16.0,
+              right: 16.0,
+            ),
+            child: FutureBuilder(
+              future: _getMessagesByTitle(),
+              builder: (context, res) {
+                if (res.hasError) {
+                  return Container(
                     height: MediaQuery.of(context).size.height,
                     decoration: BoxDecoration(
                       image: DecorationImage(
-                        image: AssetImage('assets/img/no_messages.png'),
-                      ),
-                    ),
-                    child: Column(
-                      children: <Widget>[
-                        SizedBox(
-                          height: 50.0,
-                        ),
-                        Text("No messages!",
-                            style: TextStyle(
-                                color: Colors.red,
-                                fontWeight: FontWeight.bold)),
-                      ],
-                    ));
-              }
-              return ListView.builder(
-                padding: EdgeInsets.all(0),
-                itemCount: res.data.length,
-                itemBuilder: (context, idx) {
-                  final eachContent = res.data[idx];
-                  return Card(
-                    elevation: 1,
-                    margin: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-                    child: InkWell(
-                      onTap: () {
-                        Map<String, dynamic> _arg = {
-                          "msgsId": eachContent.rowIdsGroup,
-                          "senderId": this.routeParam['id'],
-                          "title": eachContent.title,
-                          "username": this.routeParam["username"]
-                        };
-                        _navigationService.navigateTo(routes.ChatHistory,
-                            arg: _arg);
-                      },
-                      child: ListTile(
-                        isThreeLine: true,
-                        title: Text(
-                          "${eachContent.title}",
-                          style: TextStyle(
-                              color: shedAppBlue400,
-                              fontWeight: FontWeight.bold),
-                        ),
-                        subtitle: Text(
-                            "${AccessService.getLastContent(eachContent.messagesGroup).length > 100 ? AccessService.getLastContent(eachContent.messagesGroup).substring(0, 40) : AccessService.getLastContent(eachContent.messagesGroup)}..."),
-                        trailing: FutureBuilder(
-                                future: AccessService.numberOfZeros(
-                                    eachContent.isReadGroup),
-                                builder: (BuildContext context, snapshot) {
-                                  if (snapshot.hasError) return SizedBox();
-                                  if (!snapshot.hasData) return SizedBox();
-                                  return snapshot.data == 0 ? SizedBox() : Badge(
-                                    badgeContent: Text(
-                                      "${snapshot.data}",
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white),
-                                    ),
-                                    badgeColor: Colors.redAccent,
-                                  );
-                                }),
+                        image: AssetImage('assets/img/empty_state.png'),
                       ),
                     ),
                   );
-                },
-              );
-            } else {
-              return AppSpinner();
-            }
-          },
-        ));
+                }
+                if (res.hasData) {
+                  if (res.data.length <= 0) {
+                    return Container(
+                        height: MediaQuery.of(context).size.height,
+                        decoration: BoxDecoration(
+                          image: DecorationImage(
+                            image: AssetImage('assets/img/no_messages.png'),
+                          ),
+                        ),
+                        child: Column(
+                          children: <Widget>[
+                            SizedBox(
+                              height: 50.0,
+                            ),
+                            Text("No messages!",
+                                style: TextStyle(
+                                    color: Colors.red,
+                                    fontWeight: FontWeight.bold)),
+                          ],
+                        ));
+                  }
+                  return ListView.separated(
+                    itemCount: res.data.length,
+                    itemBuilder: (context, idx) {
+                      final eachContent = res.data[idx];
+                      return Container(
+                        padding: EdgeInsets.all(10.0),
+                        child: InkWell(
+                            onTap: () {
+                              Map<String, dynamic> _arg = {
+                                "msgsId": eachContent.rowIdsGroup,
+                                "senderId": this.routeParam['id'],
+                                "title": eachContent.title,
+                                "username": this.routeParam["username"]
+                              };
+                              _navigationService.navigateTo(routes.ChatHistory,
+                                  arg: _arg);
+                            },
+                            child: Row(
+                              children: <Widget>[
+                                Expanded(
+                                    child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: <Widget>[
+                                      Text(
+                                        "${eachContent.title}",
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                      SizedBox(height: 5.0),
+                                      AccessService.getLastContent(
+                                                      eachContent.messagesGroup)
+                                                  .length >
+                                              150
+                                          ? Text(
+                                              "${AccessService.getLastContent(eachContent.messagesGroup).substring(0, 150)}...")
+                                          : Text(
+                                              "${AccessService.getLastContent(eachContent.messagesGroup)}"),
+                                    ])),
+                                SizedBox(
+                                  width: 30.0,
+                                  child: FutureBuilder(
+                                      future: this.accessService.numberOfZeros(
+                                          eachContent.isReadGroup),
+                                      builder:
+                                          (BuildContext context, snapshot) {
+                                        if (snapshot.hasError)
+                                          return SizedBox();
+                                        if (!snapshot.hasData)
+                                          return SizedBox();
+                                        return snapshot.data == 0
+                                            ? SizedBox()
+                                            : Badge(
+                                                badgeContent: Text(
+                                                  "${snapshot.data}",
+                                                  style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: Colors.white),
+                                                ),
+                                                badgeColor: Colors.redAccent,
+                                              );
+                                      }),
+                                )
+                              ],
+                            )),
+                      );
+                    },
+                    separatorBuilder: (context, idx) => Container(
+                      height: 0.5,
+                      color: Colors.grey,
+                    ),
+                  );
+                } else {
+                  return AppSpinner();
+                }
+              },
+            )));
   }
 }

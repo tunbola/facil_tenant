@@ -40,6 +40,8 @@ class _ProfilePageState extends State<ProfilePage>
   ValueNotifier _dependent = ValueNotifier(null);
 
   HttpService _httpService = new HttpService();
+  AccessService accessService = AccessService();
+
   bool _buttonClicked = false;
   Map<String, dynamic> _report = {"status": false, "message": ""};
 
@@ -65,8 +67,8 @@ class _ProfilePageState extends State<ProfilePage>
   };
 
   Future<UserProfileModel> _getUserProfile() async {
-    String userId = await AccessService.getUserId();
-    this.userRoleId = await AccessService.userRole();
+    String userId = await this.accessService.getUserId();
+    this.userRoleId = await this.accessService.userRole();
     Map<String, dynamic> response = await _httpService.fetchProfile(userId);
     Map<String, dynamic> profile = response["data"];
     UserProfileModel userProfile = UserProfileModel(

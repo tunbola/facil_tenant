@@ -1,16 +1,13 @@
 import 'dart:async';
-
 import 'package:badges/badges.dart';
 import 'package:facil_tenant/models/message_model.dart';
 import 'package:facil_tenant/services/http_service.dart';
 import 'package:flutter/material.dart';
 import 'package:facil_tenant/components/image_button.dart';
 import '../components/app_scaffold.dart';
-
 import 'package:overlay_support/overlay_support.dart';
 import '../styles/colors.dart';
 import "package:facil_tenant/services/access_service.dart";
-
 import "package:facil_tenant/services/navigation_service.dart";
 import "package:facil_tenant/singleton/locator.dart";
 import "package:facil_tenant/routes/route_paths.dart" as routes;
@@ -31,19 +28,20 @@ class _DashboardPageState extends State<DashboardPage> {
   String _propertyName = "";
   String _propertyAddress = "";
   HttpService _httpService = new HttpService();
+  AccessService accessService = AccessService();
+  
+  NavigationService _navigationService = locator<NavigationService>();
 
   Future<String> getUnreadMessages() async {
     Map<String, dynamic> response = await _httpService.fetchMessageSenders();
     int unread = 0;
     if (!response['status']) return null;
     await response['data'].forEach((c) async {
-      int n = await AccessService.numberOfZeros(c['is_read']);
+      int n = await this.accessService.numberOfZeros(c['is_read']);
       unread = unread + n;
     });
     return Future.value(unread.toString());
   }
-
-  static NavigationService _navigationService = locator<NavigationService>();
 
   void showNotifs(BuildContext context) {
     Timer(Duration(seconds: 1), () {
@@ -88,7 +86,7 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   getUserName() async {
-    String un = await AccessService.getUserName();
+    String un = await this.accessService.getUserName();
     setState(() {
       _username = un;
       if (un == "No name yet") {
@@ -103,7 +101,7 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   getProperty() async {
-    Map<String, dynamic> property = await AccessService.getProperty();
+    Map<String, dynamic> property = await this.accessService.getProperty();
     setState(() {
       _propertyName = property["name"];
       _propertyAddress = property["address"];
@@ -189,18 +187,19 @@ class _DashboardPageState extends State<DashboardPage> {
               child: ClipRRect(
                 borderRadius: BorderRadius.all(Radius.circular(0.0)),
                 child: ConstrainedBox(
-                  constraints: BoxConstraints(maxWidth: 90),
+                  constraints: BoxConstraints(maxWidth: 100),
                   child: InkWell(
                     child: Column(children: [
                       Icon(
-                        Icons.announcement,
+                        //Icons.announcement,
+                        Icons.notification_important,
                         color: Colors.red,
                         size: 50.0,
                       ),
                       Container(
                         child: Text(
                           "Announcements",
-                          style: TextStyle(fontSize: 10.0),
+                          style: TextStyle(fontSize: 13.0, color: shedAppBlue400),
                         ),
                       )
                     ]),
