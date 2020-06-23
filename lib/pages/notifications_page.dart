@@ -130,6 +130,7 @@ class _NotificationsListState extends State<NotificationsList> {
               requestStatus: data["requestStatus"]["name"],
               requestStatusId:
                   int.parse(data["requestStatus"]["id"].toString()),
+              isTerminated: int.parse(data["requestStatus"]["is_terminal"]),
               requestType: data["requestType"]["name"],
               attachmentUrl: data['attachment_url']))
           .toList();
@@ -245,17 +246,17 @@ class _NotificationsListState extends State<NotificationsList> {
                       "${DateFormat.yMMMEd().format(DateTime.parse(content.createdAt))}",
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
-                    SizedBox(height: 5.0),
+                    SizedBox(height: 10.0),
                     messageLength < 150
                         ? Text("${content.message}")
                         : Text("${content.message.substring(0, 150)}"),
+                    SizedBox(height: 10.0),
                   ])),
               Container(
                   width: 30.0,
                   child: Center(
                       child: Icon(
                     Icons.keyboard_arrow_right,
-                    size: 30.0,
                   )))
             ],
           ),
@@ -278,7 +279,7 @@ class _NotificationsListState extends State<NotificationsList> {
             children: <Widget>[
               SizedBox(height: 5.0),
               Text("${content.requestType}"),
-              SizedBox(height: 5.0),
+              SizedBox(height: 10.0),
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
@@ -295,10 +296,11 @@ class _NotificationsListState extends State<NotificationsList> {
                   Text("${content.requestStatus}")
                 ],
               ),
-              SizedBox(height: 5.0),
+              SizedBox(height: 10.0),
               messageLength < 150
                   ? Text("${content.message}")
                   : Text("${content.message.substring(0, 150)} ..."),
+              SizedBox(height: 10.0),
             ],
           )),
           Container(
@@ -306,7 +308,6 @@ class _NotificationsListState extends State<NotificationsList> {
               child: Center(
                   child: Icon(
                 Icons.keyboard_arrow_right,
-                //size: 30.0,
               )))
         ],
       ),
@@ -404,8 +405,8 @@ class _NotificationsListState extends State<NotificationsList> {
                                 "${DateFormat.yMMMEd().format(DateTime.parse(content.createdAt))}",
                                 style: TextStyle(fontWeight: FontWeight.bold)),
                             isRequest
-                                ? GestureDetector(
-                                    onTap: () {
+                                ? (content.isTerminated == 0) ? FlatButton(
+                                    onPressed: () {
                                       Navigator.push(context,
                                           MaterialPageRoute(builder: (_) {
                                         return UpdateNotificationPage(
@@ -423,7 +424,7 @@ class _NotificationsListState extends State<NotificationsList> {
                                         Text("Edit")
                                       ],
                                     ),
-                                  )
+                                  ) : SizedBox()
                                 : SizedBox(),
                           ],
                         ),

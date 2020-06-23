@@ -10,6 +10,7 @@ class NotificationsModel {
   String lastUpdated;
   String requestStatus;
   int requestStatusId;
+  int isTerminated;
   String requestType;
   String attachmentUrl;
 
@@ -20,6 +21,7 @@ class NotificationsModel {
       this.lastUpdated,
       this.requestStatus,
       this.requestStatusId,
+      this.isTerminated,
       this.requestType,
       this.attachmentUrl});
 

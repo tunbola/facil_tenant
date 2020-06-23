@@ -114,7 +114,7 @@ class HttpBaseService {
     } on DioError catch (e) {
       if ((e.type == DioErrorType.CONNECT_TIMEOUT) ||
           (e.type == DioErrorType.RECEIVE_TIMEOUT)) {
-        return {"status": false, "message": "Internet connection errorer"};
+        return {"status": false, "message": "Internet connection error"};
       }
       //e.type = DioErrorType.DEFAULT;
       return {"status": false, "message": 'Service is unavailable'};
@@ -148,7 +148,6 @@ class HttpBaseService {
       //e.type = DioErrorType.DEFAULT;
       return {"status": false, "message": 'Service is unavailable'};
     } catch (e) {
-      print('Error from req : $e');
       return {
         "status": false,
         "message": "An error occured while making request"

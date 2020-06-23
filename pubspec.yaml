@@ -24,7 +24,6 @@ dependencies:
   dio: ^3.0.9
   intl: ^0.15.8
   overlay_support: ^1.0.1
-  #path_provider: ^0.4.1
   path_provider: ^1.6.7
   provider: ^2.0.0+1
   sembast: ^1.15.4+1
@@ -40,9 +39,9 @@ dependencies:
   crypto: ^2.1.3
   flutter_pdfview: ^1.0.1
   image: ^2.1.4
-  flutter_web_browser: ^0.11.0
   fluttertoast: ^4.0.1
   cached_network_image: ^2.2.0+1
+  flutter_inappwebview: ^3.1.0
 
 dev_dependencies:
   flutter_test:
@@ -71,6 +70,14 @@ flutter:
   # list giving the asset and other descriptors for the font. For
   # example:
   fonts:
+    - family: Ubuntu
+      fonts:
+        - asset: assets/fonts/Ubuntu/Ubuntu-Regular.ttf
+        - asset: assets/fonts/Ubuntu/Ubuntu-Italic.ttf
+        - asset: assets/fonts/Ubuntu/Ubuntu-Bold.ttf
+        - asset: assets/fonts/Ubuntu/Ubuntu-Light.ttf
+        - asset: assets/fonts/Ubuntu/Ubuntu-Medium.ttf
+          style: italic
     - family: Octin
       fonts:
         - asset: assets/fonts/octin_stencil_rg.otf
