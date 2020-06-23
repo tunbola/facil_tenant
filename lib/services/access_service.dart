@@ -176,4 +176,10 @@ class AccessService {
     }
     return numberOfUnread;
   }
+
+  static String exceptionMessage(String message) {
+    List<String> msgs = message.split(':');
+    return (msgs.length > 0) ? msgs[1] : message;
+  }
+
 }

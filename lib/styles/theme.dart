@@ -41,32 +41,32 @@ ThemeData shedAppThemeData() {
         fontWeight: FontWeight.bold,
       ),
       title: TextStyle(
-        fontFamily: 'Opensans',
+        fontFamily: 'Ubuntu',
         // fontSize: 20.0,
         color: shedAppBodyBlack,
         fontWeight: FontWeight.bold,
       ),
       subtitle: TextStyle(
-        fontFamily: 'Opensans',
+        fontFamily: 'Ubuntu',
         // fontSize: 18.0,
         color: shedAppBodyBlack,
         fontStyle: FontStyle.italic,
       ),
       body1: TextStyle(
-        fontFamily: "Opensans",
+        fontFamily: "Ubuntu",
         // fontSize: 16.0,
         color: shedAppBodyBlack,
       ),
       display1: TextStyle(
-        fontFamily: "Opensans",
+        fontFamily: "Ubuntu",
         // fontSize: 30.0,
         color: shedAppBlue100,
       ),
       caption: TextStyle(
-        fontFamily: "Opensans",
+        fontFamily: "Ubuntu",
         // fontSize: 14.0,
         color: shedAppBodyBlack,
-      ).copyWith(fontFamily: "Opensans",),
+      ).copyWith(fontFamily: "Ubuntu",),
     ),
     primaryIconTheme: base.iconTheme.copyWith(
       size: 30,
@@ -77,12 +77,12 @@ ThemeData shedAppThemeData() {
       suffixStyle: TextStyle(color: shedAppBodyBlack),
       labelStyle: TextStyle(
         color: Color(0xCC25333D),
-        fontFamily: "Opensans",
+        fontFamily: "Ubuntu",
         // fontSize: 15.0
       ),
       hintStyle: TextStyle(
         color: Color(0xCC25333D),
-        fontFamily: "Opensans",
+        fontFamily: "Ubuntu",
         // fontSize: 15.0
       ),
       enabledBorder: OutlineInputBorder(

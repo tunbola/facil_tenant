@@ -6,11 +6,14 @@ import 'package:facil_tenant/models/balance_model.dart';
 import 'package:facil_tenant/models/outstanding_bills_model.dart';
 import 'package:facil_tenant/models/payment_type_model.dart';
 import 'package:facil_tenant/models/payments_model.dart';
+import 'package:facil_tenant/pages/facil_custom_tabs.dart';
+import 'package:facil_tenant/services/access_service.dart';
 import 'package:facil_tenant/services/http_service.dart';
-import 'package:flutter_web_browser/flutter_web_browser.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
 import 'package:facil_tenant/styles/colors.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../components/app_scaffold.dart';
 import 'package:flutter_picker/flutter_picker.dart';
 import 'package:crypto/crypto.dart' as crypto;
@@ -526,7 +529,7 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
                                     return;
                                   }
                                   String url = _response['data'];
-                                  await FlutterWebBrowser.openWebPage(url: url, androidToolbarColor: Colors.white);
+                                  (new FacilCustomTabs(url)).openTab();
                                 },
                                 child: _proceedToPayButton
                                     ? AuthButtonSpinner(Colors.white)
@@ -606,6 +609,7 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
                           ),
                           onConfirm: (Picker picker, List value) {
                             List<dynamic> values = picker.getSelectedValues();
+                            Fluttertoast.showToast(msg: 'Fetching ...');
                             setState(() {
                               yearToSearch = values[0];
                               monthToSearch = monthsMap[values[1]];
@@ -690,7 +694,8 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
                           margin: EdgeInsets.only(bottom: 100.0),
                           child: Center(
                             child: Text(
-                              res.error.toString(),
+                              AccessService.exceptionMessage(
+                                  res.error.toString()),
                               style: TextStyle(
                                   color: Colors.red,
                                   fontWeight: FontWeight.bold),
