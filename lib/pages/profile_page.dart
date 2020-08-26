@@ -139,6 +139,7 @@ class _ProfilePageState extends State<ProfilePage>
 
   Future<List<dynamic>> fetchDependents() async {
     Map<String, dynamic> response = await _httpService.fetchDependents();
+    print('API response : $response');
     if (!response['status']) return Future.value(null);
     List<dynamic> res =
         response['data'].map((c) => DependentsModel.fromJson(c)).toList();
@@ -250,6 +251,7 @@ class _ProfilePageState extends State<ProfilePage>
       });
 
     List<dynamic> dependents = await fetchDependents();
+    print('Dependents : $dependents');
     if (dependents == null)
       setState(() {
         dependentsInfo = {
@@ -404,48 +406,68 @@ class _ProfilePageState extends State<ProfilePage>
                                                     TextInputType.phone,
                                                 autocorrect: false,
                                               ),
-                                              SizedBox(
-                                                height: 10.0,
-                                              ),
-                                              Container(
-                                                height: 60.0,
-                                                padding: EdgeInsets.symmetric(
-                                                    horizontal: 10.0),
-                                                decoration: BoxDecoration(
-                                                  borderRadius: new BorderRadius
-                                                          .all(
-                                                      Radius.circular(30.0)),
-                                                  border: Border.all(
-                                                      color: shedAppBlue300),
-                                                ),
-                                                child: ValueListenableBuilder(
-                                                  valueListenable: _dependent,
-                                                  builder:
-                                                      (context, type, child) {
-                                                    List _dep =
-                                                        dependentsInfo["data"];
-                                                    return DropdownButtonHideUnderline(
-                                                      child: DropdownButton(
-                                                        isExpanded: true,
-                                                        value: type,
-                                                        hint: Text(
-                                                            "Select dependents"),
-                                                        items: _dep.map((item) {
-                                                          return DropdownMenuItem(
-                                                              child: Text(
-                                                                  "${item.title}"),
-                                                              value: item.id
-                                                                  .toString());
-                                                        }).toList(),
-                                                        onChanged: (val) {
-                                                          _dependent.value =
-                                                              val;
-                                                        },
+                                              pageType == 'dependents'
+                                                  ? Column(children: <Widget>[
+                                                      SizedBox(
+                                                        height: 10.0,
                                                       ),
-                                                    );
-                                                  },
-                                                ),
-                                              ),
+                                                      Container(
+                                                        height: 60.0,
+                                                        padding: EdgeInsets
+                                                            .symmetric(
+                                                                horizontal:
+                                                                    10.0),
+                                                        decoration:
+                                                            BoxDecoration(
+                                                          borderRadius:
+                                                              new BorderRadius
+                                                                      .all(
+                                                                  Radius
+                                                                      .circular(
+                                                                          30.0)),
+                                                          border: Border.all(
+                                                              color:
+                                                                  shedAppBlue300),
+                                                        ),
+                                                        child:
+                                                            ValueListenableBuilder(
+                                                          valueListenable:
+                                                              _dependent,
+                                                          builder: (context,
+                                                              type, child) {
+                                                            List _dep =
+                                                                dependentsInfo[
+                                                                    "data"];
+                                                            return DropdownButtonHideUnderline(
+                                                              child:
+                                                                  DropdownButton(
+                                                                isExpanded:
+                                                                    true,
+                                                                value: type,
+                                                                hint: Text(
+                                                                    "Select dependents"),
+                                                                items: _dep.map(
+                                                                    (item) {
+                                                                  return DropdownMenuItem(
+                                                                      child: Text(
+                                                                          "${item.title}"),
+                                                                      value: item
+                                                                          .id
+                                                                          .toString());
+                                                                }).toList(),
+                                                                onChanged:
+                                                                    (val) {
+                                                                  _dependent
+                                                                          .value =
+                                                                      val;
+                                                                },
+                                                              ),
+                                                            );
+                                                          },
+                                                        ),
+                                                      ),
+                                                    ])
+                                                  : SizedBox()
                                             ]),
                                       SizedBox(
                                         height: 10.0,
