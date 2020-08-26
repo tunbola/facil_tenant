@@ -139,7 +139,6 @@ class _ProfilePageState extends State<ProfilePage>
 
   Future<List<dynamic>> fetchDependents() async {
     Map<String, dynamic> response = await _httpService.fetchDependents();
-    print('API response : $response');
     if (!response['status']) return Future.value(null);
     List<dynamic> res =
         response['data'].map((c) => DependentsModel.fromJson(c)).toList();
@@ -251,7 +250,6 @@ class _ProfilePageState extends State<ProfilePage>
       });
 
     List<dynamic> dependents = await fetchDependents();
-    print('Dependents : $dependents');
     if (dependents == null)
       setState(() {
         dependentsInfo = {
