@@ -17,8 +17,8 @@ class HttpBaseService {
 
     dio.interceptors
         .add(InterceptorsWrapper(onRequest: (RequestOptions options) async {
-      if (options.headers['authorization'] != null) {
-        String token = options.headers['authorization'].split(' ')[1];
+      if (options.headers['Authorization'] != null) {
+        String token = options.headers['Authorization'].split(' ')[1];
         int currentTimeStamp =
             (DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000).toInt();
         Map<String, dynamic> dt = decodeJwt(token);
@@ -32,7 +32,7 @@ class HttpBaseService {
             }
             var data = response.data;
             await AccessService.setAccess(json.encode(data['data']));
-            options.headers['authorization'] =
+            options.headers['Authorization'] =
                 "Bearer ${data['data']['token']}";
             return options;
           }).whenComplete(() => dio.unlock());

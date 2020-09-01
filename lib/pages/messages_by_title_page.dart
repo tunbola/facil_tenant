@@ -128,7 +128,7 @@ class _MessagesByTitleState extends State<MessagesByTitlePage> {
                                               "${AccessService.getLastContent(eachContent.messagesGroup)}"),
                                     ])),
                                 SizedBox(
-                                  width: 30.0,
+                                  //width: 20.0,
                                   child: FutureBuilder(
                                       future: this.accessService.numberOfZeros(
                                           eachContent.isReadGroup),
@@ -144,11 +144,9 @@ class _MessagesByTitleState extends State<MessagesByTitlePage> {
                                                 badgeContent: Text(
                                                   "${snapshot.data}",
                                                   style: TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.bold,
                                                       color: Colors.white),
                                                 ),
-                                                badgeColor: Colors.redAccent,
+                                                badgeColor: shedAppBlue300,
                                               );
                                       }),
                                 )

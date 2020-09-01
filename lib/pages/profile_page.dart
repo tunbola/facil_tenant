@@ -575,6 +575,7 @@ class _ProfilePageState extends State<ProfilePage>
                                         onPressed: () async {
                                           setState(() {
                                             _buttonClicked = true;
+                                            _report['message'] = '';
                                           });
                                           Future<Map<String, dynamic>>
                                               profileUpdate =
