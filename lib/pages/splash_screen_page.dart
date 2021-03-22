@@ -41,7 +41,7 @@ class SplashPage extends StatelessWidget {
                 "FACIL",
                 style: Theme.of(context)
                     .textTheme
-                    .headline
+                    .headline5
                     .copyWith(fontSize: 100.0),
                 textAlign: TextAlign.center,
               ),

@@ -39,7 +39,7 @@ class AppScaffold extends StatelessWidget {
         elevation: 0,
         title: Text(
           "FACIL",
-          style: Theme.of(context).textTheme.headline.copyWith(
+          style: Theme.of(context).textTheme.headline5.copyWith(
                 color: bottom != null
                     ? Colors.white
                     : Theme.of(context).accentColor,
@@ -54,7 +54,8 @@ class AppScaffold extends StatelessWidget {
         decoration: BoxDecoration(
           image: DecorationImage(
             image: AssetImage('assets/img/properties.png'),
-            alignment: Alignment.bottomCenter, //push image to bottom of the screen and align to center on the x-axis
+            alignment: Alignment
+                .bottomCenter, //push image to bottom of the screen and align to center on the x-axis
             fit: BoxFit.fitWidth,
             colorFilter: ColorFilter.mode(Colors.white10, BlendMode.dstATop),
           ),
@@ -83,9 +84,8 @@ class AppScaffold extends StatelessWidget {
                                 val,
                                 style: Theme.of(context)
                                     .textTheme
-                                    .body1
-                                    .copyWith(
-                                        color: Colors.white),
+                                    .bodyText2
+                                    .copyWith(color: Colors.white),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               );
@@ -95,10 +95,11 @@ class AppScaffold extends StatelessWidget {
                             child: CircleAvatar(
                               backgroundColor: Colors.white,
                               backgroundImage:
-                                AssetImage('assets/img/tenant.png'),
+                                  AssetImage('assets/img/tenant.png'),
                               radius: 15.0,
                             ),
-                            onTap: () => Navigator.of(context).pushNamed('profile'),
+                            onTap: () =>
+                                Navigator.of(context).pushNamed('profile'),
                           )
                         ],
                       ),

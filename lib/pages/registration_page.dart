@@ -10,7 +10,8 @@ class RegistrationPage extends StatefulWidget {
   RegistrationPage(this.presentSnack);
 
   @override
-  RegistrationPageState createState() => RegistrationPageState(this.presentSnack);
+  RegistrationPageState createState() =>
+      RegistrationPageState(this.presentSnack);
 }
 
 class RegistrationPageState extends State<RegistrationPage> {
@@ -40,19 +41,22 @@ class RegistrationPageState extends State<RegistrationPage> {
 
   String _passwordValidator(String password, String retypePassword) {
     if (retypePassword.trim().length < 1) return "Please retype password";
-    if (password.trim() != retypePassword.trim()) return "Passwords are not the same";
+    if (password.trim() != retypePassword.trim())
+      return "Passwords are not the same";
     return null;
   }
 
   String _smsCodeValidator(String smsCode) {
     if (smsCode.trim().length < 1) return "Please enter your unique code";
-    if (!AccessService.isValidCode(smsCode)) return "Code should contain numbers only with length of 6";
+    if (!AccessService.isValidCode(smsCode))
+      return "Code should contain numbers only with length of 6";
     return null;
   }
 
   String _phoneNumberValidator(String phone) {
     if (phone.trim().length < 1) return "Please enter phone number";
-    if (!AccessService.isPhoneNumber(phone)) return "Phone number should contain numbers only of 11 or less";
+    if (!AccessService.isPhoneNumber(phone))
+      return "Phone number should contain numbers only of 11 or less";
     return null;
   }
 
@@ -176,32 +180,42 @@ class RegistrationPageState extends State<RegistrationPage> {
                       SizedBox(
                         height: 20.0,
                       ),
-                      RaisedButton(
+                      ElevatedButton(
                         child: buttonClicked
-                          ? SizedBox(
-                              child: AuthButtonSpinner(Colors.white),
-                              height: 20.0,
-                              width: 20.0,
-                            )
-                          : Text('REGISTER'),
+                            ? SizedBox(
+                                child: AuthButtonSpinner(Colors.white),
+                                height: 20.0,
+                                width: 20.0,
+                              )
+                            : Text('REGISTER'),
                         onPressed: () {
                           if (_formKey.currentState.validate()) {
                             setState(() {
                               buttonClicked = true;
                             });
                             HttpService httpService = new HttpService();
-                            Future response = httpService.registerUser(phone.text.trim(), email.text.trim(), password.text.trim(), smsCode.text.trim());
+                            Future response = httpService.registerUser(
+                                phone.text.trim(),
+                                email.text.trim(),
+                                password.text.trim(),
+                                smsCode.text.trim());
                             response.then((response) {
                               if (response != null) {
                                 setState(() {
                                   buttonClicked = false;
                                 });
                                 if (response["status"]) {
-                                  String message = "${response['message']}... Please log in.";
-                                  presentSnack(context, message, Colors.green, Colors.white);
-                                  Future.delayed(Duration(seconds: 2), () => Navigator.of(context).pushNamed("login/signin"));
+                                  String message =
+                                      "${response['message']}... Please log in.";
+                                  presentSnack(context, message, Colors.green,
+                                      Colors.white);
+                                  Future.delayed(
+                                      Duration(seconds: 2),
+                                      () => Navigator.of(context)
+                                          .pushNamed("login/signin"));
                                 } else {
-                                  presentSnack(context, response["message"], Colors.red, Colors.white);
+                                  presentSnack(context, response["message"],
+                                      Colors.red, Colors.white);
                                 }
                               }
                             });

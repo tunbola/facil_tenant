@@ -29,7 +29,7 @@ class _DashboardPageState extends State<DashboardPage> {
   String _propertyAddress = "";
   HttpService _httpService = new HttpService();
   AccessService accessService = AccessService();
-  
+
   NavigationService _navigationService = locator<NavigationService>();
 
   Future<String> getUnreadMessages() async {
@@ -124,7 +124,7 @@ class _DashboardPageState extends State<DashboardPage> {
       actions: <Widget>[
         IconButton(
           icon: Icon(Icons.power_settings_new),
-          onPressed: () { 
+          onPressed: () {
             AccessService.logOut();
             Navigator.of(context).pushReplacementNamed('auth');
             return;
@@ -153,7 +153,7 @@ class _DashboardPageState extends State<DashboardPage> {
                   Text(
                     _username.toUpperCase(),
                     overflow: TextOverflow.visible,
-                    style: Theme.of(context).textTheme.title.copyWith(
+                    style: Theme.of(context).textTheme.headline6.copyWith(
                           fontSize: 50.0,
                           color: shedAppBlue300,
                         ),
@@ -165,7 +165,7 @@ class _DashboardPageState extends State<DashboardPage> {
                     _propertyName,
                     overflow: TextOverflow.visible,
                     textAlign: TextAlign.left,
-                    style: Theme.of(context).textTheme.display1.copyWith(
+                    style: Theme.of(context).textTheme.headline4.copyWith(
                           fontSize: 25.0,
                         ),
                   ),
@@ -173,7 +173,7 @@ class _DashboardPageState extends State<DashboardPage> {
                     _propertyAddress,
                     overflow: TextOverflow.visible,
                     textAlign: TextAlign.left,
-                    style: Theme.of(context).textTheme.display1.copyWith(
+                    style: Theme.of(context).textTheme.headline4.copyWith(
                           fontSize: 17.0,
                         ),
                   ),
@@ -199,7 +199,8 @@ class _DashboardPageState extends State<DashboardPage> {
                       Container(
                         child: Text(
                           "Announcements",
-                          style: TextStyle(fontSize: 13.0, color: shedAppBlue400),
+                          style:
+                              TextStyle(fontSize: 13.0, color: shedAppBlue400),
                         ),
                       )
                     ]),
@@ -256,8 +257,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 ImageButton(
                   "assets/img/sent_message.png",
                   caption: "Requests",
-                  onPress: () =>
-                      _navigationService.navigateTo(routes.Requests),
+                  onPress: () => _navigationService.navigateTo(routes.Requests),
                 ),
                 ImageButton(
                   "assets/img/verified_payment.png",

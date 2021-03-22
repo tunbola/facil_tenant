@@ -53,7 +53,7 @@ class OnboardingPage extends StatelessWidget {
                 child: Center(
                   child: Text(
                     "",
-                    style: Theme.of(context).textTheme.display1,
+                    style: Theme.of(context).textTheme.headline4,
                   ),
                 ),
               ),
@@ -68,7 +68,7 @@ class OnboardingPage extends StatelessWidget {
                 child: Center(
                   child: Text(
                     "",
-                    style: Theme.of(context).textTheme.display1,
+                    style: Theme.of(context).textTheme.headline4,
                   ),
                 ),
               ),
@@ -93,11 +93,11 @@ class OnboardingPage extends StatelessWidget {
                       child: Center(
                         child: Text(
                           "",
-                          style: Theme.of(context).textTheme.display1,
+                          style: Theme.of(context).textTheme.headline4,
                         ),
                       ),
                     ),
-                    RaisedButton(
+                    ElevatedButton(
                       onPressed: () =>
                           Navigator.of(context).pushReplacementNamed("auth"),
                       child: Text("Get Started"),
@@ -116,12 +116,12 @@ class OnboardingPage extends StatelessWidget {
                 FlatButton(
                   child: Text(
                     "NEXT",
-                    style: Theme.of(context).textTheme.body1,
+                    style: Theme.of(context).textTheme.bodyText2,
                   ),
                   onPressed: () => _ctrl.nextPage(
-                        duration: Duration(milliseconds: 500),
-                        curve: Curves.easeIn,
-                      ),
+                    duration: Duration(milliseconds: 500),
+                    curve: Curves.easeIn,
+                  ),
                 ),
                 ValueListenableBuilder(
                   valueListenable: _activeSlide,
@@ -135,7 +135,7 @@ class OnboardingPage extends StatelessWidget {
                 FlatButton(
                   child: Text(
                     "SKIP",
-                    style: Theme.of(context).textTheme.body1,
+                    style: Theme.of(context).textTheme.bodyText2,
                   ),
                   onPressed: () => _ctrl.animateToPage(2,
                       duration: Duration(milliseconds: 500),

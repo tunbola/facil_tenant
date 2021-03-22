@@ -56,7 +56,8 @@ class _UpdateNotificationPageState extends State<UpdateNotificationPage> {
               Text(
                 "${response['message']}",
                 style: TextStyle(
-                    color: response['status'] ? Colors.green : Colors.red, fontWeight: FontWeight.bold),
+                    color: response['status'] ? Colors.green : Colors.red,
+                    fontWeight: FontWeight.bold),
               ),
               SizedBox(
                 height: 20.0,
@@ -94,7 +95,8 @@ class _UpdateNotificationPageState extends State<UpdateNotificationPage> {
                         child: Container(
                           child: GestureDetector(
                             onTap: () async {
-                              final file = await FilePicker.getFile(type: FileType.ANY);
+                              final file =
+                                  await FilePicker.getFile(type: FileType.ANY);
                               if (file == null) return;
                               setState(() {
                                 attachmentName = "Please wait ...";
@@ -103,7 +105,8 @@ class _UpdateNotificationPageState extends State<UpdateNotificationPage> {
                               String fileName = splitPath[splitPath.length - 1];
                               List splitName = fileName.split(".");
                               String fileExt = splitName[splitName.length - 1];
-                              if (AccessService.supportedExtensions.contains(fileExt)) {
+                              if (AccessService.supportedExtensions
+                                  .contains(fileExt)) {
                                 setState(() {
                                   attachmentName = fileName;
                                   response['message'] = "";
@@ -138,7 +141,7 @@ class _UpdateNotificationPageState extends State<UpdateNotificationPage> {
                     SizedBox(
                       height: 15.0,
                     ),
-                    RaisedButton(
+                    ElevatedButton(
                       child: buttonClicked
                           ? AuthButtonSpinner(Colors.white)
                           : Text("Update"),
@@ -164,13 +167,19 @@ class _UpdateNotificationPageState extends State<UpdateNotificationPage> {
                           setState(() {
                             buttonClicked = false;
                             encodedAttachment = "";
-                            response = {"status": true, "message": "${cr['message']}"};
+                            response = {
+                              "status": true,
+                              "message": "${cr['message']}"
+                            };
                           });
                           return;
                         }
                         setState(() {
                           buttonClicked = false;
-                          response = {"status": false, "message": "${cr['message']}"};
+                          response = {
+                            "status": false,
+                            "message": "${cr['message']}"
+                          };
                         });
                         return;
                       },

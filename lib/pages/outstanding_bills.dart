@@ -3,6 +3,7 @@ import 'package:badges/badges.dart';
 import 'package:facil_tenant/components/app_spinner.dart';
 import 'package:facil_tenant/components/auth_button_spinner.dart';
 import 'package:facil_tenant/models/balance_model.dart';
+import 'package:facil_tenant/models/balance_model.dart';
 import 'package:facil_tenant/models/outstanding_bills_model.dart';
 import 'package:facil_tenant/models/payment_type_model.dart';
 import 'package:facil_tenant/models/payments_model.dart';
@@ -290,7 +291,7 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
                                             "${bill.paymentType.name}",
                                             style: Theme.of(context)
                                                 .textTheme
-                                                .headline
+                                                .headline5
                                                 .copyWith(fontSize: 15),
                                           ),
                                         ),
@@ -298,7 +299,7 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
                                           "${double.parse(bill.paymentType.amount)}0",
                                           style: Theme.of(context)
                                               .textTheme
-                                              .headline
+                                              .headline5
                                               .copyWith(fontSize: 15),
                                         ),
                                         SizedBox(
@@ -479,7 +480,7 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
                                           "TOTAL",
                                           style: Theme.of(context)
                                               .textTheme
-                                              .headline
+                                              .headline5
                                               .copyWith(
                                                 fontSize: 20,
                                               ),
@@ -497,7 +498,7 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
                                         )}",
                                         style: Theme.of(context)
                                             .textTheme
-                                            .headline
+                                            .headline5
                                             .copyWith(
                                               fontSize: 20,
                                               // color: Colors.white,
@@ -513,7 +514,7 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
                               SizedBox(
                                 height: 10.0,
                               ),
-                              RaisedButton(
+                              ElevatedButton(
                                 onPressed: () async {
                                   //due_type_id should be 2 once the amount matches the original amount
                                   setState(() {
@@ -625,8 +626,7 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
               margin: EdgeInsets.only(left: 30.0),
               child: Align(
                 alignment: Alignment.bottomCenter,
-                child: RaisedButton(
-                    padding: EdgeInsets.all(5),
+                child: ElevatedButton(
                     onPressed: () {
                       selectedBills.forEach((k, v) {
                         selectedChipValues[k] = (v.balanceId == null)
@@ -661,7 +661,7 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
               child: RichText(
                 textAlign: TextAlign.center,
                 text: TextSpan(
-                  style: Theme.of(context).textTheme.headline.copyWith(
+                  style: Theme.of(context).textTheme.headline5.copyWith(
                         fontSize: 13,
                         color: Colors.white,
                       ),
@@ -736,7 +736,7 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
                                 text: TextSpan(
                                   style: Theme.of(context)
                                       .textTheme
-                                      .headline
+                                      .headline5
                                       .copyWith(
                                         fontSize: 16,
                                         color: shedAppBlue400,
@@ -773,7 +773,7 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
                                             "${_yd.name}",
                                             style: Theme.of(context)
                                                 .textTheme
-                                                .headline
+                                                .headline5
                                                 .copyWith(fontSize: 20),
                                           ),
                                         ),
@@ -790,7 +790,7 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
                                                 double.parse(_yd.amount)),
                                             style: Theme.of(context)
                                                 .textTheme
-                                                .headline
+                                                .headline5
                                                 .copyWith(fontSize: 20),
                                           ),
                                         ),
@@ -847,7 +847,7 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
                           textAlign: TextAlign.center,
                           text: TextSpan(
                             style:
-                                Theme.of(context).textTheme.headline.copyWith(
+                                Theme.of(context).textTheme.headline5.copyWith(
                                       fontSize: 16,
                                       color: shedAppBlue400,
                                     ),
@@ -872,7 +872,7 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
                                     text: TextSpan(
                                       style: Theme.of(context)
                                           .textTheme
-                                          .headline
+                                          .headline5
                                           .copyWith(
                                             fontSize: 12,
                                             color: Colors.red,
@@ -919,7 +919,7 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
                                                               style: Theme.of(
                                                                       context)
                                                                   .textTheme
-                                                                  .headline
+                                                                  .headline5
                                                                   .copyWith(
                                                                       fontSize:
                                                                           15),
@@ -943,7 +943,7 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
                                                         "${_mdPaymentType.name}",
                                                         style: Theme.of(context)
                                                             .textTheme
-                                                            .headline
+                                                            .headline5
                                                             .copyWith(
                                                                 fontSize: 20),
                                                       ),
@@ -963,7 +963,7 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
                                                                     .amount)),
                                                         style: Theme.of(context)
                                                             .textTheme
-                                                            .headline
+                                                            .headline5
                                                             .copyWith(
                                                                 fontSize: 20),
                                                       ),
@@ -1040,7 +1040,7 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
                                 text: TextSpan(
                                   style: Theme.of(context)
                                       .textTheme
-                                      .headline
+                                      .headline5
                                       .copyWith(
                                         fontSize: 16,
                                         color: shedAppBlue400,
@@ -1082,7 +1082,7 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
                                             "${Months[int.parse(_b.month) - 1]}, ${_b.year}",
                                             style: Theme.of(context)
                                                 .textTheme
-                                                .headline
+                                                .headline5
                                                 .copyWith(fontSize: 15),
                                           ),
                                         ),
@@ -1100,7 +1100,7 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
                                             "${_bPaymentType.name}",
                                             style: Theme.of(context)
                                                 .textTheme
-                                                .headline
+                                                .headline5
                                                 .copyWith(fontSize: 20),
                                           ),
                                         ),
@@ -1116,7 +1116,7 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
                                             "${formatter.format(double.parse(_b.balance))}",
                                             style: Theme.of(context)
                                                 .textTheme
-                                                .headline
+                                                .headline5
                                                 .copyWith(fontSize: 20),
                                           ),
                                         ),

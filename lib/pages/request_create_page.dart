@@ -141,7 +141,8 @@ class _RequesetState extends State<RequestsPage> {
                                     List splitName = fileName.split(".");
                                     String fileExt =
                                         splitName[splitName.length - 1];
-                                    if (AccessService.supportedExtensions.contains(fileExt)) {
+                                    if (AccessService.supportedExtensions
+                                        .contains(fileExt)) {
                                       setState(() {
                                         attachmentName = fileName;
                                         response['message'] = "";
@@ -189,7 +190,7 @@ class _RequesetState extends State<RequestsPage> {
                 ),
                 child: Builder(
                   builder: (context) {
-                    return RaisedButton(
+                    return ElevatedButton(
                       onPressed: () async {
                         if (_requestType.value == null) {
                           Scaffold.of(context).showSnackBar(SnackBar(
