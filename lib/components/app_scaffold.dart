@@ -39,7 +39,7 @@ class AppScaffold extends StatelessWidget {
         elevation: 0,
         title: Text(
           "FACIL",
-          style: Theme.of(context).textTheme.headline.copyWith(
+          style: Theme.of(context).textTheme.headline5.copyWith(
                 color: bottom != null
                     ? Colors.white
                     : Theme.of(context).accentColor,
@@ -84,7 +84,7 @@ class AppScaffold extends StatelessWidget {
                                 val,
                                 style: Theme.of(context)
                                     .textTheme
-                                    .body1
+                                    .bodyText2
                                     .copyWith(color: Colors.white),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,

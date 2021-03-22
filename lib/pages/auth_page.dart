@@ -16,7 +16,7 @@ class AuthPage extends StatelessWidget {
     Color bgCol,
     Color txtCol,
   ) {
-    Scaffold.of(context).showSnackBar(
+    ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         duration: Duration(seconds: 5),
         content: Text(content),
@@ -123,7 +123,7 @@ class ForgotPasswordPage extends StatelessWidget {
                   SizedBox(
                     height: 20.0,
                   ),
-                  RaisedButton(
+                  ElevatedButton(
                     child: Text('SUBMIT'),
                     onPressed: () => goHome(),
                   ),
@@ -165,7 +165,7 @@ class ForgotPasswordPage extends StatelessWidget {
                             "Back to login",
                             textAlign: TextAlign.right,
                             style:
-                                Theme.of(context).textTheme.display1.copyWith(
+                                Theme.of(context).textTheme.headline4.copyWith(
                                       fontSize: 14.0,
                                     ),
                           ),

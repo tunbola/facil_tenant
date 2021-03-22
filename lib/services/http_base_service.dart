@@ -112,12 +112,7 @@ class HttpBaseService {
         "data": responseJson["data"]
       };
     } on DioError catch (e) {
-      if ((e.type == DioErrorType.CONNECT_TIMEOUT) ||
-          (e.type == DioErrorType.RECEIVE_TIMEOUT)) {
-        return {"status": false, "message": "Internet connection error"};
-      }
-      //e.type = DioErrorType.DEFAULT;
-      return {"status": false, "message": 'Service is unavailable'};
+      return {"status": false, "message": _getMessageFromError(e)};
     } catch (e) {
       return {
         "status": false,
@@ -141,12 +136,7 @@ class HttpBaseService {
         "data": responseJson["data"]
       };
     } on DioError catch (e) {
-      if ((e.type == DioErrorType.CONNECT_TIMEOUT) ||
-          (e.type == DioErrorType.RECEIVE_TIMEOUT)) {
-        return {"status": false, "message": "Internet connection errorer"};
-      }
-      //e.type = DioErrorType.DEFAULT;
-      return {"status": false, "message": 'Service is unavailable'};
+      return {"status": false, "message": _getMessageFromError(e)};
     } catch (e) {
       return {
         "status": false,
@@ -169,12 +159,7 @@ class HttpBaseService {
         "data": responseJson["data"]
       };
     } on DioError catch (e) {
-      if ((e.type == DioErrorType.CONNECT_TIMEOUT) ||
-          (e.type == DioErrorType.RECEIVE_TIMEOUT)) {
-        return {"status": false, "message": "Internet connection errorer"};
-      }
-      //e.type = DioErrorType.DEFAULT;
-      return {"status": false, "message": 'Service is unavailable'};
+      return {"status": false, "message": _getMessageFromError(e)};
     } catch (e) {
       return {
         "status": false,
@@ -198,17 +183,32 @@ class HttpBaseService {
         "data": responseJson["data"]
       };
     } on DioError catch (e) {
-      if ((e.type == DioErrorType.CONNECT_TIMEOUT) ||
-          (e.type == DioErrorType.RECEIVE_TIMEOUT)) {
-        return {"status": false, "message": "Internet connection errorer"};
-      }
-      //e.type = DioErrorType.DEFAULT;
-      return {"status": false, "message": 'An error occured'};
+      return {"status": false, "message": _getMessageFromError(e)};
     } catch (e) {
       return {
         "status": false,
         "message": "An error occured while making request"
       };
     }
+  }
+
+  /// gets error message from [error]
+  ///
+  /// returns an internet connection error message
+  /// if it timesout, extracts the message from the
+  /// response if any or returns a default error
+  String _getMessageFromError(DioError error) {
+    if ((error.type == DioErrorType.CONNECT_TIMEOUT) ||
+        (error.type == DioErrorType.RECEIVE_TIMEOUT)) {
+      return "Internet connection error";
+    }
+    //e.type = DioErrorType.DEFAULT;
+    if (error.response.data is Map) {
+      Map<String, dynamic> response = Map.from(error.response.data);
+      if ((error.response.data as Map).containsKey('message')) {
+        return response['message'];
+      }
+    }
+    return 'Error';
   }
 }

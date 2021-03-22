@@ -559,7 +559,7 @@ class _ProfilePageState extends State<ProfilePage>
                                       SizedBox(
                                         height: 10.0,
                                       ),
-                                      RaisedButton(
+                                      ElevatedButton(
                                         child: _buttonClicked
                                             ? SizedBox(
                                                 child: AuthButtonSpinner(
@@ -849,7 +849,7 @@ class _ProfilePageState extends State<ProfilePage>
                                   textAlign: TextAlign.center,
                                   style: Theme.of(context)
                                       .textTheme
-                                      .body1
+                                      .bodyText2
                                       .copyWith(
                                         color: Colors.white,
                                       ),
@@ -862,7 +862,7 @@ class _ProfilePageState extends State<ProfilePage>
                                   textAlign: TextAlign.center,
                                   style: Theme.of(context)
                                       .textTheme
-                                      .body1
+                                      .bodyText2
                                       .copyWith(
                                         color: Colors.white,
                                       ),
@@ -875,7 +875,7 @@ class _ProfilePageState extends State<ProfilePage>
                                   textAlign: TextAlign.center,
                                   style: Theme.of(context)
                                       .textTheme
-                                      .body1
+                                      .bodyText2
                                       .copyWith(
                                         color: Colors.white,
                                       ),
@@ -887,7 +887,7 @@ class _ProfilePageState extends State<ProfilePage>
                                   text: TextSpan(
                                     style: Theme.of(context)
                                         .textTheme
-                                        .body1
+                                        .bodyText2
                                         .copyWith(
                                           color: Colors.white,
                                         ),
@@ -994,7 +994,7 @@ class _ProfilePageState extends State<ProfilePage>
                                                             ['yb']),
                                                     style: Theme.of(context)
                                                         .textTheme
-                                                        .headline
+                                                        .headline5
                                                         .copyWith(fontSize: 25),
                                                     textAlign: TextAlign.center,
                                                   ),
@@ -1054,7 +1054,7 @@ class _ProfilePageState extends State<ProfilePage>
                                                             ['mb']),
                                                     style: Theme.of(context)
                                                         .textTheme
-                                                        .headline
+                                                        .headline5
                                                         .copyWith(fontSize: 25),
                                                     textAlign: TextAlign.center,
                                                   ),
@@ -1111,7 +1111,7 @@ class _ProfilePageState extends State<ProfilePage>
                                                     "${paymentInfo['data']['last_payment_date']}",
                                                     style: Theme.of(context)
                                                         .textTheme
-                                                        .headline
+                                                        .headline5
                                                         .copyWith(fontSize: 25),
                                                     textAlign: TextAlign.center,
                                                   ),
@@ -1174,7 +1174,7 @@ class _ProfilePageState extends State<ProfilePage>
                                                       "${requestsInfo['data']['total']}",
                                                       style: Theme.of(context)
                                                           .textTheme
-                                                          .headline
+                                                          .headline5
                                                           .copyWith(
                                                               fontSize: 25),
                                                     ),
@@ -1202,7 +1202,7 @@ class _ProfilePageState extends State<ProfilePage>
                                                       "${requestsInfo['data']['completed']}",
                                                       style: Theme.of(context)
                                                           .textTheme
-                                                          .headline
+                                                          .headline5
                                                           .copyWith(
                                                               fontSize: 25),
                                                     ),
@@ -1230,7 +1230,7 @@ class _ProfilePageState extends State<ProfilePage>
                                                       "${requestsInfo['data']['pending']}",
                                                       style: Theme.of(context)
                                                           .textTheme
-                                                          .headline
+                                                          .headline5
                                                           .copyWith(
                                                               fontSize: 25),
                                                     ),
@@ -1258,7 +1258,7 @@ class _ProfilePageState extends State<ProfilePage>
                                                       "${requestsInfo['data']['failed']}",
                                                       style: Theme.of(context)
                                                           .textTheme
-                                                          .headline
+                                                          .headline5
                                                           .copyWith(
                                                               fontSize: 25),
                                                     ),
@@ -1319,7 +1319,7 @@ class _ProfilePageState extends State<ProfilePage>
                                                     "${paymentInfo["data"]["number_of_payments"]}",
                                                     style: Theme.of(context)
                                                         .textTheme
-                                                        .headline
+                                                        .headline5
                                                         .copyWith(fontSize: 25),
                                                     textAlign: TextAlign.center,
                                                   ),

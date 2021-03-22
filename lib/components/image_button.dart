@@ -9,14 +9,13 @@ class ImageButton extends StatelessWidget {
   final Color color;
   final TextStyle textStyle;
 
-  ImageButton(
-    this.image, {
-    @required this.onPress,
-    this.caption,
-    this.isAsset = true,
-    this.color,
-    this.textStyle
-  }) : assert(onPress != null && image != null);
+  ImageButton(this.image,
+      {@required this.onPress,
+      this.caption,
+      this.isAsset = true,
+      this.color,
+      this.textStyle})
+      : assert(onPress != null && image != null);
 
   @override
   Widget build(BuildContext context) {
@@ -40,9 +39,10 @@ class ImageButton extends StatelessWidget {
               ? Text(
                   caption,
                   textAlign: TextAlign.center,
-                  style: textStyle ?? Theme.of(context).textTheme.body1.copyWith(
-                        color: shedAppBlue400,
-                      ),
+                  style: textStyle ??
+                      Theme.of(context).textTheme.bodyText2.copyWith(
+                            color: shedAppBlue400,
+                          ),
                 )
               : SizedBox(),
         ],

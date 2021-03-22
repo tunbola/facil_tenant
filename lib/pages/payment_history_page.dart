@@ -87,7 +87,6 @@ class _PaymentHistoryPageState extends State<PaymentHistoryPage> {
 
   Future<List<PaymentsModel>> getPayments(
       String searchYear, String monthSearch) async {
-
     Map<String, dynamic> response = monthSearch == monthsMap["All"]
         ? await _httpService.fetchPayments(year: searchYear)
         : await _httpService.fetchPayments(
@@ -161,7 +160,7 @@ class _PaymentHistoryPageState extends State<PaymentHistoryPage> {
               child: Text(
                 "Showing Bill Payments for $yearToSearch",
                 textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.headline.copyWith(
+                style: Theme.of(context).textTheme.headline5.copyWith(
                       fontSize: 16,
                       color: Colors.white,
                     ),
@@ -226,7 +225,7 @@ class _PaymentHistoryPageState extends State<PaymentHistoryPage> {
                                         "${eachPayment.paymentType.name}",
                                         style: Theme.of(context)
                                             .textTheme
-                                            .headline
+                                            .headline5
                                             .copyWith(fontSize: 20),
                                       ),
                                     ),
@@ -247,13 +246,14 @@ class _PaymentHistoryPageState extends State<PaymentHistoryPage> {
                                         "${formatter.format(double.parse(eachPayment.paymentType.amount))}",
                                         style: Theme.of(context)
                                             .textTheme
-                                            .headline
+                                            .headline5
                                             .copyWith(fontSize: 20),
                                       ),
                                     ),
                                     Text(
                                       "Paid on : ${DateFormat.yMMMd().format(DateTime.parse(eachPayment.paidOn))}",
-                                      style: Theme.of(context).textTheme.caption,
+                                      style:
+                                          Theme.of(context).textTheme.caption,
                                     ),
                                   ],
                                 ),
