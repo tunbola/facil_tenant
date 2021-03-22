@@ -3,6 +3,7 @@ import 'package:badges/badges.dart';
 import 'package:facil_tenant/components/app_spinner.dart';
 import 'package:facil_tenant/components/auth_button_spinner.dart';
 import 'package:facil_tenant/models/balance_model.dart';
+import 'package:facil_tenant/models/balance_model.dart';
 import 'package:facil_tenant/models/outstanding_bills_model.dart';
 import 'package:facil_tenant/models/payment_type_model.dart';
 import 'package:facil_tenant/models/payments_model.dart';

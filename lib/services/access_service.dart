@@ -3,7 +3,6 @@ import "dart:convert" as conv;
 import 'package:intl/intl.dart';
 
 class AccessService {
-
   static final String _key = "FacilAccessKey";
   static List<String> _supportedExtensions = ['pdf', 'jpg', 'jpeg', 'png'];
   static List<String> _imageExtensions = ['jpg', 'png', 'jpeg'];
@@ -181,5 +180,4 @@ class AccessService {
     List<String> msgs = message.split(':');
     return (msgs.length > 0) ? msgs[1] : message;
   }
-
 }

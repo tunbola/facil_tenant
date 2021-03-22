@@ -23,7 +23,7 @@ dependencies:
   cupertino_icons: ^0.1.2
   dio: ^3.0.9
   intl: ^0.15.8
-  overlay_support: ^1.0.1
+  overlay_support: ^1.0.5-hotfix1
   path_provider: ^1.6.7
   provider: ^2.0.0+1
   sembast: ^1.15.4+1
