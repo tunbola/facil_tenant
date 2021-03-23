@@ -113,7 +113,7 @@ class OnboardingPage extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
-                FlatButton(
+                TextButton(
                   child: Text(
                     "NEXT",
                     style: Theme.of(context).textTheme.bodyText2,
@@ -132,7 +132,7 @@ class OnboardingPage extends StatelessWidget {
                     );
                   },
                 ),
-                FlatButton(
+                TextButton(
                   child: Text(
                     "SKIP",
                     style: Theme.of(context).textTheme.bodyText2,

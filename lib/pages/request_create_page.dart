@@ -193,14 +193,14 @@ class _RequesetState extends State<RequestsPage> {
                     return ElevatedButton(
                       onPressed: () async {
                         if (_requestType.value == null) {
-                          Scaffold.of(context).showSnackBar(SnackBar(
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                             content: Text('Please choose a request type'),
                             backgroundColor: Colors.red,
                           ));
                           return;
                         }
                         if (_request.text.trim().length < 1) {
-                          Scaffold.of(context).showSnackBar(SnackBar(
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                             content: Text('Please fill in your request'),
                             backgroundColor: Colors.red,
                           ));
@@ -222,7 +222,7 @@ class _RequesetState extends State<RequestsPage> {
                             attachmentName = "";
                             _request.text = "";
                           });
-                          Scaffold.of(context).showSnackBar(SnackBar(
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                             content: Text("${cr['message']}"),
                             backgroundColor: Colors.green,
                           ));
@@ -231,7 +231,7 @@ class _RequesetState extends State<RequestsPage> {
                         setState(() {
                           _buttonClicked = false;
                         });
-                        Scaffold.of(context).showSnackBar(SnackBar(
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                           content: Text("Error while sending your request"),
                           backgroundColor: Colors.red,
                         ));

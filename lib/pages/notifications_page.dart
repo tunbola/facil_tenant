@@ -203,9 +203,9 @@ class _NotificationsListState extends State<NotificationsList> {
                         itemBuilder: (context, idx) {
                           final content = _notifications[idx];
                           return Container(
-                            padding: EdgeInsets.all(10.0),
-                            child:  notificationBody(isRequest, content, context) 
-                          );
+                              padding: EdgeInsets.all(10.0),
+                              child: notificationBody(
+                                  isRequest, content, context));
                         },
                         separatorBuilder: (context, idx) => Container(
                           height: 0.5,
@@ -268,7 +268,9 @@ class _NotificationsListState extends State<NotificationsList> {
     }
     Color color = content.requestStatusId < 3
         ? shedAppBlue300
-        : content.requestStatusId == 3 ? Colors.green : Colors.red;
+        : content.requestStatusId == 3
+            ? Colors.green
+            : Colors.red;
     return Container(
         child: InkWell(
       child: Row(
@@ -405,26 +407,28 @@ class _NotificationsListState extends State<NotificationsList> {
                                 "${DateFormat.yMMMEd().format(DateTime.parse(content.createdAt))}",
                                 style: TextStyle(fontWeight: FontWeight.bold)),
                             isRequest
-                                ? (content.isTerminated == 0) ? FlatButton(
-                                    onPressed: () {
-                                      Navigator.push(context,
-                                          MaterialPageRoute(builder: (_) {
-                                        return UpdateNotificationPage(
-                                          content: content,
-                                          color: color,
-                                        );
-                                      }));
-                                    },
-                                    child: Row(
-                                      children: <Widget>[
-                                        Icon(Icons.edit),
-                                        SizedBox(
-                                          width: 5.0,
+                                ? (content.isTerminated == 0)
+                                    ? TextButton(
+                                        onPressed: () {
+                                          Navigator.push(context,
+                                              MaterialPageRoute(builder: (_) {
+                                            return UpdateNotificationPage(
+                                              content: content,
+                                              color: color,
+                                            );
+                                          }));
+                                        },
+                                        child: Row(
+                                          children: <Widget>[
+                                            Icon(Icons.edit),
+                                            SizedBox(
+                                              width: 5.0,
+                                            ),
+                                            Text("Edit")
+                                          ],
                                         ),
-                                        Text("Edit")
-                                      ],
-                                    ),
-                                  ) : SizedBox()
+                                      )
+                                    : SizedBox()
                                 : SizedBox(),
                           ],
                         ),
@@ -449,7 +453,7 @@ class _NotificationsListState extends State<NotificationsList> {
                                         content.attachmentUrl,
                                         height: 300.0,
                                       )
-                                    : FlatButton(
+                                    : TextButton(
                                         onPressed: () {
                                           _launchURL(content.attachmentUrl);
                                         },

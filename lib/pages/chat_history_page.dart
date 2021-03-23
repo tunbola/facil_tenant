@@ -256,7 +256,7 @@ class _ChatHistoryPageState extends State<ChatHistoryPage> {
                                         }
                                         if (!_validateMsg(
                                             _message.text.trim())) {
-                                          Scaffold.of(context)
+                                          ScaffoldMessenger.of(context)
                                               .showSnackBar(SnackBar(
                                             content: Text(
                                                 "Message cannot contain |"),
@@ -289,7 +289,7 @@ class _ChatHistoryPageState extends State<ChatHistoryPage> {
                                           });
                                           _listLength.value += 1;
                                         }).catchError((error) {
-                                          Scaffold.of(context)
+                                          ScaffoldMessenger.of(context)
                                               .showSnackBar(SnackBar(
                                             content: Text(
                                                 "Sorry, could not send message..."),
@@ -322,7 +322,8 @@ class _ChatHistoryPageState extends State<ChatHistoryPage> {
                                     setState(() {
                                       _loaderViewIndex = 1;
                                     });
-                                    Scaffold.of(context).showSnackBar(SnackBar(
+                                    ScaffoldMessenger.of(context)
+                                        .showSnackBar(SnackBar(
                                       content: Text(
                                         'File type is not supported',
                                       ),
@@ -392,7 +393,7 @@ class _ChatHistoryPageState extends State<ChatHistoryPage> {
                       _listLength.value += 1;
                       Navigator.of(context).pop();
                     }).catchError((error) {
-                      Scaffold.of(context).showSnackBar(SnackBar(
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                         content: Text("Failed..."),
                         backgroundColor: Colors.red,
                       ));
@@ -430,7 +431,8 @@ class _ChatHistoryPageState extends State<ChatHistoryPage> {
                                 enableSwipe: true,
                                 pageSnap: true,
                                 onError: (e) {
-                                  Scaffold.of(context).showSnackBar(SnackBar(
+                                  ScaffoldMessenger.of(context)
+                                      .showSnackBar(SnackBar(
                                     content: Text("${e.toString()}"),
                                   ));
                                 },
@@ -496,8 +498,7 @@ class _ChatHistoryPageState extends State<ChatHistoryPage> {
                           ),
                           errorWidget: (context, url, error) =>
                               const Icon(Icons.error),
-                        )
-                        ))
+                        )))
                 : InkWell(
                     child: Container(
                       child: Column(

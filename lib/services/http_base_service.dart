@@ -204,8 +204,9 @@ class HttpBaseService {
     }
     //e.type = DioErrorType.DEFAULT;
     if (error.response.data is Map) {
-      Map<String, dynamic> response = Map.from(error.response.data);
-      if ((error.response.data as Map).containsKey('message')) {
+      Map<String, dynamic> response =
+          error.response.data as Map<String, dynamic>;
+      if (response.containsKey('message')) {
         return response['message'];
       }
     }

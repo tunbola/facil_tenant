@@ -235,12 +235,12 @@ class RegistrationPageState extends State<RegistrationPage> {
                             Text(
                               "Already have an account?",
                             ),
-                            FlatButton(
+                            TextButton(
                               child: Text(
                                 "login",
                                 style: Theme.of(context)
                                     .textTheme
-                                    .display1
+                                    .headline4
                                     .copyWith(
                                       fontSize: 14.0,
                                     ),

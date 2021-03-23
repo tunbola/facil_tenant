@@ -3,7 +3,6 @@ import 'package:badges/badges.dart';
 import 'package:facil_tenant/components/app_spinner.dart';
 import 'package:facil_tenant/components/auth_button_spinner.dart';
 import 'package:facil_tenant/models/balance_model.dart';
-import 'package:facil_tenant/models/balance_model.dart';
 import 'package:facil_tenant/models/outstanding_bills_model.dart';
 import 'package:facil_tenant/models/payment_type_model.dart';
 import 'package:facil_tenant/models/payments_model.dart';
@@ -14,7 +13,6 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
 import 'package:facil_tenant/styles/colors.dart';
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../components/app_scaffold.dart';
 import 'package:flutter_picker/flutter_picker.dart';
 import 'package:crypto/crypto.dart' as crypto;
@@ -44,7 +42,7 @@ class OutstandingBillsPage extends StatefulWidget {
 class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
   final _httpService = HttpService();
   bool _proceedToPayButton = false;
-  final _scaffoldKey = GlobalKey<ScaffoldState>();
+  final _scaffoldKey = GlobalKey<ScaffoldMessengerState>();
 
   final String fixedPayment = '1';
   final String partialPayment = '1';
@@ -416,7 +414,7 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
                                             Container(
                                                 alignment: Alignment.center,
                                                 width: 60.0,
-                                                child: FlatButton(
+                                                child: TextButton(
                                                   onPressed: () {
                                                     try {
                                                       String key = bill
@@ -572,6 +570,7 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
   }
 
   renderSnackBar(String text) {
+    //ScaffoldMessenger.of(context)
     _scaffoldKey.currentState.showSnackBar(SnackBar(
       content: Text(text),
       backgroundColor: Colors.red,

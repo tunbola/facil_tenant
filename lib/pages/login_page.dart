@@ -166,7 +166,7 @@ class LoginFormState extends State<LoginPage> {
                         Text(
                           "New here?",
                         ),
-                        FlatButton(
+                        TextButton(
                           child: Text(
                             " Click to register",
                             style:
@@ -179,7 +179,7 @@ class LoginFormState extends State<LoginPage> {
                         ),
                       ],
                     ),
-                    /*FlatButton(
+                    /*TextButton(
                       child: Text(
                         "Retrieve Password",
                         textAlign: TextAlign.right,

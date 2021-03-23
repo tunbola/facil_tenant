@@ -147,7 +147,7 @@ class _UpdateNotificationPageState extends State<UpdateNotificationPage> {
                           : Text("Update"),
                       onPressed: () async {
                         if (message.text.trim().length < 1) {
-                          Scaffold.of(context).showSnackBar(SnackBar(
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                             content: Text('Please fill in your request'),
                             backgroundColor: Colors.red,
                           ));

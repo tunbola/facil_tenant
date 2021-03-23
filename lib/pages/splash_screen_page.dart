@@ -49,7 +49,7 @@ class SplashPage extends StatelessWidget {
                 "The Real Estate Manager",
                 style: Theme.of(context)
                     .textTheme
-                    .subtitle
+                    .subtitle2
                     .copyWith(fontSize: 20.0),
                 textAlign: TextAlign.center,
               )
