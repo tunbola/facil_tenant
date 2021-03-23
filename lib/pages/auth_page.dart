@@ -145,12 +145,12 @@ class ForgotPasswordPage extends StatelessWidget {
                             Text(
                               "New here?",
                             ),
-                            FlatButton(
+                            TextButton(
                               child: Text(
                                 "register",
                                 style: Theme.of(context)
                                     .textTheme
-                                    .display1
+                                    .headline4
                                     .copyWith(
                                       fontSize: 14.0,
                                     ),
@@ -160,7 +160,7 @@ class ForgotPasswordPage extends StatelessWidget {
                             ),
                           ],
                         ),
-                        FlatButton(
+                        TextButton(
                           child: Text(
                             "Back to login",
                             textAlign: TextAlign.right,

@@ -732,7 +732,7 @@ class _ProfilePageState extends State<ProfilePage>
                                         //style: TextStyle(fontSize: 14.0),
                                       ),
                                       actions: [
-                                        FlatButton(
+                                        TextButton(
                                           child: Text(
                                             "Ok, thanks",
                                             style: TextStyle(
@@ -775,7 +775,7 @@ class _ProfilePageState extends State<ProfilePage>
                             : "${_userProfile.user.surname} ${_userProfile.user.othernames}",
                         style: Theme.of(context)
                             .textTheme
-                            .body2
+                            .bodyText1
                             .copyWith(color: Colors.white),
                       ),
                       expandedHeight: MediaQuery.of(context).size.height * 0.5,
@@ -971,7 +971,7 @@ class _ProfilePageState extends State<ProfilePage>
                                             "${DateTime.now().year} OUTSTANDING BILLS (YEARLY)",
                                             style: Theme.of(context)
                                                 .textTheme
-                                                .body2,
+                                                .bodyText1,
                                             // .copyWith(color: Colors.white)
                                             textAlign: TextAlign.center,
                                           ),
@@ -1031,7 +1031,7 @@ class _ProfilePageState extends State<ProfilePage>
                                             "${DateTime.now().year} OUTSTANDING BILLS (MONTHLY)",
                                             style: Theme.of(context)
                                                 .textTheme
-                                                .body2,
+                                                .bodyText1,
                                             // .copyWith(color: Colors.white)
                                             textAlign: TextAlign.center,
                                           ),
@@ -1091,7 +1091,7 @@ class _ProfilePageState extends State<ProfilePage>
                                             "LAST PAYMENT MADE THIS YEAR",
                                             style: Theme.of(context)
                                                 .textTheme
-                                                .body2,
+                                                .bodyText1,
                                             textAlign: TextAlign.center,
                                           ),
                                         ),
@@ -1148,7 +1148,7 @@ class _ProfilePageState extends State<ProfilePage>
                                             "REQUESTS",
                                             style: Theme.of(context)
                                                 .textTheme
-                                                .body2,
+                                                .bodyText1,
                                             textAlign: TextAlign.center,
                                           ),
                                         ),
@@ -1165,7 +1165,7 @@ class _ProfilePageState extends State<ProfilePage>
                                                     "TOTAL",
                                                     style: Theme.of(context)
                                                         .textTheme
-                                                        .title
+                                                        .headline6
                                                         .copyWith(fontSize: 12),
                                                     textAlign: TextAlign.center,
                                                   ),
@@ -1193,7 +1193,7 @@ class _ProfilePageState extends State<ProfilePage>
                                                     "COMPLETED",
                                                     style: Theme.of(context)
                                                         .textTheme
-                                                        .title
+                                                        .headline6
                                                         .copyWith(fontSize: 12),
                                                     textAlign: TextAlign.center,
                                                   ),
@@ -1221,7 +1221,7 @@ class _ProfilePageState extends State<ProfilePage>
                                                     "PENDING",
                                                     style: Theme.of(context)
                                                         .textTheme
-                                                        .title
+                                                        .headline6
                                                         .copyWith(fontSize: 12),
                                                     textAlign: TextAlign.center,
                                                   ),
@@ -1249,7 +1249,7 @@ class _ProfilePageState extends State<ProfilePage>
                                                     "FAILED",
                                                     style: Theme.of(context)
                                                         .textTheme
-                                                        .title
+                                                        .headline6
                                                         .copyWith(fontSize: 12),
                                                     textAlign: TextAlign.center,
                                                   ),
@@ -1299,7 +1299,7 @@ class _ProfilePageState extends State<ProfilePage>
                                             "PAYMENTS MADE THIS YEAR",
                                             style: Theme.of(context)
                                                 .textTheme
-                                                .body2,
+                                                .bodyText1,
                                             textAlign: TextAlign.center,
                                           ),
                                         ),
@@ -1514,7 +1514,7 @@ class _ProfilePageState extends State<ProfilePage>
                                                 "Added at : ${DateFormat.yMMMd().format(DateTime.parse(_visit.createdAt))}",
                                                 style: Theme.of(context)
                                                     .textTheme
-                                                    .subtitle,
+                                                    .subtitle2,
                                               ),
                                               SizedBox(height: 7.0),
                                               Text(
@@ -1535,7 +1535,7 @@ class _ProfilePageState extends State<ProfilePage>
                                                 "Expected on : ${DateFormat.yMMMd().format(DateTime.parse(_visit.expectedVisitTime))}",
                                                 style: Theme.of(context)
                                                     .textTheme
-                                                    .subtitle,
+                                                    .subtitle2,
                                               ),
                                             ],
                                           ),
@@ -1562,7 +1562,7 @@ class _ProfilePageState extends State<ProfilePage>
   }
 
   renderSnackBar(BuildContext context, Color bgColor, String content) {
-    Scaffold.of(context).showSnackBar(SnackBar(
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       backgroundColor: bgColor,
       content: Text(
         content,
