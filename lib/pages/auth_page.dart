@@ -42,6 +42,7 @@ class AuthPage extends StatelessWidget {
   Widget build(BuildContext context) {
     ctx = context;
     return AppScaffold(
+      shouldShowProfileIcon: false,
       child: Navigator(
         initialRoute: 'login/signin',
         onGenerateRoute: (RouteSettings settings) {

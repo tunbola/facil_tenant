@@ -12,7 +12,7 @@ description: A new Flutter project.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # dependency image_picker: ^0.5.0+9
-version: 1.0.0+4
+version: 1.0.2+5
 
 environment:
   sdk: ">=2.2.2 <3.0.0"
@@ -24,9 +24,8 @@ dependencies:
   dio: ^3.0.9
   intl: ^0.15.8
   overlay_support: ^1.0.5-hotfix1
-  path_provider: ^1.6.7
+  path_provider: ^2.0.1
   provider: ^2.0.0+1
-  sembast: ^1.15.4+1
   get_it: ^4.0.2
   json_annotation: ^2.2.0
   datetime_picker_formfield: ^0.4.3
@@ -42,6 +41,7 @@ dependencies:
   fluttertoast: ^4.0.1
   cached_network_image: ^2.2.0+1
   flutter_inappwebview: ^3.1.0
+  shared_preferences: ^2.0.5
 
 dev_dependencies:
   flutter_test:

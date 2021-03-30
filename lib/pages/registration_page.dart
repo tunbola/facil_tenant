@@ -1,3 +1,5 @@
+import 'package:facil_tenant/pages/facil_custom_tabs.dart';
+import 'package:flutter/gestures.dart';
 import "package:flutter/material.dart";
 import '../styles/colors.dart';
 import "../services/http_service.dart";
@@ -180,6 +182,32 @@ class RegistrationPageState extends State<RegistrationPage> {
                       SizedBox(
                         height: 20.0,
                       ),
+                      Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 10.0,
+                          ),
+                          child: new RichText(
+                            text: new TextSpan(
+                              children: [
+                                new TextSpan(
+                                  text:
+                                      'By clicking register, you agree to our ',
+                                  style: new TextStyle(color: Colors.black),
+                                ),
+                                new TextSpan(
+                                  text: 'terms & conditions',
+                                  style: new TextStyle(color: Colors.blue),
+                                  recognizer: new TapGestureRecognizer()
+                                    ..onTap = () {
+                                      FacilCustomTabs(
+                                              "https://facilng.net/terms.html")
+                                          .openTab();
+                                    },
+                                ),
+                              ],
+                            ),
+                          )),
+                      SizedBox(height: 20.0),
                       ElevatedButton(
                         child: buttonClicked
                             ? SizedBox(

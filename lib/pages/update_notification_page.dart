@@ -96,7 +96,7 @@ class _UpdateNotificationPageState extends State<UpdateNotificationPage> {
                           child: GestureDetector(
                             onTap: () async {
                               final file =
-                                  await FilePicker.getFile(type: FileType.ANY);
+                                  await FilePicker.getFile(type: FileType.any);
                               if (file == null) return;
                               setState(() {
                                 attachmentName = "Please wait ...";
