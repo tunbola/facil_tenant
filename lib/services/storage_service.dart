@@ -1,12 +1,9 @@
 import 'dart:async';
 
-import 'package:path/path.dart';
-import 'package:path_provider/path_provider.dart' as fs;
-import 'package:sembast/sembast.dart';
-import 'package:sembast/sembast_io.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LocalStorage {
-  static String _dbPath;
+  /*static String _dbPath;
   static DatabaseFactory dbFactory = databaseFactoryIo;
 
   static Future<String> get _fsPath async {
@@ -53,5 +50,32 @@ class LocalStorage {
     } catch (e) {
       return false;
     }
+  }*/
+
+  static Future<SharedPreferences> _store() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs;
+  }
+
+  static Future<dynamic> getItem(String key) async {
+    SharedPreferences dbInstance = await _store();
+    bool hasKey = dbInstance.containsKey(key);
+    if (hasKey) {
+      String content = dbInstance.getString(key);
+      return content;
+    }
+    return false;
+  }
+
+  static Future<bool> setItem(String key, String data) async {
+    SharedPreferences dbInstance = await _store();
+    bool state = await dbInstance.setString(key, data);
+    return state;
+  }
+
+  static Future<bool> removeItem(String key) async {
+    SharedPreferences dbInstance = await _store();
+    bool state = await dbInstance.remove(key);
+    return state;
   }
 }

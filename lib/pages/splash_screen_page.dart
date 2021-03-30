@@ -10,7 +10,7 @@ class SplashPage extends StatelessWidget {
   _checkAuthState(BuildContext context) async {
     final isReturningUser = await LocalStorage.getItem("oldUser");
     if (isReturningUser == false) {
-      await LocalStorage.setItem("oldUser", true);
+      await LocalStorage.setItem("oldUser", "yes");
       Navigator.of(context).pushReplacementNamed('onboarding');
     } else {
       var _route = await AccessService.getLastVisitedRoute();

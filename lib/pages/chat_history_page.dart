@@ -306,7 +306,7 @@ class _ChatHistoryPageState extends State<ChatHistoryPage> {
                                 icon: Icon(Icons.attach_file),
                                 onPressed: () async {
                                   final file = await FilePicker.getFile(
-                                      type: FileType.ANY);
+                                      type: FileType.any);
                                   if (file == null) return;
                                   setState(() {
                                     _loaderViewIndex = 0;

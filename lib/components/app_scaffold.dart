@@ -11,6 +11,7 @@ class AppScaffold extends StatelessWidget {
   final Widget bottomWidget;
   final bool auomaticallyImplyLeading;
   final List<Widget> actions;
+  final bool shouldShowProfileIcon;
 
   AppScaffold({
     @required this.child,
@@ -20,6 +21,7 @@ class AppScaffold extends StatelessWidget {
     this.auomaticallyImplyLeading = true,
     this.bottom,
     this.floatingActionButton,
+    this.shouldShowProfileIcon = true,
   }) : assert(child != null && pageTitle != null);
 
   @override
@@ -91,16 +93,18 @@ class AppScaffold extends StatelessWidget {
                               );
                             },
                           ),
-                          GestureDetector(
-                            child: CircleAvatar(
-                              backgroundColor: Colors.white,
-                              backgroundImage:
-                                  AssetImage('assets/img/tenant.png'),
-                              radius: 15.0,
-                            ),
-                            onTap: () =>
-                                Navigator.of(context).pushNamed('profile'),
-                          )
+                          shouldShowProfileIcon
+                              ? GestureDetector(
+                                  child: CircleAvatar(
+                                    backgroundColor: Colors.white,
+                                    backgroundImage:
+                                        AssetImage('assets/img/tenant.png'),
+                                    radius: 15.0,
+                                  ),
+                                  onTap: () => Navigator.of(context)
+                                      .pushNamed('profile'),
+                                )
+                              : SizedBox()
                         ],
                       ),
                     ),

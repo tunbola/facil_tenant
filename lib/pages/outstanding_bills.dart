@@ -909,7 +909,10 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
                                                           child: Badge(
                                                             shape: BadgeShape
                                                                 .square,
-                                                            borderRadius: 20,
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        10.0),
                                                             toAnimate: true,
                                                             badgeColor:
                                                                 shedAppBlue50,
@@ -1074,7 +1077,8 @@ class _OutstandingBillsPageState extends State<OutstandingBillsPage> {
                                       child: Padding(
                                         child: Badge(
                                           shape: BadgeShape.square,
-                                          borderRadius: 20,
+                                          borderRadius:
+                                              BorderRadius.circular(10),
                                           toAnimate: true,
                                           badgeColor: shedAppBlue50,
                                           badgeContent: Text(
