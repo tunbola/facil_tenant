@@ -2,17 +2,17 @@ import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
 class MyInAppBrowser extends InAppBrowser {
   @override
-  Future onLoadStart(String url) async {
+  Future onLoadStart(Uri url) async {
     //print("\n\nStarted $url\n\n");
   }
 
   @override
-  Future onLoadStop(String url) async {
+  Future onLoadStop(Uri url) async {
     //print("\n\nStopped $url\n\n");
   }
 
   @override
-  void onLoadError(String url, int code, String message) {
+  void onLoadError(Uri url, int code, String message) {
     //print("\n\nCan't load $url.. Error: $message\n\n");
   }
 
@@ -23,7 +23,8 @@ class MyInAppBrowser extends InAppBrowser {
 }
 
 class MyChromeSafariBrowser extends ChromeSafariBrowser {
-  MyChromeSafariBrowser(browserFallback) : super(bFallback: browserFallback);
+  MyChromeSafariBrowser(browserFallback)
+      : super(/*bFallback: browserFallback*/);
 
   @override
   void onOpened() {
@@ -60,7 +61,7 @@ class FacilCustomTabs {
 
   openTab() async {
     await browser.open(
-        url: url,
+        url: Uri.parse(url),
         options: ChromeSafariBrowserClassOptions(
             android:
                 AndroidChromeCustomTabsOptions(addDefaultShareMenuItem: false),

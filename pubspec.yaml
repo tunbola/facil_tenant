@@ -21,35 +21,34 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^0.1.2
-  dio: ^3.0.9
-  intl: ^0.15.8
-  overlay_support: ^1.0.5-hotfix1
+  dio: ^4.0.0
+  intl: ^0.17.0
+  overlay_support: ^1.2.0
   path_provider: ^2.0.1
-  provider: ^2.0.0+1
-  get_it: ^4.0.2
-  json_annotation: ^2.2.0
-  datetime_picker_formfield: ^0.4.3
+  provider: ^5.0.0
+  get_it: ^6.0.0
+  json_annotation: ^4.0.1
+  datetime_picker_formfield: ^2.0.0
   dropdownfield: ^1.0.3
-  badges: ^1.1.1
-  flutter_picker: ^1.1.0
-  image_picker: 0.6.3+1
-  file_picker: ^1.4.3+2
-  url_launcher: ^5.4.1
-  crypto: ^2.1.3
-  flutter_pdfview: ^1.0.1
-  image: ^2.1.4
-  fluttertoast: ^4.0.1
-  cached_network_image: ^2.2.0+1
-  flutter_inappwebview: ^3.1.0
+  badges: ^1.2.0
+  flutter_picker: ^2.0.1
+  image_picker: ^0.7.4
+  file_picker: ^3.0.1
+  url_launcher: ^6.0.3
+  crypto: ^3.0.1
+  flutter_pdfview: ^1.1.0
+  image: ^3.0.2
+  fluttertoast: ^8.0.3
+  cached_network_image: ^3.0.0
+  flutter_inappwebview: ^5.3.1+1
   shared_preferences: ^2.0.5
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_launcher_icons: ^0.7.0
-  json_model:
-  build_runner: ^1.2.8
-  json_serializable: ^2.0.0
+  flutter_launcher_icons: ^0.9.0
+  build_runner: ^1.12.2
+  json_serializable: ^4.1.0
 
 flutter_icons:
   android: "launcher_icon"
