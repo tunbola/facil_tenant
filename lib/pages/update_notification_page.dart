@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:facil_tenant/components/app_scaffold.dart';
 import 'package:facil_tenant/components/auth_button_spinner.dart';
@@ -95,12 +96,13 @@ class _UpdateNotificationPageState extends State<UpdateNotificationPage> {
                         child: Container(
                           child: GestureDetector(
                             onTap: () async {
-                              final file =
-                                  await FilePicker.getFile(type: FileType.any);
-                              if (file == null) return;
+                              final result = await FilePicker.platform
+                                  .pickFiles(type: FileType.any);
+                              if (result == null) return;
                               setState(() {
                                 attachmentName = "Please wait ...";
                               });
+                              File file = File(result.files.single.path);
                               List splitPath = file.path.split('/');
                               String fileName = splitPath[splitPath.length - 1];
                               List splitName = fileName.split(".");

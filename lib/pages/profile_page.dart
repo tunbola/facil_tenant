@@ -815,9 +815,10 @@ class _ProfilePageState extends State<ProfilePage>
                                     radius: 80,
                                   ),
                                   onTap: () async {
-                                    var image = await ImagePicker.pickImage(
-                                        source: ImageSource.gallery);
-                                    var imageBytes = image.readAsBytesSync();
+                                    var result = await ImagePicker()
+                                        .getImage(source: ImageSource.gallery);
+                                    var imageBytes = await result
+                                        .readAsBytes(); //image.readAsBytesSync();
                                     String encodedImage =
                                         base64Encode(imageBytes);
                                     setState(() {

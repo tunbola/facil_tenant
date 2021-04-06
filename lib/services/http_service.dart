@@ -8,7 +8,6 @@ import "dart:convert" as conv;
 import "package:facil_tenant/services/access_service.dart";
 
 class HttpService {
-  
   HttpBaseService requestHander = HttpBaseService();
 
   final AccessService accessService = new AccessService();
@@ -28,7 +27,8 @@ class HttpService {
   }
 
   Future<Map<String, dynamic>> fetchAnnounceMents(int pageNumber) async {
-    Map<String, String> requestHeader = await this.accessService.requestHeader();
+    Map<String, String> requestHeader =
+        await this.accessService.requestHeader();
     String url =
         "${config['baseUrl']}${config['announcements']}index?page=$pageNumber";
     Map<String, dynamic> response =
@@ -38,7 +38,8 @@ class HttpService {
 
   Future<Map<String, dynamic>> fetchRequests(
       {int pageNumber, bool fetchAll = false}) async {
-    Map<String, String> requestHeader = await this.accessService.requestHeader();
+    Map<String, String> requestHeader =
+        await this.accessService.requestHeader();
     String url = fetchAll
         ? "${config['baseUrl']}${config['request']}${config['view']}?all=true"
         : "${config['baseUrl']}${config['request']}${config['view']}?page=$pageNumber";
@@ -48,7 +49,8 @@ class HttpService {
   }
 
   Future<Map<String, dynamic>> fetchMessageSenders() async {
-    Map<String, String> requestHeader = await this.accessService.requestHeader();
+    Map<String, String> requestHeader =
+        await this.accessService.requestHeader();
     String url = "${config['baseUrl']}${config['message']}";
     Map<String, dynamic> response =
         await requestHander.sendGet(url, requestHeader);
@@ -56,7 +58,8 @@ class HttpService {
   }
 
   Future<Map<String, dynamic>> fetchMessagesByTitle(String userId) async {
-    Map<String, String> requestHeader = await this.accessService.requestHeader();
+    Map<String, String> requestHeader =
+        await this.accessService.requestHeader();
     String url = "${config['baseUrl']}${config['message']}?userId=$userId";
     Map<String, dynamic> response =
         await requestHander.sendGet(url, requestHeader);
@@ -65,7 +68,8 @@ class HttpService {
 
   Future<Map<String, dynamic>> fetchChatHistory(
       String chatMateId, String title) async {
-    Map<String, String> requestHeader = await this.accessService.requestHeader();
+    Map<String, String> requestHeader =
+        await this.accessService.requestHeader();
     String url =
         "${config['baseUrl']}${config['message']}?chatMateId=${chatMateId}&title=$title";
     Map<String, dynamic> response =
@@ -76,7 +80,8 @@ class HttpService {
   Future<Map<String, dynamic>> sendMessage(
       List<String> viewableBy, String title,
       {String message, String attachment}) async {
-    Map<String, String> requestHeader = await this.accessService.requestHeader();
+    Map<String, String> requestHeader =
+        await this.accessService.requestHeader();
     String requestBody = conv.json.encode({
       "viewable_by": viewableBy,
       "title": title,
@@ -90,7 +95,8 @@ class HttpService {
   }
 
   Future<Map<String, dynamic>> updateMessagesState(String msgIds) async {
-    Map<String, String> requestHeader = await this.accessService.requestHeader();
+    Map<String, String> requestHeader =
+        await this.accessService.requestHeader();
     String requestBody = conv.json.encode({"msgsid": msgIds});
     String url = "${config['baseUrl']}${config['message']}${config['update']}";
     Map<String, dynamic> response =
@@ -113,7 +119,8 @@ class HttpService {
   }
 
   Future<Map<String, dynamic>> fetchProfile(String userId) async {
-    Map<String, String> requestHeader = await this.accessService.requestHeader();
+    Map<String, String> requestHeader =
+        await this.accessService.requestHeader();
     String url =
         "${config['baseUrl']}${config['user']}${config['view']}?id=$userId";
     Map<String, dynamic> response =
@@ -123,7 +130,8 @@ class HttpService {
 
   Future<Map<String, dynamic>> createDependentUser(
       String phone, String dependent) async {
-    Map<String, String> requestHeader = await this.accessService.requestHeader();
+    Map<String, String> requestHeader =
+        await this.accessService.requestHeader();
     String requestBody =
         conv.json.encode({"phone": phone, "dependent_id": dependent});
     String url = "${config['baseUrl']}${config['register']}${config['create']}";
@@ -134,7 +142,8 @@ class HttpService {
 
   Future<Map<String, dynamic>> registerVisit(
       String visitorName, String visitorPhone, String expectedVisitTime) async {
-    Map<String, String> requestHeader = await this.accessService.requestHeader();
+    Map<String, String> requestHeader =
+        await this.accessService.requestHeader();
     String requestBody = conv.json.encode({
       "visitor_name": visitorName,
       "visitor_phone": visitorPhone,
@@ -148,7 +157,8 @@ class HttpService {
 
   Future<Map<String, dynamic>> updateProfile(String surname, String othernames,
       String phone, String email, String address, String title) async {
-    Map<String, String> requestHeader = await this.accessService.requestHeader();
+    Map<String, String> requestHeader =
+        await this.accessService.requestHeader();
     String userId = await this.accessService.getUserId();
     String requestBody = conv.json.encode({
       "surname": surname,
@@ -167,7 +177,8 @@ class HttpService {
   }
 
   Future<Map<String, dynamic>> fetchRequestTypes() async {
-    Map<String, String> requestHeader = await this.accessService.requestHeader();
+    Map<String, String> requestHeader =
+        await this.accessService.requestHeader();
     String url = "${config['baseUrl']}${config['requestType']}index";
     Map<String, dynamic> response =
         await requestHander.sendGet(url, requestHeader);
@@ -177,7 +188,8 @@ class HttpService {
   Future<Map<String, dynamic>> createRequest(
       String requestTypeId, String request,
       {String attachment}) async {
-    Map<String, String> requestHeader = await this.accessService.requestHeader();
+    Map<String, String> requestHeader =
+        await this.accessService.requestHeader();
     String url = "${config['baseUrl']}${config['request']}${config['create']}";
     String requestBody = attachment == null
         ? conv.json.encode({
@@ -196,7 +208,8 @@ class HttpService {
 
   Future<Map<String, dynamic>> fetchOutstandingBills(
       {String year, String month}) async {
-    Map<String, String> requestHeader = await this.accessService.requestHeader();
+    Map<String, String> requestHeader =
+        await this.accessService.requestHeader();
     String url = "";
     if (month != null) {
       url =
@@ -213,7 +226,8 @@ class HttpService {
   }
 
   Future<Map<String, dynamic>> fetchBalances() async {
-    Map<String, String> requestHeader = await this.accessService.requestHeader();
+    Map<String, String> requestHeader =
+        await this.accessService.requestHeader();
     String url = "${config['baseUrl']}${config['balances']}${config['view']}";
     Map<String, dynamic> response =
         await requestHander.sendGet(url, requestHeader);
@@ -222,7 +236,8 @@ class HttpService {
 
   Future<Map<String, dynamic>> fetchPayments(
       {String year, String month}) async {
-    Map<String, String> requestHeader = await this.accessService.requestHeader();
+    Map<String, String> requestHeader =
+        await this.accessService.requestHeader();
     String url = "";
     if (month != null) {
       url =
@@ -240,7 +255,8 @@ class HttpService {
   }
 
   Future<Map<String, dynamic>> deleteMessages(String id) async {
-    Map<String, String> requestHeader = await this.accessService.requestHeader();
+    Map<String, String> requestHeader =
+        await this.accessService.requestHeader();
     String url =
         "${config['baseUrl']}${config['message']}${config['delete']}?id=$id";
     Map<String, dynamic> response =
@@ -250,7 +266,8 @@ class HttpService {
 
   Future<Map<String, dynamic>> getTransactionId(
       List<Map<String, dynamic>> paymentData) async {
-    Map<String, String> requestHeader = await this.accessService.requestHeader();
+    Map<String, String> requestHeader =
+        await this.accessService.requestHeader();
     String url =
         "${config['baseUrl']}${config['transaction']}${config['create']}";
     String requestBody = conv.json.encode({"payment_info": paymentData});
@@ -261,7 +278,8 @@ class HttpService {
 
   Future<Map<String, dynamic>> uploadProfileImage(
       String imageEncodedString) async {
-    Map<String, String> requestHeader = await this.accessService.requestHeader();
+    Map<String, String> requestHeader =
+        await this.accessService.requestHeader();
     String url = "${config['baseUrl']}${config['user']}${config['avatar']}";
     String requestBody = conv.json.encode({
       "user_avatar": imageEncodedString,
@@ -272,7 +290,8 @@ class HttpService {
   }
 
   Future<Map<String, dynamic>> fetchDependents() async {
-    Map<String, String> requestHeader = await this.accessService.requestHeader();
+    Map<String, String> requestHeader =
+        await this.accessService.requestHeader();
     String url = "${config['baseUrl']}${config['dependents']}index";
     Map<String, dynamic> response =
         await requestHander.sendGet(url, requestHeader);
@@ -281,7 +300,8 @@ class HttpService {
 
   Future<Map<String, dynamic>> updateRequest(String id, String message,
       {String attachment}) async {
-    Map<String, String> requestHeader = await this.accessService.requestHeader();
+    Map<String, String> requestHeader =
+        await this.accessService.requestHeader();
     String url = "${config['baseUrl']}${config['request']}edit";
     String requestBody = attachment == null
         ? conv.json.encode({
@@ -296,7 +316,8 @@ class HttpService {
   }
 
   Future<Map<String, dynamic>> fetchDuePaymentTypes() async {
-    Map<String, String> requestHeader = await this.accessService.requestHeader();
+    Map<String, String> requestHeader =
+        await this.accessService.requestHeader();
     String url = "${config['baseUrl']}${config['duetypes']}";
     Map<String, dynamic> response =
         await requestHander.sendGet(url, requestHeader);

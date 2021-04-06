@@ -305,13 +305,24 @@ class _ChatHistoryPageState extends State<ChatHistoryPage> {
                             IconButton(
                                 icon: Icon(Icons.attach_file),
                                 onPressed: () async {
-                                  final file = await FilePicker.getFile(
-                                      type: FileType.any);
-                                  if (file == null) return;
-                                  setState(() {
-                                    _loaderViewIndex = 0;
-                                  });
-                                  List splitPath = file.path.split('/');
+                                  final result =
+                                      await FilePicker.platform.pickFiles(
+                                    type: FileType.any,
+                                    allowedExtensions: [
+                                      'jpg',
+                                      'png',
+                                      'pdf',
+                                      'doc'
+                                    ],
+                                  );
+                                  if (result == null) return;
+                                  print(result);
+                                  //setState(() {
+                                  //  _loaderViewIndex = 0;
+                                  //});
+
+                                  //result.files.
+                                  /*List splitPath = file.path.split('/');
                                   String fileName =
                                       splitPath[splitPath.length - 1];
                                   List splitName = fileName.split(".");
@@ -342,7 +353,7 @@ class _ChatHistoryPageState extends State<ChatHistoryPage> {
                                     showAttachmentPreview(
                                         context, compressedFile, fileExt);
                                     return;
-                                  }
+                                  }*/
                                 })
                           ]),
                         ],

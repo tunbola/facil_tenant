@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:facil_tenant/services/access_service.dart';
 import 'package:facil_tenant/services/http_service.dart';
@@ -129,12 +130,13 @@ class _RequesetState extends State<RequestsPage> {
                               child: Container(
                                 child: GestureDetector(
                                   onTap: () async {
-                                    final file = await FilePicker.getFile(
-                                        type: FileType.any);
-                                    if (file == null) return;
+                                    final result = await FilePicker.platform
+                                        .pickFiles(type: FileType.any);
+                                    if (result == null) return;
                                     setState(() {
                                       attachmentName = "Please wait ...";
                                     });
+                                    File file = File(result.files.single.path);
                                     List splitPath = file.path.split('/');
                                     String fileName =
                                         splitPath[splitPath.length - 1];

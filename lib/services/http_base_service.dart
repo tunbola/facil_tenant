@@ -15,8 +15,8 @@ class HttpBaseService {
     dio.options.connectTimeout = 30000;
     dio.options.receiveTimeout = 45000;
 
-    dio.interceptors
-        .add(InterceptorsWrapper(onRequest: (RequestOptions options) async {
+    dio.interceptors.add(InterceptorsWrapper(onRequest:
+        (RequestOptions options, RequestInterceptorHandler handler) async {
       if (options.headers['Authorization'] != null) {
         String token = options.headers['Authorization'].split(' ')[1];
         int currentTimeStamp =
@@ -26,40 +26,44 @@ class HttpBaseService {
           //request another token
           dio.lock();
           this.keepUserIn().then((response) async {
-            if (response == null) {
+            /*if (response == null) {
               _navigationService.navigateToReplace(routes.Auth);
-              return dio.reject('Automatic log in was not completed');
-            }
+              return handler.reject(DioError({requestOptions: options}), true);
+              // dio.reject('Automatic log in was not completed');
+            }*/
             var data = response.data;
             await AccessService.setAccess(json.encode(data['data']));
             options.headers['Authorization'] =
                 "Bearer ${data['data']['token']}";
-            return options;
+            return handler.next(options);
+          }).catchError((error, stackTrace) {
+            _navigationService.navigateToReplace(routes.Auth);
+            handler.reject(error, true);
           }).whenComplete(() => dio.unlock());
         }
       }
 
       // Do something before request is sent
-      return options; //continue
+      return handler.next(options); //continue
       // If you want to resolve the request with some custom data，
       // you can return a `Response` object or return `dio.resolve(data)`.
       // If you want to reject the request with an error message,
       // you can return a `DioError` object or return `dio.reject(errMsg)`
-    }, onResponse: (Response response) async {
+    }, onResponse: (Response response, handler) async {
       // Do something with response data
       /*if (response.statusCode == 401) {
        //token expired
         _navigationService.navigateToReplace(routes.Auth);
       }*/
-      return response; // continue
-    }, onError: (DioError e) async {
+      return handler.next(response); // continue
+    }, onError: (DioError e, handler) async {
       // Do something with response error
       /*int code = e.response.statusCode;
       if (code == 401) {
         await keepUserIn();
         //return e;
       }*/
-      return e; //continue
+      return handler.next(e); //continue
     }));
   }
 
@@ -198,8 +202,8 @@ class HttpBaseService {
   /// if it timesout, extracts the message from the
   /// response if any or returns a default error
   String _getMessageFromError(DioError error) {
-    if ((error.type == DioErrorType.CONNECT_TIMEOUT) ||
-        (error.type == DioErrorType.RECEIVE_TIMEOUT)) {
+    if ((error.type == DioErrorType.connectTimeout) ||
+        (error.type == DioErrorType.receiveTimeout)) {
       return "Internet connection error";
     }
     //e.type = DioErrorType.DEFAULT;
