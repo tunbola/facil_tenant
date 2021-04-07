@@ -9,8 +9,8 @@
          In most cases you can leave this as-is, but you if you want to provide
          additional functionality it is fine to subclass or reimplement
          FlutterApplication and put your custom class here. -->
+         <!--         android:name="io.flutter.app.FlutterApplication" -->
     <application
-        android:name="io.flutter.app.FlutterApplication"
         android:label="facil_tenant"
         android:icon="@mipmap/launcher_icon"
         android:allowBackup="false"
@@ -36,5 +36,8 @@
             </intent-filter>
         </activity>
     </application>
+    <meta-data
+      android:name="flutterEmbedding"
+      android:value="2" />
     <uses-permission android:name="android.permission.INTERNET" />
 </manifest>

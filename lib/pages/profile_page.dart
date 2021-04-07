@@ -817,8 +817,7 @@ class _ProfilePageState extends State<ProfilePage>
                                   onTap: () async {
                                     var result = await ImagePicker()
                                         .getImage(source: ImageSource.gallery);
-                                    var imageBytes = await result
-                                        .readAsBytes(); //image.readAsBytesSync();
+                                    var imageBytes = await result.readAsBytes();
                                     String encodedImage =
                                         base64Encode(imageBytes);
                                     setState(() {
