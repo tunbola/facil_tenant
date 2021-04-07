@@ -1,5 +1,5 @@
 package com.facilng.facilTenant
-
+/*
 import android.os.Bundle
 
 import io.flutter.app.FlutterActivity
@@ -10,4 +10,10 @@ class MainActivity: FlutterActivity() {
     super.onCreate(savedInstanceState)
     GeneratedPluginRegistrant.registerWith(this)
   }
+}
+*/
+import io.flutter.embedding.android.FlutterActivity
+
+class MainActivity: FlutterActivity() {
+
 }

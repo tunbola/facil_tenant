@@ -316,13 +316,11 @@ class _ChatHistoryPageState extends State<ChatHistoryPage> {
                                     ],
                                   );
                                   if (result == null) return;
-                                  print(result);
-                                  //setState(() {
-                                  //  _loaderViewIndex = 0;
-                                  //});
-
-                                  //result.files.
-                                  /*List splitPath = file.path.split('/');
+                                  setState(() {
+                                    _loaderViewIndex = 0;
+                                  });
+                                  File file = File(result.files.single.path);
+                                  List splitPath = file.path.split('/');
                                   String fileName =
                                       splitPath[splitPath.length - 1];
                                   List splitName = fileName.split(".");
@@ -353,7 +351,7 @@ class _ChatHistoryPageState extends State<ChatHistoryPage> {
                                     showAttachmentPreview(
                                         context, compressedFile, fileExt);
                                     return;
-                                  }*/
+                                  }
                                 })
                           ]),
                         ],
